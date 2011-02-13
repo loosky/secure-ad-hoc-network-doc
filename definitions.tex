@@ -1,0 +1,55 @@
+\chapter*{Definitions}
+\addcontentsline{toc}{chapter}{Definitions}
+
+\begin{acronym}
+%Legg inn i alfabetisk rekkefølge!
+
+\acro{Ad Hoc Network}
+		A self-organizing network with no form for pre-existing infrastructure or centralized administration.
+
+\acro{Authenticated List} %egendefinert forkortelse av espen
+	A list containing the public keys, IP, roles, certificate validity period, signature fraction and the timestamp of the last received signature of all authenticated nodes in the network. The list broadcasted by the SP periodically.
+
+
+\acro{Authentication Module} %egendefinert forkortelse av espen
+	Addition to the B.A.T.M.A.N. protocol which takes care of cryptographic functions and other additions. It also adds fields to the Originator messages which can contain a digital signature or signature fractions, and sends other messages with nonces, certificates, and ALs.
+
+
+\acro{Convergence Time}
+	The time it takes for the network to get to a stable state with no route flapping after an event that has changed the network topology. E.g. a node has died or moved and made a link inferior to other alternative links.
+
+\acro{Elliptic-Curve Cryptography}
+	Public key cryptography based on the mathematical properties of elliptic curves.
+
+\acro{Multicast}
+	In computer networking this refers to the delivery of a packet or message to a group of devices.
+
+\acro{Originator}
+	Synonym for a Batman interface which is a network interface utilized by Batman.
+
+\acro {Originator Message}
+	Batman protocol message advertising the existence of an originator. They are used for link quality and path detection \cite{batman_rfc}. %CP
+
+\acro{Packet Delivery Ratio}
+	Proportion of delivered packets relative to the amount of packets sent.
+
+\acro{Proxy Certificate}
+	A X.509 certificate signed by a regular X.509 EEC. It is used to assign roles to which the recipient can act on behalf of the signee.
+
+\acro{Public Key Infrastructure}
+	Every entities involved with the management (creation, distribution etc.) of public key certificates. Managed by the PKIX working group of IETF.
+
+\acro{Round Trip Delay}
+	The time it takes from a packet is sent from the sender and the sender receives as acknowledgment packet from the receiver.
+
+\acro{Route Flapping}
+		Occurs when a node in a network continuously changes preferred route between a source and destination pair creating route instability.
+
+
+\acro{Shortest Path}
+	Minimum number of hops between two communicating nodes.
+
+\acro{X.509 Certificates}
+	Standard public key certificate standard managed by the PKIX working group of IETF.
+
+\end{acronym}

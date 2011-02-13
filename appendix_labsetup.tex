@@ -1,0 +1,92 @@
+\chapter{Lab Setup}
+\label{lab_setup}
+\definecolor{darkgray}{rgb}{0.95,0.95,0.95}
+\lstset{ %
+language=c,                % choose the language of the code
+basicstyle=\footnotesize,       % the size of the fonts that are used for the code
+numbers=left,                   % where to put the line-numbers
+numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+stepnumber=0,                   % the step between two line-numbers. If it is 1 each line will be numbered
+numbersep=5pt,                  % how far the line-numbers are from the code
+backgroundcolor=\color{darkgray},  % choose the background color. You must add \usepackage{color}
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+frame=single,   		% adds a frame around the code
+tabsize=2,  		% sets default tabsize to 2 spaces
+captionpos=b,   		% sets the caption-position to bottom
+breaklines=true,    	% sets automatic line breaking
+breakatwhitespace=false,    % sets if automatic breaks should only happen at whitespace
+escapeinside={\%*}{*)}          % if you want to add a comment within your code
+}
+
+The computers used in the lab was setup with the following hardware:
+
+\begin{itemize}
+\item Intel Core 2 Duo 2.83 GHz processor
+\item 4 GB memory
+\item Atheros AR5413 802.11abg NIC
+\end{itemize}
+
+\noindent
+Further, they are setup with Ubuntu 10.4 (Linux Kernel 2.6.32-25-generic-pae) and ath5k drivers for the wireless interfaces. The network interface is configured as follows:
+
+
+\begin{lstlisting}[frame=tb]
+/etc/network/interfaces
+
+auto lo
+iface lo inet loopback
+
+auto wlan0
+iface wlan0 inet static
+address 10.0.0.X
+netmask 255.255.255.0
+pre-up ifconfig wlan0 down
+pre-up ifconfig wlan0 hw ether XX:XX:XX:XX:XX:XX
+pre-up iwconfig wlan0 mode ad-hoc essid BATMAN channel 3
+
+auto unicast
+iface unicast inet static
+address 10.0.0.X
+netmask 255.255.255.0
+pre-up brctl addbr unicast
+pre-up brctl addif unicast wlan0
+pre-down ifconfig unicast down
+post-down brctl delif unicast wlan0
+post-down brctl delbr unicast
+\end{lstlisting}
+
+\noindent
+\\
+To install batmand, run the following as root user:
+
+\begin{lstlisting}[frame=tb]
+make
+make install
+make clean
+\end{lstlisting}
+
+\noindent
+\\
+For running the batman daemon on the test nodes, we ran the following script as root user:
+
+\begin{lstlisting}[frame=tb]
+ifconfig wlan0 up
+batmand wlan0
+batmand -cd 4
+killall batmand
+ifconfig wlan0 down
+\end{lstlisting}
+
+\noindent
+\\
+For reducing the transmitting power in test III and IV we ran the following as root user:
+
+\begin{lstlisting}[frame=tb]
+ifconfig wlan0 down
+iwconfig wlan0 txpower 7
+ifconfig wlan0 up
+\end{lstlisting}
+
+

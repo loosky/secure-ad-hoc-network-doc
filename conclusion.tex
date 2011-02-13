@@ -1,0 +1,30 @@
+\chapter{Conclusion}
+\label{conclusion}
+
+In this project we have proposed a solution where we combine common security measures to provide a restricted ad hoc network. Public key certificates are used as a means for access control to a network and they are managed by semi-central nodes. The proposal solves the task of issuing certificates by giving trusted nodes rights on behalf of the semi-central nodes to include new nodes to the network, and to be able to verify other trusted nodes without the presence of the semi-central nodes. We accomplish this without significantly affecting the security or the performance of the network.
+\\\\
+This project started with a comprehensive study of ad hoc networks and their characteristics that was important to consider when trying to find a solution. We also researched the necessary background information about the tools we planned to use - evaluating some routing protocols and different cryptographic schemes that seemed fit in an ad hoc environment.
+\\\\
+Along with this research it was important to consider the environments and scenarios the ad hoc network was to be used as they would probably influence the network behavior.
+\\\\
+We used an ad hoc routing protocol called BATMAN as the base for our entire system. The protocol is simple and robust with limited complex functionality compared to many of its alternatives - making it easier to modify for security purposes and to verify its security. The proposed solution adds several new entities to the original BATMAN protocol, which is used in order to achieve a scalable authentication scheme.
+\\\\
+The proposed system incorporates access control without being dependent on a central authority, rather some entity taking charge at the place and time of the network initialization. We also focused on having the network being able to continue its operation and partially allowing new entities and fully verifying already trusted entities even if the entity with the master role is unavailable.  Even better, several entities can mirror the master role making the authentication scheme very scalable.
+\\\\
+For full authentication our system either requires dependence on a central authority or an out-of-band authentication taking place on site, both of which might be impractical for ad hoc networks. However, we argue that this is required in order to have proper authentication. When establishing a network this might be optional for the users, and will most likely be depending on the scenario. Either way, our system supports both settings.
+\\\\
+A simple implementation was developed as a proof of concept and tested to indicate the impact the additional functionality has on the network. It is in no way a secure implementation, but we have modified the protocol in such a way that it could eventually be extended to incorporate the complete system.
+\\\\
+The results from the two first performance tests seemed to prove our hypothesis that our handshake process adds significantly time overhead during establishment. Our choice of using a random master node allocation seems to be a poor choice and separating the pre-authentication steps from routing messages is definitely recommended - both have been taken into consideration in our proposed system design.
+\\\\
+We performed two additional tests with far more promising results. We assumed that our implementation would not influence regular BATMAN operation, and tested this assumption by checking route convergence times for already authenticated entities and compared the results with the original BATMAN protocol. We did not discover any discrepancies between the two setups which implies that the development of our implementation should be continued.
+\\\\
+Our system design accomplishes to provide a proposal for a restricted ad hoc network that takes into account the challenges of their unique nature. Our implementation shows that the BATMAN protocol is a good choice to utilize when trying to implement our solution and that the work done in this project is a step in the right direction.
+
+\section{Further Work}\label{further_work}
+This section suggests some topics and areas that would be interesting to investigate further. These topics are omitted due to time constraints, but they important and needs to be looked at later on.
+\\\\
+A simulation of our system design is recommended in order to investigate how the networks would behave in larger scale and rapidly changing environments. Based on the results from the simulations, changes could be made to the design. It would also be desirable to continue the implementation of our solution and to do some real life tests to see how the system would behave.
+
+\subsection{In-depth Security Analysis}
+The design should be tested with some gray box security analysis, i.e. analyzing the specifics of our implementation, not the cryptographic functions that will be used. In addition, a cryptanalysis of the actual implementation would also possibly strengthen the protocols claims.

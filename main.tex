@@ -1,0 +1,131 @@
+\documentclass[a4paper, twoside, english, 11pt]{report}
+\usepackage{graphicx} 				% In order to include graphic.
+\usepackage[latin1]{inputenc}		% Norwegian letters
+\usepackage{url}
+\usepackage{array}
+\usepackage[pdftex,colorlinks]{hyperref}
+\usepackage{acronym}				% All those acronyms...
+\usepackage{eurofont}
+\usepackage[top=3.0cm, bottom=2.5cm, left=2.5cm, right=2.5cm, bindingoffset=1cm, includefoot]{geometry}
+\setcounter{secnumdepth}{3}			% The depth to which section numbering occurs
+\usepackage{listings}
+\usepackage{supertabular}
+\usepackage{longtable}
+\usepackage{multibib}
+\usepackage{enumerate}
+\usepackage{verbatim} 				% Inputing text files
+\usepackage{courier}
+\usepackage{caption}
+\usepackage{wrapfig}
+\usepackage{setspace}
+
+\newcites{web}{Web References}
+\hypersetup{%
+		bookmarksnumbered,
+		linkcolor=black, 		% Color for normal internal links.
+		anchorcolor=black,		% Color for anchor text.
+		citecolor=black,		% Color for bibliographical citations in text.
+		filecolor=magenta, 		% Color for URLs which open local files.
+		menucolor=red, 			% Color for Acrobat menu items.
+		pagecolor=red, 			% Color for links to other pages
+		urlcolor=blue, 			% Color for linked URLs.
+}%
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[RO]{\bfseries\rightmark}
+\fancyhead[LE]{\bfseries\leftmark}
+\renewcommand{\headrulewidth}{0.5pt}
+\addtolength{\headheight}{0.5pt}
+\addtolength{\footskip}{0.5pt}
+\cfoot{\thepage} 
+\pagestyle{fancy}
+
+\begin{document}
+
+% FRONT PAGE
+\pagestyle{empty}
+\input{front_page}
+
+% PROBLEM DESCRIPTION
+\cleardoublepage
+\pagestyle{empty}
+\input{problem_description_final}
+
+\cleardoublepage
+\pagenumbering{roman}			% Roman numbers in the beginning of the report is nice.
+\pagestyle{fancy}
+
+% ABSTRACT
+\cleardoublepage
+\input{abstract}
+\pagestyle{empty}					% In order to remove the black line on the top. Unfortunately the page number is also removed...
+
+% PREFACE
+\cleardoublepage
+\pagestyle{fancy}
+\input{preface}
+
+% ABBREVIATIONS
+\clearpage
+\input{acronyms}
+
+% DEFINITIONS
+\clearpage
+\input{definitions}
+
+% TABLE OF CONTENTS, LIST OF FIGURES AND LIST OF TABLES
+\tableofcontents
+\listoffigures
+\listoftables
+\pagestyle{empty}	
+
+% INTRODUCTION
+\cleardoublepage
+\pagenumbering{arabic}			% Arabic numbering. Starts on page 1 again.
+\pagestyle{fancy}
+\input{introduction}
+
+% BACKGROUND
+\input{background}
+
+% SCENARIOS & REQUIREMENTS
+\input{scenario_requirements}
+
+% SYSTEM DESCRIPTION
+\input{system_design}
+
+% IMPLEMENTATION
+\input{implementation}
+
+% Laboratory Environment and Testing
+\input{environment_testing}
+
+% RESULTS
+\input{results}
+
+% CONCLUSION
+\input{conclusion}
+
+% BIBLIOGRAPHY
+\clearpage
+\addcontentsline{toc}{chapter}{Bibliography}
+%\nocite{*}
+\bibliographystyle{alpha}
+\bibliography{ref}
+
+%\clearpage
+%\addcontentsline{toc}{chapter}{Web References}
+%\nociteweb{*}
+%\bibliographystyleweb{plain}
+%\bibliographyweb{ref}
+
+% APPENDIX
+\clearpage
+\appendix
+\input{appendix_batman}
+\input{appendix_labsetup}
+\input{appendix_source_code}
+\input{appendix_tests}
+\end{document}

@@ -1,0 +1,59 @@
+\chapter{Test Results}
+\label{appendix_tests}
+
+\definecolor{darkgray}{rgb}{0.95,0.95,0.95}
+\lstset{ %
+language=sh,                % choose the language of the code
+basicstyle=\footnotesize,       % the size of the fonts that are used for the code
+numbers=left,                   % where to put the line-numbers
+numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+stepnumber=0,                   % the step between two line-numbers. If it is 1 each line will be numbered
+numbersep=5pt,                  % how far the line-numbers are from the code
+backgroundcolor=\color{darkgray},  % choose the background color. You must add \usepackage{color}
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+frame=single,   		% adds a frame around the code
+tabsize=2,  		% sets default tabsize to 2 spaces
+captionpos=b,   		% sets the caption-position to bottom
+breaklines=true,    	% sets automatic line breaking
+breakatwhitespace=false,    % sets if automatic breaks should only happen at whitespace
+escapeinside={\%}{)}          % if you want to add a comment within your code
+}
+
+
+\section{Excerpts From Logs}
+Below are excerpts from the first run of every test.
+
+\subsection{Test I}
+This excerpt shows the test runs of test I. The logs are taken from the debug of the master node, which was node 2. The important thing to notice is the timestamp from the first plain OGM received and the timestamp for when it was added to the routing table.
+\\
+\lstinputlisting[frame=tb]{testing_logs_latex/1_1_2.txt}
+
+\subsection{Test II}
+This excerpt shows the runs of test II with node 2 as the master node. Note when when the first plain OGM is received and when the new node is added to the routing table.
+\\
+\lstinputlisting[frame=tb]{testing_logs_latex/2_1_2.txt}
+
+\subsection{Test III}
+Here is the results from test III for both our implementation and the original BATMAN protocol. Here we show that the last OGM received from node 4 before it was removed. Notice the arrival timestamp of this OGM and of the route change.
+
+\subsubsection*{Our Implementation}
+\lstinputlisting[frame=tb]{testing_logs_latex/3_1_1.txt}
+
+\subsubsection*{Original BATMAN}
+\lstinputlisting[frame=tb]{testing_logs_latex/original_batman/3_1_1.txt}
+
+\subsection{Test IV}
+The excerpts from test IV shows shows how long time it takes from the first OGM from node 4 is received, until it is added as the preferred route again.
+
+\subsubsection*{Our Implementation}
+\lstinputlisting[frame=tb]{testing_logs_latex/4_1_1.txt}
+
+\subsubsection*{Original BATMAN}
+\lstinputlisting[frame=tb]{testing_logs_latex/original_batman/4_1_1.txt}
+
+\section{Full Logs}
+The full logs of all the test runs can be downloaded from \url{http://org.ntnu.no/batman2010/test\_logs.tar.gz}. Here you will find every test done with our implementation in the root folder, and the tests done on the original BATMAN protocol inside the "original\_batman" folder. Every file is named with the test number, run number and the node the debug log is taken from as follows - test\_run\_node.txt. E.g. the file called "2\_2\_1.txt" contains the log of run number two of test two taken from node one.
+
+
