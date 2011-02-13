@@ -1,0 +1,23 @@
+[30460] Received BATMAN packet via NB: 10.0.0.3, IF: wlan0 10.0.0.2 (from OG: 10.0.0.3, via old OG: 10.0.0.3, seqno 1, tq 255, TTL 50, V 9, IDF 0) 
+[30460] Creating new originator: 10.0.0.3 
+[30460] updating last_seqno: old 0, new 1 
+[30460] Creating new last-hop neighbour of originator
+[30460] bidirectional: orig = 10.0.0.3        neigh = 10.0.0.3        => own_bcast =  0, real recv =  0, local tq:   0, asym_penalty:   0, total tq:   0 
+[30460] ========================================================
+[30460] [RECV] 0 | 0 | 0 (PLAIN)
+[30460] [SEND] 232 | 0 | 123 (CHALLENGE)
+[30460] ========================================================
+	
+		...
+		...
+		...
+
+[36280] Received BATMAN packet via NB: 10.0.0.3, IF: wlan0 10.0.0.2 (from OG: 10.0.0.3, via old OG: 10.0.0.3, seqno 7, tq 255, TTL 50, V 9, IDF 0) 
+[36280] updating last_seqno: old 6, new 7 
+[36280] bidirectional: orig = 10.0.0.3        neigh = 10.0.0.3        => own_bcast =  1, real recv =  6, local tq:  42, asym_penalty:  66, total tq:  10 
+[36280] update_originator(): Searching and updating originator entry of received packet,  
+[36280] Updating existing last-hop neighbour of originator
+[36280] update_routes() 
+[36280] Route to 10.0.0.3 via 10.0.0.3
+[36280] Adding new route
+[36280] Adding route to 10.0.0.3 via 0.0.0.0 (table 66 - wlan0)
