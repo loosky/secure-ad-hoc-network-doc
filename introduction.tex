@@ -1,72 +1,12 @@
-\chapter{Introduction}
-\label{introduction}
-A communications network is a critical factor in both emergency and military situations. For instance, operations like search and rescue and tactical commando operations amongst soldiers should be a coordinated effort requiring secure and quick communication among participants. The effectiveness of an operation can be heavily affected by the networks functionality, availability and reliability.
-\\\\
-Traditional communications networks are usually dependent on some fixed infrastructure where there are physical and logical relationships between participating devices. In computer networks there are several central entities such as routers, Domain Name Servers (DNS) and Dynamic Host Configuration Protocol (DHCP) Servers that are necessary in order to have a functional network. However, in certain emergency situations or military operations, resources may be scarce, conditions unpredictable and rapidly changing, making it desirable to have a network with very little dependence to any fixed infrastructure or centralized administration.
-\\\\
-Mobile ad hoc networks may solve many of the challenges mentioned above and some of their most important characteristics can summarized as follows:
-
-\begin{itemize}
-\item Self-organizing with no infrastructure or centralized administration.
-\item Distributed routing.
-\item Quick and cost-effective deployment.
-\end{itemize}
-
-\noindent
-Despite the advantages of using ad hoc networks, there are many challenges and issues associated with them. One in particular, which is especially important in military operations, is security. Wireless mobile ad hoc networks are more vulnerable to attacks compared to wired networks because of their highly dynamic topology, scarce bandwidth, and potentially low power and processing capacity in the devices used \cite{murthy-ad}. However, one of ad hoc networks biggest advantage may also be considered as the biggest challenge to a security and authentication scheme - namely the lack of infrastructure. Authentication is usually solved in a hierarchical manner on the Internet, but when a network lacks infrastructure this becomes an very difficult task.
+\chapter{Introduction}\label{introduction}
 
 \section{Motivation}
-The motivation for this report is attempting to design an authentication scheme and access control for ad hoc networks that does not affect the networks unique characteristics. How do we balance the hierarchical structure usually required for authentication mechanisms with the flat structure of ad hoc networks? And if this issue can be solved, how can it be done without significantly reducing the performance of the network? 
 
 \section{Objectives}
-The purpose of this report is first to give the reader some insight into the challenges of authentication and access control in ad hoc networks, and to give an understanding of why this is important - especially in what kind of scenarios this might be crucial.
-\\\\
-Secondly, we aim to propose a solution for a secure and restricted ad hoc network that meets the requirements for use in emergency and military operations. The main focus will be on authentication and access control since many other security features such as key exchange for message encryption may depend on this.
-\\\\
-Finally we will develop a very simple implementation of the authentication scheme proposed for the BATMAN routing protocol. By implementing this we aim to achieve a proof of concept that the idea of authentication can be incorporated without significantly reducing the performance or alter other functionality of the protocol.
 
 \section{Limitations}
-Our proposal is based on common security and authentication mechanisms widely used in traditional computer networks. Thus, if used right they should introduce the same level of security and trust as they do in regular networks. However, we do not known how our solution will work in a larger scale and how this might affect the performance. The system design should therefore be simulated to test the scalability and functionality under heavy load and mobility. However, due to limited time and resources we will not focus on this in this report, leaving such simulation and testing to be done in the future.
-\\\\
-Our implementation of the proposed system design does not contain any cryptographic schemes. However, our implementation is expandable in such way that it could incorporate such functionality.
-\\\\
-We have had limited time to look at the different security attacks on our system, so our design needs to be further evaluated in that respect.
 
 \section{Method}
-The work behind this project can roughly be split into three parts:
-  
-\begin{enumerate}[I.]
-\item Research and study of background material.
-\item Discussing and developing a proposal for a system design.
-\item Modifying the BATMAN protocol to incorporate some of the basic functionalities proposed.
-\end{enumerate}
 
 \section{Document Structure}
 The remainder of this report is structured as follows:
-
-\paragraph{Chapter \ref{background}:}\textbf{Background} presents basic background information about ad hoc networks including network functionalities such as routing. It also sheds light on applications and challenges of ad hoc networks as well as common security issues they may face. Different authentication schemes used in traditional computer networks are also presented, such as certificates and public key cryptography.
-
-\paragraph{Chapter \ref{scenario_requirements}:}\textbf{Scenarios and Requirements} describes scenarios from application areas where it is beneficial and natural to utilize ad hoc networks. It also presents additional requirements that might affect how security and access control should be implemented in such networks. The chapter then continues to explain a simplified and generalized scenario based on the ones described before which is to be used as a basis for our system design, actual implementation, and testing.
-
-\paragraph{Chapter \ref{system_design}:}\textbf{System Design} describes in detail our proposal for a system with an authentication scheme that provides an access control mechanism for ad hoc networks. It explains how the BATMAN ad hoc routing protocol must be adapted to incorporate our authentication scheme using different authentication mechanisms described in Chapter \ref{background}.
-
-\paragraph{Chapter \ref{implementation}:}\textbf{Implementation} presents the BATMAN source code that we have modified and extended to implement a simplified version of the system explained in Chapter \ref{system_design}.
-
-\paragraph{Chapter \ref{environment_testing}:}\textbf{Laboratory Environment and Testing} explains the environment where we tested our implementation and how the testing was performed.
-
-\paragraph{Chapter \ref{results}:}\textbf{Results} presents the results from the testing done as explained in Chapter \ref{environment_testing}.
-
-\paragraph{Chapter \ref{conclusion}:}\textbf{Conclusion} contains our evaluation of our proposed system. It highlights positive aspects in respect to the limitations of our solution. It then presents a discussion of the results received from the testing done in Chapter \ref{environment_testing} and summarizes our findings. Finally, a short mention is done on our thoughts and ideas for future work.
-
-\noindent
-\\The following appendices are also included:
-
-\paragraph{Appendix \ref{appendix_batman}:}\textbf{BATMAN Protocol} presents some additional information about the ad hoc routing protocol.
-
-\paragraph{Appendix \ref{lab_setup}:}\textbf{Lab Setup} describes more thoroughly how we set up the laboratory environment.
-
-\paragraph{Appendix \ref{source_code}:}\textbf{Source Code} presents the batman.c source code which have been extensively modified, and other code snippets from other portions of the code.
-
-\paragraph{Appendix \ref{appendix_tests}:}\textbf{Test Results} includes the debug output used to calculate the results from our tests.
-
-\paragraph{Appendix \ref{essay}:}\textbf{Technical Essay} describes the authentication process in Mobile Ad Hoc Networks and proposes a simple authentication scheme.
