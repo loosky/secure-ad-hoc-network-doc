@@ -1,8 +1,30 @@
+*****************************
 ***Info will be added soon***
+*****************************
 
 
-Test machines:
+***Test Clients***
+
 #1 - batman_1@129.241.208.58
 #2 - batman_2@129.241.208.228
 #3 - batman_3@129.241.209.106
 #4 - batman_4@129.241.209.114
+
+
+
+***Problem Description***
+
+With an secure ad hoc network, the Military and Emergency responders can utilize the full features of ad hoc networking. 
+These features include, but are not limited to, being able to set up wireless communication quick and inexpensively in areas
+without the proper communication infrastructure, or separated from the public networks.
+
+In this thesis I aim to implement a secure ad hoc network, based on a solution proposed by Dr. Lawrie Brown (UNSW@ADFA) and 
+Martin Gilje Jaatun (SINTEF ICT), and implement some extra functionality Anne Gabrielle Bowitz and I proposed in a much more
+complete solution during our specialization project last fall. I do not however, expect to have enough time to fully implement
+our solution, so I will first focus on the proposal by Brown and Jaatun.
+
+The secure ad hoc network is based on B.A.T.M.A.N., which is a pro-active ad hoc routing protocol. The solution I'm about to
+implement adds authentication to the routing messages sent in the network, using among other things proxy certificates.
+
+Finally, I am going to run some tests to see how our secure version of the B.A.T.M.A.N. protocol compares to the original,
+and see how the solution handles known attacks against mobile ad hoc networks, e.g. the wormhole attack.
