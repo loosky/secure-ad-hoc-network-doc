@@ -14,9 +14,9 @@
 
 ***Problem Description***
 
-With an secure ad hoc network, the Military and Emergency responders can utilize the full features of ad hoc networking. 
-These features include, but are not limited to, being able to set up wireless communication quick and inexpensively in areas
-without the proper communication infrastructure, or separated from the public networks.
+With an secure ad hoc network, the Military and Emergency responders can utilize the full features of ad hoc
+networking. These features include, but are not limited to, being able to set up wireless communication quick and
+inexpensively in areas without the proper communication infrastructure, or separated from the public networks.
 
 In this thesis I aim to implement a secure ad hoc network, based on a solution proposed by Dr. Lawrie Brown (UNSW@ADFA) and 
 Martin Gilje Jaatun (SINTEF ICT), and implement some extra functionality Anne Gabrielle Bowitz and I proposed in a much more
