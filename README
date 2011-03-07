@@ -18,11 +18,11 @@ With an secure ad hoc network, the Military and Emergency responders can utilize
 networking. These features include, but are not limited to, being able to set up wireless communication quick and
 inexpensively in areas without the proper communication infrastructure, or separated from the public networks.
 
-In this thesis I aim to implement a secure ad hoc network, based on a solution proposed by Dr. Lawrie Brown
+(In this thesis I aim to implement a secure ad hoc network, based on a solution proposed by Dr. Lawrie Brown
 (UNSW@ADFA) and Martin Gilje Jaatun (SINTEF ICT), and implement some extra functionality Anne Gabrielle Bowitz
 and I proposed in a much more complete solution during our specialization project last fall. I do not however,
 expect to have enough time to fully implement our solution, so I will first focus on the proposal by Brown and
-Jaatun.
+Jaatun.) Kommentar Martin?
 
 The secure ad hoc network is based on B.A.T.M.A.N., which is a pro-active ad hoc routing protocol. The solution
 I'm about to implement adds authentication to the routing messages sent in the network, using among other things
