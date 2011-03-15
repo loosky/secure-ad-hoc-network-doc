@@ -15,6 +15,47 @@ emergency situation scenario, in which communication infrastructure is
 unavailable. This thesis will also reflect on some possible requirements given
 by a military application.
 
+If there is a major emergency situation such as an earthquake or tsunami, it is
+likely that parts or the whole of the communication infrastructure at the scene
+is destroyed or temporarily down. The remaining communication lines will then
+probably be congested, such that little communication actually goes through.
+
+In this situation, it is of great importance that Emergency Personell, such as
+Paramedics, Firemen, Policemen and the Military, are able to communicate
+efficiently and therefore independently of the public communication
+infrastructure.
+
+They need this network in order to manage the the operation, and therefore
+availability is probably the highest regarded trait of this network. Secondly,
+they should be able to trust that the communication on the network is to be
+trusted, i.e. messages sent are from who they claim they to be.
+
+Also, being able to authorize new actors on the scene, such as Red Cross, can be
+critical to the operation. These new actors will probably not have the necessary
+authentication tokens, i.e. certificates, required by the authentication scheme
+in the network.
+
+\subsection{List of Requirements}
+Based on the scenario above these requirements can be extracted and made into
+general requirements that needs to be addressed by the system designm.
+
+\begin{table}[ht!]
+	\centering
+	\begin{tabular}{ | l | p{11cm} | }
+	\hline
+	\textbf{Requirement} & \textbf{Requirement Description}\\\hline
+		R1 & A node must be authorized in order to get full rights in a
+		network\\\hline
+		R2 & A node without a recognized authentication token should be able to be
+		authorized if necessary\\ \hline
+		R3 & Networks need a master node which handles access control\\\hline
+		R4 & Different networks should be able to collaborate\\\hline
+	\end{tabular}
+	\caption{Requirements based upon our simplified and general scenario.}
+	\label{tab:our_req}
+\end{table}
+
 
 
 \section{Design Overview}
+The secure extension of BATMANasdasdasdasd
