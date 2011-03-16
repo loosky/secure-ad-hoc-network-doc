@@ -1,4 +1,4 @@
-\chapter{Design}
+\chapter{System Design}
 This chapter portray the design for the proposed implementation of the secure ad
 hoc network.
 
@@ -58,4 +58,46 @@ general requirements that needs to be addressed by the system designm.
 
 
 \section{Design Overview}
-The secure extension of BATMANasdasdasdasd
+The secure ad hoc network designed here does not change any fundamental workings
+of regular ad hoc routing protocols. Assuming all nodes in the network already
+have been authenticated, the routing in the network should behave as if there
+were no secure extension to the routing protocol.
+
+The proposed design should work with most pro-active ad hoc routing protocols
+with limited alterations - but this design is specifically made for the BATMAN routing
+protocol chosen for its simplicity. How to incorporate this design into BATMAN
+will be expained in Chapter \ref{chapter_implementation}.
+
+The basic principle of the proposed design is that an authenticated node accepts
+other authenticated nodes' routing messages and forwards them as normal, while
+discarding routing messages from unauthenticated nodes. One or more nodes in the
+network will assume a role as master nodes, with the extra capability of
+authorizing new nodes into the network. A special certificate called a \ac{PC}
+will be used for authentication after this authorization has taken place so
+other nodes in the network will be able to authenticate and accept the new
+node.
+
+\subsection{Entity Explanation}
+Before a simplified example can be given, a few new entities to this design
+needs to be explained further. This is the short version, just enough for the
+reader to understand the example - the full description of these entities will
+be further explained later.
+
+\begin{itemize}
+  \item \textbf{Service Proxy (SP)} is responsible for tasks similar to that of
+  	a \ac{CA} and has the master role in the network. The \ac{SP} is the entity
+  	that authorize new nodes and sign their \ac{PC}s.
+  \item \textbf{Proxy Certificate 0} is a self-signed \ac{PC} belonging to a
+  	\ac{SP}. This \ac{PC} has a certificate depth of 0, thus we refer to it as a
+  	\ac{PC0}.
+  \item \textbf{Proxy Certificate 1} is a \ac{PC} signed by a \ac{PC0} i.e. the
+  	the certificate of a \ac{SP}. All authenticated nodes in one network, has a
+  	\ac{PC1} signed by a \ac{SP} from that network.
+  \item \textbf{Authentication List (AL)} is a list containing the necessary
+  	information about all authorized nodes in the network. The \ac{AL} is
+  	broadcasted through the network by the \ac{SP} periodically and all nodes
+  	keep a local copy of the \ac{AL} which they use to authenticate other nodes
+  	in the network.
+\end{itemize}
+
+\subsection{Simple Example}
