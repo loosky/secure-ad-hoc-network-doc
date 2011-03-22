@@ -101,3 +101,26 @@ be further explained later.
 \end{itemize}
 
 \subsection{Simple Example}
+Two nodes are within transmitting range of each other. One of the nodes is a
+\ac{SP} and the other is unauthenticated. The pro-active ad hoc routing protocol
+used on both nodes regularly broadcast routing messages, so the two nodes learn
+of each others existence. Upon reception of a routing message from the
+unauthenticated node, the \ac{SP} will invite the node for a handshake. With
+this handshake, the unauthenticated node will generate itself a \ac{PC} which
+the \ac{SP} will sign as trusted - i.e. the node is issued a \ac{PC1}.
+
+Using the public key pair of the \ac{PC1}, the newly trusted node will now
+broadcast a signature, and use an excerpt from this signature in its routing
+messages. The \ac{SP}, recognizing the signature will rebroadcast the routing
+messages so regular ad hoc routing follows.
+
+Also upon handshake completion is the generation an \ac{AL}. The \ac{SP} will
+use this list in order to save certain necessary details about the other node,
+such as its address, public key, last signature, and more. Also in this list is
+the corresponding information about the \ac{SP} itself. When the list is created
+or updated it is broadcasted to the network - encrypted so its details stay
+hidden from unauthenticated nodes.
+
+Whenever a new node is discovered by the \ac{SP} this procedure repeats, and a
+new addition is made to the \ac{AL}. Other previously trusted nodes will learn
+the identity of new nodes when they receive the updated list from the \ac{SP}.
