@@ -1,12 +1,53 @@
 \chapter{Implementation}\label{chapter_implementation}
 
-The security additions to the BATMAN protocol are mostly implemented in the
-\ac{AM}, but some alterations had to be made in other parts of the code as well.
-This chapter is devoted to explain what have been done as to achieve the design
-goals, but the code itself is found in Appendix \ref{chapter_source_code}.
+This chapter goes into depth on how the design from the previous chapter got
+implemented into the BATMAN protocol. The layout of this chapter is a
+chronological order from the point of view of the programmer. If you wish to
+have a look at the code right away, you can find that in Appendix
+\ref{chapter_source_code}.
 
-\section{Proof of Concept Solution with Dedicated Socket}
-Based on the implementation done in the previous project where we proposed a
-proof of concept solution with no actual cryptographic authentication scheme -
-this section describes how that solution was extended to use a separate socket
-in order to achieve the performance needed, as discussed in the project.
+
+\section{Classes}
+
+\subsection{Authentication Module}
+Almost all functionality added to BATMAN is within the borders of this class.
+Some code however, had to be added elsewhere in order to call the \ac{AM}
+functions, or to use information from \ac{AM}. This segregation is primarily
+done in order to separate original BATMAN functions from new authentication
+functions.
+
+The first thing to notice about the \ac{AM} is that it runs on its own thread,
+so all authentication mechanisms run concurrent to regular BATMAN routing
+operations. This separation was necessary in order to have BATMAN behave
+normally during authentication of a node, so a large network should not suffer
+if an important node (position) is 'hung up' in authentication.
+
+\subsection{Batman and Schedule Classes}
+These were the only classes of the original BATMAN code that had to be modified.
+The batman class handles most of the logic when receiving a \ac{OGM} so this is
+where a check has been added to see if a node is known. If it is not, a thread
+in the \ac{AM} is initialized in order to try to authenticate with the other
+node, and then goes on to disregard the handling of that packet further, as to
+deny it being copied into the routing table by BATMAN.
+
+In schedule the signature offset, or the authentication token as described in
+the next section, was added at the end of the extended \ac{OGM}. If there is no
+authentication token or signature available, it will add a zero value,
+indicating the node is not authenticated with any network.
+
+\section{First Phase}
+The first phase of the implementation started with looking through the whole
+source code of BATMAN in order to get an understanding of where and how changes
+had to be made. The batman class has a nice setup where it goes through many
+different checks (if-statements) on a received \ac{OGM} to determine wheter it
+should be added to the routing table, if information about the node should be
+modified, or if the node should be dropped for one of several reasons.
+
+Throughout all of these checks, there is a label it can jump to if any check
+fails, called 'send\_packets'. That is a label in which all logic to the
+received oacket is disregarded and the program goes on to schedule its own and and
+forward other known nodes' \ac{OGM}s. This label is very useful because when
+checking if a node is already authenticated, the flow can be altered so that if
+a node is unknown the program can jump to this label and disregard the handling
+of the received \ac{OGM} after initializing a new authentication thread in
+\ac{AM}.
