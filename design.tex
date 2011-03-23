@@ -1,11 +1,11 @@
 \chapter{System Design}
-This chapter portray the design for the proposed implementation of the secure ad
-hoc network.
+This chapter portrays the design for the proposed implementation of the secure
+ad hoc network.
 
 \section{Requirements}
 Ad hoc networks have some desired characteristics such as quick and inexpensive
-setup and being independent of critical communication infrastructure, but they
-also impose great challenges regarding security and more. The challenges
+setup and being independent of communication infrastructure, but they
+also impose great challenges regarding security. The challenges
 regarding security can vary depending the purpose and environment of the
 network.
 
@@ -20,15 +20,13 @@ likely that parts or the whole of the communication infrastructure at the scene
 is destroyed or temporarily down. The remaining communication lines will then
 probably be congested, such that little communication actually goes through.
 
-In this situation, it is of great importance that Emergency Personell, such as
+In this situation, it is of great importance that Emergency Personnel, such as
 Paramedics, Firemen, Policemen and the Military, are able to communicate
 efficiently and therefore independently of the public communication
-infrastructure.
-
-They need this network in order to manage the the operation, and therefore
-availability is probably the highest regarded trait of this network. Secondly,
-they should be able to trust that the communication on the network is to be
-trusted, i.e. messages sent are from who they claim they to be.
+infrastructure. They need this network in order to manage the the operation, and
+therefore availability is probably the most important trait of this network.
+Secondly, they should be able to trust that the communication on the network is to be
+trusted, i.e. messages sent are from whom they claim they to be.
 
 Also, being able to authorize new actors on the scene, such as Red Cross, can be
 critical to the operation. These new actors will probably not have the necessary
@@ -37,7 +35,10 @@ in the network.
 
 \subsection{List of Requirements}
 Based on the scenario above these requirements can be extracted and made into
-general requirements that needs to be addressed by the system designm.
+general requirements that needs to be addressed by the system design. The work
+presented here is based on several sources, most prevalent being the research
+from the OASIS project [OASIS] and the doctoral project of Eli Winjum carried
+out at UniK \cite{ffi_2005_04015}.
 
 \begin{table}[ht!]
 	\centering
@@ -45,17 +46,22 @@ general requirements that needs to be addressed by the system designm.
 	\hline
 	\textbf{Requirement} & \textbf{Requirement Description}\\\hline
 		R1 & A node must be authorized in order to get full rights in a
-		network\\\hline
-		R2 & A node without a recognized authentication token should be able to be
+		network \cite{dahill2001secure}, \cite{sanzgiri2002secure}\\\hline
+		R2 & A node without a recognized authentication token should be able to become
 		authorized if necessary\\ \hline
 		R3 & Networks need a master node which handles access control\\\hline
-		R4 & Different networks should be able to collaborate\\\hline
+		R4 & Different networks should be able to collaborate
+		\cite{ffi_2005_04015}\\\hline
 	\end{tabular}
 	\caption{Requirements based upon our simplified and general scenario.}
 	\label{tab:our_req}
 \end{table}
 
-
+An early study produced security requirements of ad hoc networks demanding
+that the routing logic must not be spoofed or altered to produce different
+behavior \cite{dahill2001secure}. This means authorization is required (R1)
+before someone can partake in routing logic. FFI also requires seamless radio coverage over the
+area giving us R4.
 
 \section{Design Overview}
 The secure ad hoc network designed here does not change any fundamental workings
