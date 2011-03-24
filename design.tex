@@ -70,24 +70,35 @@ have been authenticated, the routing in the network should behave as if there
 were no secure extension to the routing protocol.
 
 The proposed design should work with most pro-active ad hoc routing protocols
-with limited alterations - but this design is specifically made for the BATMAN routing
-protocol chosen for its simplicity. How to incorporate this design into BATMAN
-will be expained in Chapter \ref{chapter_implementation}.
+with limited alterations - but this design is specifically made for the
+BATMAN \cite{batman_rfc} routing protocol chosen for its simpler design compared to
+e.g. OLSR \cite{clausen2003rfc3626} because it only uses the third layer of the
+OSI Model \cite{zimmermann1980osi}. How to incorporate this design into BATMAN will be
+expained in Chapter \ref{chapter_implementation}.
 
 The basic principle of the proposed design is that an authenticated node accepts
 other authenticated nodes' routing messages and forwards them as normal, while
 discarding routing messages from unauthenticated nodes. One or more nodes in the
-network will assume a role as master nodes, with the extra capability of
+network will assume a role as master node(s), with the extra capability of
 authorizing new nodes into the network. A special certificate called a \ac{PC}
-will be used for authentication after this authorization has taken place so
-other nodes in the network will be able to authenticate and accept the new
+\cite{tuecke2004rfc3820} will be used for authentication after this authorization has taken
+place so other nodes in the network will be able to authenticate and accept the new
 node.
 
+
 \subsection{Entity Explanation}
+
+\begin{figure}[ht!]
+	\centering
+  	\includegraphics{images/simple_example_entities.png}
+  	\caption{Different entities in the Simple Example.}
+	\label{fig:simple_example_entities}
+\end{figure}
+
 Before a simplified example can be given, a few new entities to this design
 needs to be explained further. This is the short version, just enough for the
 reader to understand the example - the full description of these entities will
-be further explained later.
+be given later.
 
 \begin{itemize}
   \item \textbf{Service Proxy (SP)} is responsible for tasks similar to that of
@@ -104,6 +115,8 @@ be further explained later.
   	broadcasted through the network by the \ac{SP} periodically and all nodes
   	keep a local copy of the \ac{AL} which they use to authenticate other nodes
   	in the network.
+  \item \textbf{Authenticated Node} bla bla.
+  \item \textbf{Unauthenticated Node} bla bla.
 \end{itemize}
 
 \subsection{Simple Example}
