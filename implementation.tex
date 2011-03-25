@@ -46,7 +46,7 @@ modified, or if the node should be dropped for one of several reasons.
 Throughout all of these checks, there is a label it can jump to if any check
 fails, called 'send\_packets'. That is a label in which all logic to the
 received oacket is disregarded and the program goes on to schedule its own and and
-forward other known nodes' \ac{OGM}s. This label is very useful because when
+forward other known nodes' \acp{OGM}. This label is very useful because when
 checking if a node is already authenticated, the flow can be altered so that if
 a node is unknown the program can jump to this label and disregard the handling
 of the received \ac{OGM} after initializing a new authentication thread in

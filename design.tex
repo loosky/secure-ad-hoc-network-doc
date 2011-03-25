@@ -101,20 +101,19 @@ reader to understand the example - the full description of these entities will
 be given later.
 
 \begin{itemize}
-  \item \textbf{Service Proxy (SP)} is responsible for tasks similar to that of
-  	a \ac{CA} and has the master role in the network. The \ac{SP} is the entity
-  	that authorize new nodes and sign their \ac{PC}s.
-  \item \textbf{Proxy Certificate 0} is a self-signed \ac{PC} belonging to a
+  \item \textbf{\acf{SP}} is responsible for tasks similar to that of a \ac{CA}
+  	and has the master role in the network. The \ac{SP} is the entity that
+ 	 authorizes new nodes and signs their \acp{PC}.
+  \item \textbf{\acf{PC0}} is a self-signed \ac{PC} belonging to a
   	\ac{SP}. This \ac{PC} has a certificate depth of 0, thus we refer to it as a
   	\ac{PC0}.
-  \item \textbf{Proxy Certificate 1} is a \ac{PC} signed by a \ac{PC0} i.e. the
-  	the certificate of a \ac{SP}. All authenticated nodes in one network, has a
-  	\ac{PC1} signed by a \ac{SP} from that network.
-  \item \textbf{Authentication List (AL)} is a list containing the necessary
-  	information about all authorized nodes in the network. The \ac{AL} is
-  	broadcasted through the network by the \ac{SP} periodically and all nodes
-  	keep a local copy of the \ac{AL} which they use to authenticate other nodes
-  	in the network.
+  \item \textbf{\acf{PC1}} is a \ac{PC} signed by a \ac{PC0} (i.e. the the
+	 certificate of a \ac{SP}). All authenticated nodes in one network, has a
+ 	 \ac{PC1} signed by a \ac{SP} from that network.
+  \item \textbf{\acf{AL}} is a list containing the necessary information about
+ 	all authorized nodes in the network. The \ac{SP} signs and broadcasts a copy
+ 	of the \ac{AL} periodically, and all nodes keep a local copy of the \ac{AL}
+  	which they use to authenticate other nodes in the network.
   \item \textbf{Authenticated Node} bla bla.
   \item \textbf{Unauthenticated Node} bla bla.
 \end{itemize}
@@ -122,11 +121,17 @@ be given later.
 \subsection{Simple Example}
 Two nodes are within transmitting range of each other. One of the nodes is a
 \ac{SP} and the other is unauthenticated. The pro-active ad hoc routing protocol
-used on both nodes regularly broadcast routing messages, so the two nodes learn
-of each others existence. Upon reception of a routing message from the
+used on both nodes regularly broadcasts routing messages, so the two nodes learn
+of each others' existence. Upon reception of a routing message from the
 unauthenticated node, the \ac{SP} will invite the node for a handshake. With
-this handshake, the unauthenticated node will generate itself a \ac{PC} which
-the \ac{SP} will sign as trusted - i.e. the node is issued a \ac{PC1}.
+this handshake, the unauthenticated node will send a self-generated \ac{PC}
+which the \ac{SP} can sign as trusted - i.e. the node is issued a \ac{PC1}.
+
+Before the \ac{SP} actually signs the \ac{PC} received from the unauthenticated
+node, it needs some verification that the node is an actor that should be
+allowed access to the network. The actor will therefore meet the \ac{SP} in the
+field and give its \ac{PC}'s public key fingerprint (out-of-band) so the \ac{SP}
+can verify the incoming \ac{PC} as the actor's.
 
 Using the public key pair of the \ac{PC1}, the newly trusted node will now
 broadcast a signature, and use an excerpt from this signature in its routing
@@ -143,3 +148,5 @@ hidden from unauthenticated nodes.
 Whenever a new node is discovered by the \ac{SP} this procedure repeats, and a
 new addition is made to the \ac{AL}. Other previously trusted nodes will learn
 the identity of new nodes when they receive the updated list from the \ac{SP}.
+
+TODO: add an MSC or figure with the entities to explain the example\ldots
