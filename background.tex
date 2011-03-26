@@ -1,6 +1,33 @@
 \chapter{Background}
 
 \section{B.A.T.M.A.N.}
+BATMAN \cite{batman_rfc} is an increasingly more popular routing protocol for
+wireless ad hoc networks. The name is an abbreviation for ``Better Approach To
+Mobile Ad hoc Networking''. The motivation behind BATMAN was to replace OLSR
+\cite{why-starting-batman} because of the inherent difficulties that protocol
+has. 
+
+OLSR is a pro-active routing protocol, which means that participating nodes
+regularly exchange routing information with each other. According to the BATMAN
+developers the problem with OLSR is that every node in the network calculates
+the whole routing path, which is a complex way to do it. In addition, if nodes
+sit on different routing information this concept leads to routing loops and
+heavy route flapping. The result is many patches to the protocol that defies
+the protocol standard in order to make it more suitable.
+
+The developers of BATMAN wanted to start with a clean slate and decided amongst
+other things that each node should only know the next hop, i.e. the link-local
+neighbor that is the path between itself and the destination. In many ways, what
+they did was to make a simpler and easier to understand protocol. For instance,
+the way BATMAN calculates the optimal route, i.e. the next jump, is by comparing
+the number of routing messages it has received from each node and who was the
+last sender.
+
+FIGUR
+
+The routing messages sent in BATMAN is called \acp{OGM}.
+
+
 
 \section{Proxy Certificates}
 
