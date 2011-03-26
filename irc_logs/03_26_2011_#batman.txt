@@ -1,0 +1,23 @@
+**** BEGIN LOGGING AT Sat Mar 26 17:47:47 2011
+
+Mar 26 17:50:41 <espengra>	Hi, is there anyone who can explain why the Prev_Sender field is used instead of just getting the src address from the UDP header?
+Mar 26 17:51:15 <espengra>	btw, i'm talking about the daemon and not batman-adv if there's a difference...
+Mar 26 17:52:24 <d0tslash_>	if i remember correctly, prev_sender has the ip of the sender before the node where you received it
+Mar 26 17:52:28 *	d0tslash_ is now known as d0tslash
+Mar 26 17:52:50 <d0tslash>	(and yes, there is a difference between batman-adv and batmand in this regard ...)
+Mar 26 17:55:26 <espengra>	hmm
+Mar 26 17:55:40 <d0tslash>	it might be that on the first hop, these two fields are the same
+Mar 26 17:55:59 <espengra>	is this what the "potential" next jump is used for?
+Mar 26 17:56:23 <d0tslash>	what do you mean?
+Mar 26 17:56:31 *	wolfspraul has quit (Quit: leaving)
+Mar 26 17:56:53 <espengra>	when i run in debug 1 mode, it lists next jump and potential next jumps
+Mar 26 17:57:29 <espengra>	wait, I think what that actually means... I'm just unsure about the prev-sender
+Mar 26 17:58:16 <d0tslash>	lets have an example: consider the OGM did the path A --> B --> C --> D --> E
+Mar 26 17:59:14 <d0tslash>	then you would have A in the OGM field, C in the previos_sender field, and D in the ip source field
+Mar 26 17:59:28 <d0tslash>	(if we consider the packet transmitted by D)
+Mar 26 18:00:46 <espengra>	ok, so is it used to for example make sure that if E is direct neighbor of C, and he receives a packet from D with C in the prev_sender field, E will not use D, but C as the route to A ?
+Mar 26 18:01:16 <espengra>	i mean if E is direct neighbor of BOTH D and C
+Mar 26 18:01:18 <ecsv_>	marec: d0tslash: i think that i've resetted all passwords and banned users without valid e-mail.... now to the projects - we want only a batman-adv project with batctl subproject, right? and we only want to get the source from the git repos of both projects?
+Mar 26 18:02:28 <d0tslash>	espengra: not neccesarily, the "direct connection" between C and E might be very poor
+Mar 26 18:02:58 <espengra>	right
+Mar 26 18:03:22 <d0tslash>	we simply use the prev_sender field to avoid some temporary routing loops in some situations
