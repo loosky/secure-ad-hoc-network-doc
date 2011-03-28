@@ -28,7 +28,10 @@ The batman class handles most of the logic when receiving a \ac{OGM} so this is
 where a check has been added to see if a node is known. If it is not, a thread
 in the \ac{AM} is initialized in order to try to authenticate with the other
 node, and then goes on to disregard the handling of that packet further, as to
-deny it being copied into the routing table by BATMAN.
+deny it being copied into the routing table by BATMAN. The \ac{OGM} packet
+format has also been slightly altered as to include an extra field for
+authentication purposes. This field will be used to include the signature offset
+of the node broadcasting or forwarding the \ac{OGM}.
 
 In schedule the signature offset, or the authentication token as described in
 the next section, was added at the end of the extended \ac{OGM}. If there is no
@@ -43,11 +46,67 @@ different checks (if-statements) on a received \ac{OGM} to determine wheter it
 should be added to the routing table, if information about the node should be
 modified, or if the node should be dropped for one of several reasons.
 
+This first phase do not use any cryptographic functions, and will only be used
+as a ``framework'' for handling the sent messages and funtion calls so adding
+actual secure methods later will become separated from the problems of altering
+the BATMAN source code.
+
 Throughout all of these checks, there is a label it can jump to if any check
-fails, called 'send\_packets'. That is a label in which all logic to the
-received oacket is disregarded and the program goes on to schedule its own and and
-forward other known nodes' \acp{OGM}. This label is very useful because when
-checking if a node is already authenticated, the flow can be altered so that if
-a node is unknown the program can jump to this label and disregard the handling
-of the received \ac{OGM} after initializing a new authentication thread in
-\ac{AM}.
+fails, called 'send\_packets'. That is a label in the received oacket is
+disregarded and the program goes on to schedule its own and and forward other
+known nodes' \acp{OGM}. This label is very useful because when checking if a
+node is already authenticated, the flow can be altered so that if a node is
+unknown the program can jump to this label and disregard the handling of the
+received \ac{OGM} after initializing a new authentication thread in \ac{AM}.
+
+In this first phase, a method called 'authenticate\_init' in the \ac{AM} class
+is called when an \ac{OGM} is received from an unknown source. This method
+copies information about the node such as its IP-address to a local variable
+before it initiates a new authentication thread to handle the authentication
+phase. The original thread jumps back to the batman class and jumps to the
+'send\_packets' label. Until the authentication thread is completed, no new
+packets from unknown sources will be handled.
+
+In the authentication thread the first thing that needs to be done is to
+determine which node is, or will become, the master node. Assuming both nodes
+are already authenticated in the network, which means they both have no
+signature offset value set in their \acp{OGM}, a very simple master node choice
+is made based on the address value. Whichever of the two nodes have the larger
+IP address value is assigned the master role. When authenticating with new nodes
+after this point, an authenticated node will disregard unknown nodes
+completely, and only the new node and the master node will initiate
+the authentication handshake, in which the new node will recognize that the
+master node is already authenticated, and therefore the master node, by looking
+at the non-zero authentication signature-offset.
+
+Next, the master node will send a pseudo-random challenge value (one-byte
+unsigned integer) in a challenge packet. The challenge packet is defined with an
+\ac{AM}-header (ID and payload type) and its payload type which is the one-byte
+unsigned integer value of the challenge. This packet, and all following are
+addressed directly to each other, and they are not broadcasted through the whole
+network such as \acp{OGM}.
+
+The recipient of the challenge will respond with a challenge-response packet
+which contains the response value, which is just a value generated as a simple
+function of the received challenge value, and a new challenge value for the
+master node. This packet is similar to the challenge packet, only it contains
+one more field - i.e. for the response value.
+
+The master node will try to verify the response value received in
+challenge-response packet and send a new response value to the received
+challenge in a new response-packet. This packet, in addition to the response
+value, also contains an authentication value, which will be used by all
+``authenticated'' nodes as the signature offset during this first phase of the
+programming. It should be noted that this is not in any way a secure
+authentication, because the authentication handshake contains no cryptographic
+functions and does not use any cryptographic keys of any sort, and because
+anyone sniffing the network can pick up the authentication value to be used.
+
+If the recipient of the response-packet accepts the response value, it will now
+copy the authentication token and use this in its \ac{OGM} later on, and
+recognize itself as an authenticated node. That means, as stated earlier, that
+it will now totally disregard any recevied \acp{OGM} for which it does not
+recognize the signature offset, or authentication value if you will.
+
+TODO: Split into sections and add figures, maybe a MSC to depict the handshake
+message flow\ldots
