@@ -12,21 +12,20 @@
 
 
 
-***Problem Description***
+***PC1 Creation***
+Issuer = Subject of PC0
+Issuer ALternative Name MUST NOT BE PRESENT
+Serial Number = sha-1(public key)
+Subject = Issuer appended with a unique Common Name (CN) CN may be the same as serial number
+Subject Alternative Name MUST NOT BE PRESENT
 
-With an secure ad hoc network, the Military and Emergency responders can utilize the full features of ad hoc
-networking. These features include, but are not limited to, being able to set up wireless communication quick and
-inexpensively in areas without the proper communication infrastructure, or separated from the public networks.
+Key Usage - Unsure, tbd.
 
-(In this thesis I aim to implement a secure ad hoc network, based on a solution proposed by Dr. Lawrie Brown
-(UNSW@ADFA) and Martin Gilje Jaatun (SINTEF ICT), and implement some extra functionality Anne Gabrielle Bowitz
-and I proposed in a much more complete solution during our specialization project last fall. I do not however,
-expect to have enough time to fully implement our solution, so I will first focus on the proposal by Brown and
-Jaatun.) Kommentar Martin?
+Basic Constraints
+	CA Field here MUST NOT be TRUE
 
-The secure ad hoc network is based on B.A.T.M.A.N., which is a pro-active ad hoc routing protocol. The solution
-I'm about to implement adds authentication to the routing messages sent in the network, using among other things
-proxy certificates.
-
-Finally, I am going to run some tests to see how our secure version of the B.A.T.M.A.N. protocol compares to the
-original, and see how the solution handles known attacks against mobile ad hoc networks, e.g. the wormhole attack.
+ProxyCertInfo Extension MUST BE MARKED AS CRITICAL
+	OPTIONAL pCPathLenConstraint
+	OPTIONAL proxyPolicy
+		policyLanguage = id-ppl-independent (Means its an independent and restricted proxy)
+		policy MUST NOT BE PRESENT (If the policy field is not present the policy MUST be implicit in the value of the policyLanguage field itself.)

@@ -73,8 +73,8 @@ a list called ``Originator List''.
 	\label{fig:ogm_packet_flow}
 \end{figure}
 
-Figure \ref{fig:ogm_packet_flow} shows how an
-\ac{OGM} is broadcasted and forwarded through the network. The packet originates from the left-most node,
+Figure \ref{fig:ogm_packet_flow} shows how an \ac{OGM} is broadcasted and
+forwarded through the network. The packet originates from the left-most node,
 and for each node that receives the packet, they forward it to their neighbors
 again.
 
@@ -89,6 +89,37 @@ network will not get flooded by reforwarding the same \acp{OGM} until its
 
 
 \section{Proxy Certificates}
+A \acf{PC} is a X.509 Certificate ``(\ldots) derived from, and signed by, a
+normal X.509 Public Key End Entity Certificate or by another Proxy Certificate
+for the purpose of providing restricted proxying and delegation within a PKI
+based authentication system.'' \cite{rfc3820}.
+
+The idea behind \acp{PC} was to overcome challenges with authentication
+using e.g. \ac{SSO} in a Grid Computing setting \cite{foster1998security}. Here
+a user might want to initiate a process that runs over several entities in the
+grid, and maybe even after the user has logged off. Therefore a way to delegate
+the user's rights to the entities running the processes for him was necessary.
+
+A \ac{PC} is in practice a public key certificate signed not by an \ac{CA}, but
+an \ac{EEC} or another \ac{PC}. With such certificates one can delegate rights
+on behalf of one self, i.e. if you issue a \ac{PC} to some other entity, that
+entity will be able to act on your behalf. \acp{PC} allows the use of
+restrictions, given in a proxyPolicy field. This way the issuer can decide which
+of its own rights the issuee will have, granted the issued \ac{PC} cannot have
+more or elevated rights to that of the issuer of the \ac{PC}.
+
+TODO: Mention entities PI, AC, AA\ldots Say something about why this can be
+useful for our implementation. Maybe a figure with the certificate fields??
+
+
+%PI - Proxy Issuer
+%AC - Attribute Certificate
+%AA - Attribute Authority
+
+%Requirement from the RFC page 9: passing the PC request from entity B to
+% entity A over an authenticated, integrity checked channel. In our solution
+% this is OK because the out-of-band channel (fingerprint exchange) can be
+% viewed as this authenticated integrity checked channel. . . me thinks
 
 \section{Attacks on Mobile Ad Hoc Networks}
 \subsection{Wormhole Attack}
