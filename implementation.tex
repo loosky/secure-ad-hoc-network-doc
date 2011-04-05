@@ -1,10 +1,10 @@
 \chapter{Implementation}\label{chapter_implementation}
+\acresetall
 
-This chapter goes into depth on how the design from the previous chapter got
+This chapter goes into depth on how the design from the previous chapter is
 implemented into the BATMAN protocol. The layout of this chapter is a
-chronological order from the point of view of the programmer. If you wish to
-have a look at the code right away, you can find that in Appendix
-\ref{chapter_source_code}.
+chronological order from the point of view of the programmer. The source code
+can be found in Appendix \ref{chapter_source_code}.
 
 
 \section{Classes}
@@ -16,7 +16,7 @@ functions, or to use information from \ac{AM}. This segregation is primarily
 done in order to separate original BATMAN functions from new authentication
 functions.
 
-The first thing to notice about the \ac{AM} is that it runs on its own thread,
+The first thing to notice about the \ac{AM} is that it runs in its own thread,
 so all authentication mechanisms run concurrent to regular BATMAN routing
 operations. This separation was necessary in order to have BATMAN behave
 normally during authentication of a node, so a large network should not suffer
@@ -24,7 +24,7 @@ if an important node (position) is 'hung up' in authentication.
 
 \subsection{Batman and Schedule Classes}
 These were the only classes of the original BATMAN code that had to be modified.
-The batman class handles most of the logic when receiving a \ac{OGM} so this is
+The Batman class handles most of the logic when receiving an \ac{OGM} so this is
 where a check has been added to see if a node is known. If it is not, a thread
 in the \ac{AM} is initialized in order to try to authenticate with the other
 node, and then goes on to disregard the handling of that packet further, as to
@@ -33,10 +33,17 @@ format has also been slightly altered as to include an extra field for
 authentication purposes. This field will be used to include the signature offset
 of the node broadcasting or forwarding the \ac{OGM}.
 
-In schedule the signature offset, or the authentication token as described in
-the next section, was added at the end of the extended \ac{OGM}. If there is no
-authentication token or signature available, it will add a zero value,
-indicating the node is not authenticated with any network.
+In the Schedule class the signature offset, or the authentication token as
+described in the next section, was added at the end of the extended \ac{OGM}. If
+there is no authentication token or signature available, it will add a zero
+value, indicating the node is not authenticated with any network.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[totalheight=1\textheight]{images/batman_if_statements.png}
+	\caption{IF-Statements in the Batman Class}
+	\label{fig:batman_if_statements}
+\end{figure}
 
 \section{First Phase}
 The first phase of the implementation started with looking through the whole
@@ -44,20 +51,23 @@ source code of BATMAN in order to get an understanding of where and how changes
 had to be made. The batman class has a nice setup where it goes through many
 different checks (if-statements) on a received \ac{OGM} to determine wheter it
 should be added to the routing table, if information about the node should be
-modified, or if the node should be dropped for one of several reasons.
+modified, or if the node should be dropped for one of several reasons. These
+checks are shown in Figure \ref{fig:batman_if_statements}.
 
-This first phase do not use any cryptographic functions, and will only be used
-as a ``framework'' for handling the sent messages and funtion calls so adding
+This first phase does not use any cryptographic functions, and will only be used
+as a ``framework'' for handling the sent messages and function calls, so adding
 actual secure methods later will become separated from the problems of altering
 the BATMAN source code.
 
 Throughout all of these checks, there is a label it can jump to if any check
-fails, called 'send\_packets'. That is a label in the received oacket is
+fails, called 'send\_packets'. That is, it is a label in the received packet is
 disregarded and the program goes on to schedule its own and and forward other
-known nodes' \acp{OGM}. This label is very useful because when checking if a
+scheduled \acp{OGM}. In Figure \ref{fig:batman_if_statements} this is shown
+with the box at the bottom. This label is very useful because when checking if a
 node is already authenticated, the flow can be altered so that if a node is
 unknown the program can jump to this label and disregard the handling of the
 received \ac{OGM} after initializing a new authentication thread in \ac{AM}.
+This part is shown with the highlighted red in the same figure.
 
 In this first phase, a method called 'authenticate\_init' in the \ac{AM} class
 is called when an \ac{OGM} is received from an unknown source. This method
@@ -80,17 +90,21 @@ master node is already authenticated, and therefore the master node, by looking
 at the non-zero authentication signature-offset.
 
 Next, the master node will send a pseudo-random challenge value (one-byte
-unsigned integer) in a challenge packet. The challenge packet is defined with an
-\ac{AM}-header (ID and payload type) and its payload type which is the one-byte
-unsigned integer value of the challenge. This packet, and all following are
-addressed directly to each other, and they are not broadcasted through the whole
-network such as \acp{OGM}.
+unsigned integer) in a challenge packet. It is important to mention once
+again that these packets are meant as a framework, and that the challenges in
+the final version will both be much larger in size and made with a
+cryptographic function. The challenge packet is defined with an \ac{AM}-header
+(ID and payload type) and its payload type which is the one-byte unsigned
+integer value of the challenge. This packet, and all following are addressed
+directly to each other, and they are not broadcasted through the whole network
+such as \acp{OGM}.
 
 The recipient of the challenge will respond with a challenge-response packet
 which contains the response value, which is just a value generated as a simple
 function of the received challenge value, and a new challenge value for the
-master node. This packet is similar to the challenge packet, only it contains
-one more field - i.e. for the response value.
+master node. Once again, the response value will be created using
+cryptographic functions in the final version. This packet is similar to the
+challenge packet, only it contains one more field - i.e. for the response value.
 
 The master node will try to verify the response value received in
 challenge-response packet and send a new response value to the received

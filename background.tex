@@ -1,4 +1,6 @@
 \chapter{Background}
+\acresetall
+
 This chapter aim to give the reader the necessary background to understand this
 thesis.
 
@@ -9,13 +11,15 @@ Mobile Ad hoc Networking''. The motivation behind BATMAN was to replace OLSR
 \cite{why-starting-batman} because of the inherent difficulties that protocol
 has. 
 
+\subsection{From OLSR to BATMAN}
 OLSR is a pro-active routing protocol, which means that participating nodes
 regularly exchange routing information with each other. According to the BATMAN
 developers the problem with OLSR is that every node in the network calculates
 the whole routing path, which is a complex way to do it. In addition, if nodes
 sit on different routing information this concept leads to routing loops and
 heavy route flapping. The result is many patches to the protocol that defies
-the protocol standard in order to make it more suitable.
+the protocol standard in order to make it more suitable
+\cite{why-starting-batman}.
 
 The developers of BATMAN wanted to start with a clean slate and decided amongst
 other things that each node should only know the next hop, i.e. the link-local
@@ -25,15 +29,16 @@ the way BATMAN calculates the optimal route, i.e. the next jump, is by comparing
 the number of routing messages it has received from each node and who was the
 last sender.
 
+\subsection{BATMAN Protocol Explanation}
 The routing messages sent in BATMAN are called \acp{OGM}. Figure
 \ref{fig:original_ogm} show the packet format with all header fields. The
 \ac{OGM} format has changed since the \cite{batman_rfc} was published, but there
 is no publication with the new packet format as of yet. The updated packet
 format can be found on the project's web pages \url{http://www.open-mesh.org/}.
 
-\begin{figure}[ht!]
+\begin{figure}[h]
 	\centering
-  	\includegraphics{images/original_ogm.png}
+  	\includegraphics[width=\textwidth]{images/original_ogm.png}
   	\caption{BATMAN's \acf{OGM} packet format.}
 	\label{fig:original_ogm}
 \end{figure}
@@ -42,14 +47,44 @@ The real workhorse of the packet is the ``Originator Address'' field which
 carries the address of the node 'A' that sent out the \ac{OGM}. When a node 'B'
 receives this message it checks if the originator address and source IP address
 of the UDP header is the same - if so the two nodes are direct neighbors. B then
-forwards the \ac{OGM} only changing the ``TTL'' and ``Previous Sender'' fields.
-All \acp{OGM} are inside the BATMAN network is broadcasted like this until the
+forwards the \ac{OGM} only changing the ``\ac{TTL}'' and ``Previous Sender''
+fields. All \acp{OGM} inside the BATMAN network are broadcasted like this until the
 TTL has dropped to zero, or until they receive an \ac{OGM} they have
-previously sent themselves.
+previously sent themselves. If a node receives multiple copies of the same
+\ac{OGM} which it has not been part of forwarding yet, it will handle both
+\acp{OGM}, i.e. know there are multiple paths and forward both packets with
+their respective \ac{TTL} values (minus one).
 
 This way all \acp{OGM} will be received and rebroadcasted by all nodes in the
 network and all nodes will learn the existence of each other and which nodes are
 the first jump between them and the other nodes, i.e. the first leg of the path.
+The different nodes and the first nodes in the path to those nodes are stored in
+a list called ``Originator List''.
+
+\begin{figure}[h]
+	\centering
+	\subfloat{\includegraphics[width=0.3\textwidth]{images/ogm_packet_flow_1.png} }
+	\subfloat{\includegraphics[width=0.3\textwidth]{images/ogm_packet_flow_2.png} } 
+	\subfloat{\includegraphics[width=0.3\textwidth]{images/ogm_packet_flow_3.png}}
+	\\
+	\subfloat{\includegraphics[width=0.3\textwidth]{images/ogm_packet_flow_4.png} } 
+	\subfloat{\includegraphics[width=0.3\textwidth]{images/ogm_packet_flow_5.png}}
+	\caption{Flow of an \acf{OGM} originating from the left-most node.}
+	\label{fig:ogm_packet_flow}
+\end{figure}
+
+Figure \ref{fig:ogm_packet_flow} shows how an
+\ac{OGM} is broadcasted and forwarded through the network. The packet originates from the left-most node,
+and for each node that receives the packet, they forward it to their neighbors
+again.
+
+When a node which has already received and forwarded an \ac{OGM} receives the
+same \ac{OGM} from another node at a later point - it drops that packet so the
+network will not get flooded by reforwarding the same \acp{OGM} until its
+\ac{TTL} is zero. This is also necessary in order to prevent routing loops.
+
+\subsection{Batman Daemon vs. Batman-Advanced}
+
 
 
 
