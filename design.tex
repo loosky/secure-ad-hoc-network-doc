@@ -1,4 +1,5 @@
 \chapter{System Design}
+\label{chapter_system_design}
 \acresetall
 
 This chapter portrays the design for the proposed implementation of the secure
@@ -94,7 +95,7 @@ node.
 
 \subsection{Entity Explanation}
 
-\begin{figure}[ht!]
+\begin{figure}[h]
 	\centering
   	\includegraphics{images/simple_example_entities.png}
   	\caption{Different entities in the Simple Example.}
@@ -173,8 +174,55 @@ protocol [some def of pro-active routing protocols].
 
 \subsection{Node Discovery}
 Upon entering the network area, the node is both unauthenticated and unknown to
-the network.
+the network. The node regularily broadcasts routing messages to be received by
+any potential node in the area. Assume all nodes are configured with addresses
+on the same subnet so they can receive the sent broadcast (See Limitations in
+Section \ref{ip_address_conf}).
+
+Simultaneously, the node also listens to other nodes' routing messages.
+Depending on the time interval between the broadcasts and whether the nodes
+within each other's transmitting range are asymmetrical, they will discover each
+other approximately at the same time.
+
+\begin{figure}[h]
+	\centering
+  	\includegraphics[width=0.5\textwidth]{images/node_states_discovery.png}
+  	\caption{Discovery Phase between a \acf{SP} and an unauthenticated node (A)}
+	\label{fig:node_states_discovery}
+\end{figure}
+
+Figure \ref{fig:node_states_discovery} illustrate the routing messages
+periodically sent by two nodes until they discover each other. One of the nodes
+have already assumed the master role and is a \ac{SP} while the other node is
+unauthenticated.
+
+The \ac{SP} will have its own self-issued (and signed) \ac{PC0} and its \ac{AL}
+have only one entry - its own \ac{PC}. Note that if it had authorized another
+node at an earlier point in time (but within the lifetime of the \ac{PC}) that
+node's \ac{PC1} would also be represented in the \ac{AL}, even if the node was
+outside the network at this point (physically).
+
+The new node does not have any \ac{PC} at this point, unless it has a \ac{PC}
+issued within and valid only for another network. This is however not covered
+here, and it is assumed the node has no certificate at all. The same goes for
+its \ac{AL}, or one can rather say it has an empty \ac{AL} - denoted by the 'Ø'
+in the figure.
 
 \subsection{Authentication Handshake}
+\begin{figure}[h]
+	\centering
+  	\includegraphics[width=0.5\textwidth]{images/node_states_handshake.png}
+  	\caption{Handshake between a \acf{SP} and an unauthenticated node (A).}
+	\label{fig:node_states_handshake}
+\end{figure}
+\subsubsection{Out-Of-Band}
 
 \subsection{Authorized Operation}
+\begin{figure}[h]
+	\centering
+  	\includegraphics[width=0.5\textwidth]{images/node_states_authorized.png}
+  	\caption{Normal operation between a \acf{SP} and an unauthenticated node
+  	(A)including an \ac{AL} Update message.}
+	\label{fig:node_states_authorized}
+\end{figure}
+\subsubsection{Discovering New Nodes}
