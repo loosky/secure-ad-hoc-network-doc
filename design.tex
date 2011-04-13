@@ -95,17 +95,12 @@ node.
 
 \subsection{Entity Explanation}
 
-\begin{figure}[h]
-	\centering
-  	\includegraphics{images/simple_example_entities.png}
-  	\caption{Different entities in the Simple Example.}
-	\label{fig:simple_example_entities}
-\end{figure}
-
 Before a simplified example can be given, a few new entities in this design
 needs to be explained further. This is the short version, just enough for the
 reader to understand the example - the full description of these entities
-and why they are necessary will be given later.
+and why they are necessary will be given later. All of these entities are also
+portrayed in Figure \ref{fig:simple_example_entities}. The portrayed entities
+will be used as a template for other figures later in this thesis report.
 
 \begin{itemize}
   \item \textbf{\acf{SP}} is responsible for tasks similar to that of a \ac{CA}
@@ -124,6 +119,13 @@ and why they are necessary will be given later.
   \item \textbf{Authenticated Node} bla bla.
   \item \textbf{Unauthenticated Node} bla bla.
 \end{itemize}
+
+\begin{figure}[h]
+	\centering
+  	\includegraphics{images/simple_example_entities.png}
+  	\caption{Different entities in the Simple Example.}
+	\label{fig:simple_example_entities}
+\end{figure}
 
 \subsection{Simple Example}
 TODO: Why proxy certs, and not just regular certs. Explain this very short in
@@ -197,7 +199,7 @@ have already assumed the master role and is a \ac{SP} while the other node is
 unauthenticated.
 
 The \ac{SP} will have its own self-issued (and signed) \ac{PC0} and its \ac{AL}
-have only one entry - its own \ac{PC}. Note that if it had authorized another
+has only one entry - its own \ac{PC}. Note that if it had authorized another
 node at an earlier point in time (but within the lifetime of the \ac{PC}) that
 node's \ac{PC1} would also be represented in the \ac{AL}, even if the node was
 outside the network at this point (physically).
@@ -209,15 +211,84 @@ its \ac{AL}, or one can rather say it has an empty \ac{AL} - denoted by the 'Ø'
 in the figure.
 
 \subsection{Authentication Handshake}
+Once the two nodes have discovered each other, they will enter the
+authentication handshake state. Note that while the nodes are executing the
+authentication handshake, they will also continue to execute the regular routing
+operations because this authentication step will be executed in a separate
+thread. This is further elaborated in the next chapter.
+
+The unknown node will wait for a predefined amount of time, for it is not
+necessary that it will ever receive a request. The discovery might have been of
+an authenticated node with a \ac{PC1} and not a \ac{SP}, which does not have the
+rights to authenticate new nodes. It might also have been that of a \ac{SP}, but
+because of the flaky nature of ad hoc networks, the two nodes might have become
+invisible to each other before the handshake could be initiated.
+
+While the new node is waiting for an invite, the \ac{SP} generate the invite
+message which is a message containing the public key, i.e. the \ac{PC0}, and a
+list of requirements regarding the allowed cryptographic encryption schemes, key
+sizes and so on. The \ac{SP} will then send the invite directly addressed to the
+new node. The \ac{SP} will then wait for a certificate request (\ac{PC} Request)
+for a predefined time before re-sending the invite. It will do this at a maximum
+three(TODO: maybe find a source claiming a number of times is better based on
+statistics or whatever..) times before aborting the authentication handshake
+with the new node.
+
+Based on the requirements set by the \ac{SP} in the invite message, the new node
+will generate an asymmetric key pair and a \ac{PC} request which it will send
+back. This request abides by the rules for making a proxy certificate
+\cite{rfc3820}, setting the Issuer Name as the Subject Name from the received
+\ac{PC0}, the Subject Name as the Issuer Name appended with its own unique
+Common Name from a hash of its own public key, and the Serial Number from the
+same hash value. Why proxy certificates are used will be discussed later.
+
+As Figure \ref{fig:node_states_handshake} shows, the last message to be sent in
+the handshake is the actual signed certificate (\ac{PC1}) from the \ac{SP} to
+the new node. At this point the \ac{SP} will add the \ac{PC1} to its local
+\ac{AL} (which will be broadcasted later) and the new node will store the
+certificate for making signatures later.
+
 \begin{figure}[h]
 	\centering
   	\includegraphics[width=0.5\textwidth]{images/node_states_handshake.png}
   	\caption{Handshake between a \acf{SP} and an unauthenticated node (A).}
 	\label{fig:node_states_handshake}
 \end{figure}
-\subsubsection{Out-Of-Band}
+
+\subsubsection*{Out-Of-Band}
+In the section above the different states and messages shared between the two
+nodes were discussed. How and and on what grounds the \ac{SP} accepts the
+\ac{PC} request from the new node however, was not discussed. There are many
+possible authentication schemes, but when it comes to \acp{MANET}, possibly with
+no Internet connection, proper authentication becomes a difficult task. In
+the discussion in Chapter \ref{chapter_discussion} different schemes will be
+discussed, but here only one scheme is accounted for.
+
+If you have no pre-shared information between the parties involved in the
+network, the simplest way to authenticate a new node is to use an out-of-band
+authentication. The implementation of such an authentication scheme will be
+discussed in the next chapter, and will only be briefly mentioned here.
+
+New users will have to use share their public key fingerprint with the \ac{SP}
+physically, and vice versa. By doing this, the \ac{SP} can store the fingerprint
+and use it to check the received public key in the \ac{PC} request for
+authenticity in order to make sure the new node is run by the actual person he
+met and verified physically. The new node can similarily verify the \ac{SP}.
 
 \subsection{Authorized Operation}
+Once a node is authorized and has its own \ac{PC1}, it can send its own routing
+announcements, receive announcements, and forward other nodes' announcements.
+This means that the node is a fully worthy member of the MANET. However, there
+is one thing missing before the node can be verified and verify other nodes
+(than the \ac{SP}) - i.e. it has to learn the public key and address of all its
+neighbors.
+
+Figure \ref{fig:node_states_authorized} shows the authorized node receiving
+an \ac{AL} Update from the \ac{SP}. This message contains the full \ac{AL} list
+and lets the newly authorized node learn the public key and address of potential
+other nodes in the network. The list is broadcasted by the \ac{SP} periodically
+to make sure all nodes in the network know and trust each other.
+
 \begin{figure}[h]
 	\centering
   	\includegraphics[width=0.5\textwidth]{images/node_states_authorized.png}
@@ -225,4 +296,7 @@ in the figure.
   	(A)including an \ac{AL} Update message.}
 	\label{fig:node_states_authorized}
 \end{figure}
-\subsubsection{Discovering New Nodes}
+
+
+
+\subsubsection*{Discovering New Nodes}
