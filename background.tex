@@ -1,40 +1,47 @@
 \chapter{Background}
 \acresetall
 
-This chapter aim to give the reader the necessary background to understand this
+This chapter aims to give the reader the necessary background to understand this
 thesis.
 
 \section{B.A.T.M.A.N.}
 BATMAN \cite{batman_rfc} is an increasingly more popular routing protocol for
-wireless ad hoc networks. The name is an abbreviation for ``Better Approach To
-Mobile Ad hoc Networking''. The motivation behind BATMAN was to replace OLSR
-\cite{why-starting-batman} because of the inherent difficulties that protocol
-has. 
+wireless ad hoc networks, as seen by the fact its taken into the Linux kernel
+net tree
+(\url{http://www.open-mesh.org/wiki/open-mesh/2011-03-17-batman-adv-and-the-penguin}).
+The name is an abbreviation for ``Better Approach To Mobile Ad hoc Networking''.
+The motivation behind developing BATMAN was to replace the Optimized Link State
+Routing Protocol (OLSR) \cite{why-starting-batman} because of the inherent
+difficulties that protocol has.
 
 \subsection{From OLSR to BATMAN}
 OLSR is a pro-active routing protocol, which means that participating nodes
 regularly exchange routing information with each other. According to the BATMAN
 developers the problem with OLSR is that every node in the network calculates
-the whole routing path, which is a complex way to do it. In addition, if nodes
-sit on different routing information this concept leads to routing loops and
-heavy route flapping. The result is many patches to the protocol that defies
-the protocol standard in order to make it more suitable
-\cite{why-starting-batman}.
+the whole routing path, which is a complex way to do it. Not only is it
+difficult to make sure all nodes have the same information at the same time,
+it also needs (relatively) much storage and computation time. If nodes sit on
+different routing information this concept leads to routing loops and heavy
+route flapping. The result is many patches to the protocol that defies the
+protocol standard in order to make it more suitable \cite{why-starting-batman}.
 
-The developers of BATMAN wanted to start with a clean slate and decided amongst
-other things that each node should only know the next hop, i.e. the link-local
-neighbor that is the path between itself and the destination. In many ways, what
-they did was to make a simpler and easier to understand protocol. For instance,
-the way BATMAN calculates the optimal route, i.e. the next jump, is by comparing
-the number of routing messages it has received from each node and who was the
-last sender.
+The BATMAN developers therefore wanted to start with a clean slate. They decided
+amongst other things that each node should only know the next hop, i.e. the
+link-local neighbor that is the path between itself and the destination. In
+many ways, what they did was to make a simpler and easier to understand
+protocol. For instance, the way BATMAN calculates the optimal route, i.e. the
+next jump, is by comparing the number of routing messages it has received from
+each node and who was the last sender.
 
 \subsection{BATMAN Protocol Explanation}
 The routing messages sent in BATMAN are called \acp{OGM}. Figure
 \ref{fig:original_ogm} show the packet format with all header fields. The
 \ac{OGM} format has changed since the \cite{batman_rfc} was published, but there
-is no publication with the new packet format as of yet. The updated packet
-format can be found on the project's web pages \url{http://www.open-mesh.org/}.
+is no official publication with the new packet format as of yet. The updated
+packet format can be found in the project's internal documentation
+\url{http://gitorious.org/batman-adv-doc/}. The packet format found in the RFC
+belong to the older version III of the BATMAN algorithm. The algorithm used in
+this thesis is version IV.
 
 \begin{figure}[h]
 	\centering
@@ -44,22 +51,19 @@ format can be found on the project's web pages \url{http://www.open-mesh.org/}.
 \end{figure}
 
 The real workhorse of the packet is the ``Originator Address'' field which
-carries the address of the node 'A' that sent out the \ac{OGM}. When a node 'B'
-receives this message it checks if the originator address and source IP address
-of the UDP header is the same - if so the two nodes are direct neighbors. B then
-forwards the \ac{OGM} only changing the ``\ac{TTL}'' and ``Previous Sender''
-fields. All \acp{OGM} inside the BATMAN network are broadcasted like this until the
-TTL has dropped to zero, or until they receive an \ac{OGM} they have
-previously sent themselves. If a node receives multiple copies of the same
-\ac{OGM} which it has not been part of forwarding yet, it will handle both
-\acp{OGM}, i.e. know there are multiple paths and forward both packets with
-their respective \ac{TTL} values (minus one).
+carries a host address of the node 'A' that broadcasted the \ac{OGM}. When a
+node 'B' receives this message it checks if the originator address and source
+address of the IP header are the same - if so the two nodes are direct
+neighbors. B then forwards the \ac{OGM} only changing the ``\ac{TTL}'' and
+``Previous Sender'' fields. All \acp{OGM} inside the BATMAN network are
+broadcasted and rebroadcasted until the TTL has dropped to zero, or until they
+receive an \ac{OGM} they have previously sent themselves.
 
 This way all \acp{OGM} will be received and rebroadcasted by all nodes in the
 network and all nodes will learn the existence of each other and which nodes are
-the first jump between them and the other nodes, i.e. the first leg of the path.
-The different nodes and the first nodes in the path to those nodes are stored in
-a list called ``Originator List''.
+the first hop between them and the other nodes, i.e. the first leg of the path.
+All nodes and their first hops in their paths are stored in a list called an
+``Originator List''.
 
 \begin{figure}[h]
 	\centering
@@ -85,9 +89,6 @@ network will not get flooded by reforwarding the same \acp{OGM} until its
 
 \subsection{Batman Daemon vs. Batman-Advanced}
 
-
-
-
 \section{Proxy Certificates}
 A \acf{PC} is a X.509 Certificate ``(\ldots) derived from, and signed by, a
 normal X.509 Public Key End Entity Certificate or by another Proxy Certificate
@@ -100,13 +101,13 @@ a user might want to initiate a process that runs over several entities in the
 grid, and maybe even after the user has logged off. Therefore a way to delegate
 the user's rights to the entities running the processes for him was necessary.
 
-A \ac{PC} is in practice a public key certificate signed not by an \ac{CA}, but
-an \ac{EEC} or another \ac{PC}. With such certificates one can delegate rights
-on behalf of one self, i.e. if you issue a \ac{PC} to some other entity, that
-entity will be able to act on your behalf. \acp{PC} allows the use of
-restrictions, given in a proxyPolicy field. This way the issuer can decide which
-of its own rights the issuee will have, granted the issued \ac{PC} cannot have
-more or elevated rights to that of the issuer of the \ac{PC}.
+Simply understood, a \ac{PC} is a public key certificate signed not
+by an \ac{CA}, but an \ac{EEC} or another \ac{PC}. With such certificates one
+can delegate rights on behalf of one self, i.e. if you issue a \ac{PC} to some
+other entity, that entity will be able to act on your behalf. \acp{PC} allows
+the use of restrictions, given in a proxyPolicy field. This way the issuer can
+decide which of its own rights the issuee will have, granted the issued \ac{PC}
+cannot have more or elevated rights to that of the issuer of the \ac{PC}.
 
 TODO: Mention entities PI, AC, AA\ldots Say something about why this can be
 useful for our implementation. Maybe a figure with the certificate fields??

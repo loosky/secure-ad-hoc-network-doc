@@ -7,10 +7,10 @@ ad hoc network.
 
 \section{Requirements}
 Ad hoc networks have some desired characteristics such as quick and inexpensive
-setup and being independent of communication infrastructure, but they
-also impose great challenges regarding security. The challenges
-regarding security can vary depending the purpose and environment of the
-network.
+setup and being independent of communication infrastructure, but they also
+impose great challenges regarding security. The challenges regarding security
+can vary depending the purpose and environment of the network which will be
+covered in this section.
 
 \subsection{Scenario}
 The design and implementation presented in this thesis is mostly based on an
@@ -19,9 +19,10 @@ unavailable. This thesis will also reflect on some possible requirements given
 by a military application.
 
 If there is a major emergency situation such as an earthquake or tsunami, it is
-likely that parts or the whole of the communication infrastructure at the scene
+likely that parts or the entire communication infrastructure at the scene
 is destroyed or temporarily down. The remaining communication lines will then
-probably be congested, such that little communication actually goes through.
+probably be congested, such that little communication actually goes through
+[find a ref].
 
 In this situation, it is of great importance that Emergency Personnel, such as
 Paramedics, Firemen, Policemen and the Military, are able to communicate
@@ -80,17 +81,17 @@ The proposed design should work with most pro-active ad hoc routing protocols
 with limited alterations - but this design is specifically made for the
 BATMAN \cite{batman_rfc} routing protocol chosen for its simpler design compared to
 e.g. OLSR \cite{clausen2003rfc3626} because it only uses the third layer of the
-OSI Model \cite{zimmermann1980osi}. How to incorporate this design into BATMAN will be
-expained in Chapter \ref{chapter_implementation}.
+\ac{OSI} Model \cite{zimmermann1980osi}. How to incorporate this design into
+BATMAN will be expained in Chapter \ref{chapter_implementation}.
 
 The basic principle of the proposed design is that an authenticated node accepts
 other authenticated nodes' routing messages and forwards them as normal, while
 discarding routing messages from unauthenticated nodes. One or more nodes in the
 network will assume a role as master node(s), with the extra capability of
 authorizing new nodes into the network. A special certificate called a \ac{PC}
-\cite{tuecke2004rfc3820} will be used for authentication after this authorization has taken
-place so other nodes in the network will be able to authenticate and accept the new
-node.
+\cite{rfc3820} will be used for authentication after this authorization has taken
+place such that other nodes in the network will be able to authenticate and
+accept the new node.
 
 
 \subsection{Entity Explanation}
@@ -134,9 +135,9 @@ this example.
 Two nodes are within transmitting range of each other. One of the
 nodes is a \ac{SP} and the other is unauthenticated. The pro-active ad hoc
 routing protocol used on both nodes regularly broadcasts routing messages, so
-the two nodes learn of each others' existence. Upon reception of a routing
+the two nodes learn about each others' existence. Upon reception of a routing
 message from the unauthenticated node, the \ac{SP} will invite the node for a
-handshake. With this handshake, the unauthenticated node will send a \ac{PC}
+handshake. During this handshake, the unauthenticated node will send a \ac{PC}
 request. The \ac{SP} can create and sign a \ac{PC} for this node - i.e. the node
 is issued a \ac{PC1}.
 
@@ -170,9 +171,9 @@ TODO: add an MSC or figure with the entities to explain the example\ldots
 \section{Node States}
 This section is devoted to explain the different states a node can be in, and
 how it behaves during these different states. These states should be similar for
-most pro-active routing protocols as the only thing triggering these phases are
-the routing messages sent as per normal operation of any pro-active routing
-protocol [some def of pro-active routing protocols].
+most pro-active routing protocols as the main thing triggering these phases
+is the routing messages (announcements) sent as per normal operation of any
+pro-active routing protocol [some def of pro-active routing protocols].
 
 \subsection{Node Discovery}
 Upon entering the network area, the node is both unauthenticated and unknown to
@@ -217,12 +218,12 @@ authentication handshake, they will also continue to execute the regular routing
 operations because this authentication step will be executed in a separate
 thread. This is further elaborated in the next chapter.
 
-The unknown node will wait for a predefined amount of time, for it is not
-necessary that it will ever receive a request. The discovery might have been of
-an authenticated node with a \ac{PC1} and not a \ac{SP}, which does not have the
-rights to authenticate new nodes. It might also have been that of a \ac{SP}, but
-because of the flaky nature of ad hoc networks, the two nodes might have become
-invisible to each other before the handshake could be initiated.
+The unknown node will wait for a predefined amount of time, for it may not ever
+receive a request. The discovery might have been of an authenticated node with a
+\ac{PC1} and not a \ac{SP}, which does not have the rights to authenticate new
+nodes. It might also have been that of a \ac{SP}, but because of the flaky
+nature of ad hoc networks, the two nodes might have become invisible to each
+other before the handshake could be initiated.
 
 While the new node is waiting for an invite, the \ac{SP} generate the invite
 message which is a message containing the public key, i.e. the \ac{PC0}, and a
