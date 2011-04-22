@@ -5,7 +5,7 @@
 This chapter goes into depth on how the design from the previous chapter is
 implemented into the BATMAN protocol. The layout of this chapter is a
 chronological order from the point of view of the programmer. The source code
-can be found in Appendix \ref{chapter_source_code}.
+can be found in Appendix \ref{appendix:source}.
 
 
 \section{Classes}
@@ -50,7 +50,7 @@ value, indicating the node is not authenticated with any network.
 The first phase of the implementation started with looking through the whole
 source code of BATMAN in order to get an understanding of where and how changes
 had to be made. The batman class has a nice setup where it goes through many
-different checks (if-statements) on a received \ac{OGM} to determine wheter it
+different checks (if-statements) on a received \ac{OGM} to determine whether it
 should be added to the routing table, if information about the node should be
 modified, or if the node should be dropped for one of several reasons. These
 checks are shown in Figure \ref{fig:batman_if_statements}.
@@ -120,7 +120,7 @@ anyone sniffing the network can pick up the authentication value to be used.
 If the recipient of the response-packet accepts the response value, it will now
 copy the authentication token and use this in its \ac{OGM} later on, and
 recognize itself as an authenticated node. That means, as stated earlier, that
-it will now totally disregard any recevied \acp{OGM} for which it does not
+it will now totally disregard any received \acp{OGM} for which it does not
 recognize the signature offset, or authentication value if you will.
 
 TODO: Split into sections and add figures, maybe a MSC to depict the handshake

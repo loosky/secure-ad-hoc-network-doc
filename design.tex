@@ -43,12 +43,12 @@ unknown entity (unknown to the \ac{SP}), even if it knows and trusts the root
 
 Also, the \ac{SP} could be interested in giving the node rights the node would
 not usually have on this specific scene, depending on the situation. This is
-easier to acheive when the \ac{SP} can delegete its own rights.
+easier to achieve when the \ac{SP} can delegate its own rights.
 
 An important feature of the \acp{PC} is that the \ac{SP} can delegate different
 kind of rights, as long as it is a subset of its own rights, to different nodes.
 There are countless of different rights that can be useful, given the situation
-they are used in, but here is a few possible rights/priveleges to give the
+they are used in, but here is a few possible rights/privileges to give the
 reader an understanding of the possibilities they give:
 
 \begin{itemize}
@@ -65,7 +65,7 @@ reader an understanding of the possibilities they give:
 The different choices are essentially up to the \ac{SP} managing the network.
 One can ask why this is necessary, and again it depends on the application. If
 you are setting up a \ac{MANET} on the scene of a disaster to assist emergency
-personell, you could have some actors be able to organize the effort by sending
+personnel, you could have some actors be able to organize the effort by sending
 orders/commands to the other actors, while some actors only are allowed to
 receive the orders. In this situation it might be of great importance to know
 that only verified nodes are able to give commands, but the importance of
@@ -91,7 +91,7 @@ If there is a major emergency situation such as an earthquake or tsunami, it is
 likely that parts or the entire communication infrastructure at the scene
 is destroyed or temporarily down. The remaining communication lines will then
 probably be congested, such that little communication actually goes through
-[find a ref].
+[TODO: find a ref].
 
 In this situation, it is of great importance that Emergency Personnel, such as
 Paramedics, Firemen, Policemen and the Military, are able to communicate
@@ -151,7 +151,7 @@ with limited alterations - but this design is specifically made for the
 BATMAN \cite{batman_rfc} routing protocol chosen for its simpler design compared to
 e.g. OLSR \cite{clausen2003rfc3626} because it only uses the third layer of the
 \ac{OSI} Model \cite{zimmermann1980osi}. How to incorporate this design into
-BATMAN will be expained in Chapter \ref{chapter_implementation}.
+BATMAN will be explained in Chapter \ref{ch:implementation}.
 
 The basic principle of the proposed design is that an authenticated node accepts
 other authenticated nodes' routing messages and forwards them as normal, while
@@ -246,7 +246,7 @@ pro-active routing protocol [some def of pro-active routing protocols].
 
 \subsection{Node Discovery}
 Upon entering the network area, the node is both unauthenticated and unknown to
-the network. The node regularily broadcasts routing messages to be received by
+the network. The node regularly broadcasts routing messages to be received by
 any potential node in the area. Assume all nodes are configured with addresses
 on the same subnet so they can receive the sent broadcast (See Limitations in
 Section \ref{ip_address_conf}).
@@ -331,7 +331,7 @@ nodes were discussed. How and and on what grounds the \ac{SP} accepts the
 \ac{PC} request from the new node however, was not discussed. There are many
 possible authentication schemes, but when it comes to \acp{MANET}, possibly with
 no Internet connection, proper authentication becomes a difficult task. In
-the discussion in Chapter \ref{chapter_discussion} different schemes will be
+the discussion in Chapter \ref{ch:discussion} different schemes will be
 discussed, but here only one scheme is accounted for.
 
 If you have no pre-shared information between the parties involved in the
@@ -343,7 +343,7 @@ New users will have to use share their public key fingerprint with the \ac{SP}
 physically, and vice versa. By doing this, the \ac{SP} can store the fingerprint
 and use it to check the received public key in the \ac{PC} request for
 authenticity in order to make sure the new node is run by the actual person he
-met and verified physically. The new node can similarily verify the \ac{SP}.
+met and verified physically. The new node can similarly verify the \ac{SP}.
 
 \subsection{Authorized Operation}
 Once a node is authorized and has its own \ac{PC1}, it can send its own routing
