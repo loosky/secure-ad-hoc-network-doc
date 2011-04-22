@@ -1,9 +1,78 @@
 \chapter{System Design}
-\label{chapter_system_design}
+\label{ch:design}
 \acresetall
 
 This chapter portrays the design for the proposed implementation of the secure
 ad hoc network.
+
+\section{Brief Overview}
+The design here is based on a working pro-active ad hoc routing protocol. The
+routing is left to the chosen routing protocol, i.e. \ac{BATMAN}, and the
+changes made will not affect how the routing is performed. The system design can
+be said to be an extension of the protocol, which requires nodes to be
+authenticated and trusted before being allowed into the network. To strengthen
+the system each node also has to verify their identity periodically, or they are
+dropped from the network.
+
+The network setup start with an out-of-band authentication where a master node,
+hereafter \ac{SP}, verifies new nodes. How this is done can be up to the
+application, but lets assume that the actors carrying their communication
+devices, hereafter nodes, physically meets the \ac{SP} at the scene and exchange
+their public key fingerprints.
+
+When a new node is discovered by the \ac{SP} using regular routing announcements
+as part of the pro-active routing protocol, the \ac{SP} will invite the new node
+to a handshake to establish a trust between the two nodes. The new node will
+receive the \ac{SP}'s certificate (proxy certificate), and will after verifying
+the fingerprint request a proxy certificate itself. The \ac{SP} will after
+verifying the nodes fingerprint be able to issue a proxy certificate with at
+least the rights to participate in building the \ac{MANET} by broadcasting its
+own and re-broadcasting other trusted nodes routing announcements.
+
+\subsection{Why use Proxy Certificates?}
+\acp{PC}, as described in Section \ref{sect:pc}, is used to delegate
+rights on behalf of the issuer. That means that the issuer, i.e. the \ac{SP},
+can chose to delegate all or a subset of its rights to the receiver of the
+\ac{PC}. This can be very useful in a situation where the nodes themselves are
+unable to properly authenticate themselves with their pre-existing \acp{LLPKC}
+if the \ac{SP} on the scene has no way to verify their certificates. This can be
+true if their certificates are issued by an unknown root certificate (\ac{CA})
+or simply if there is no Internet access and the certificate is signed by an
+unknown entity (unknown to the \ac{SP}), even if it knows and trusts the root
+\ac{CA}.
+
+Also, the \ac{SP} could be interested in giving the node rights the node would
+not usually have on this specific scene, depending on the situation. This is
+easier to acheive when the \ac{SP} can delegete its own rights.
+
+An important feature of the \acp{PC} is that the \ac{SP} can delegate different
+kind of rights, as long as it is a subset of its own rights, to different nodes.
+There are countless of different rights that can be useful, given the situation
+they are used in, but here is a few possible rights/priveleges to give the
+reader an understanding of the possibilities they give:
+
+\begin{itemize}
+  \item Announce itself - let the \ac{MANET} know of your existence
+  \item Re-broadcast other nodes announcements - reshape the network topology
+  \item Announce a gateway - give the \ac{MANET} access to another network
+  \item Use the gateway - allow you to communicate outside the \ac{MANET}
+  \item Send and receive messages with a defined application - full application
+  rights
+  \item Only receive messages from a defined application - limited application
+  rights
+\end{itemize}
+
+The different choices are essentially up to the \ac{SP} managing the network.
+One can ask why this is necessary, and again it depends on the application. If
+you are setting up a \ac{MANET} on the scene of a disaster to assist emergency
+personell, you could have some actors be able to organize the effort by sending
+orders/commands to the other actors, while some actors only are allowed to
+receive the orders. In this situation it might be of great importance to know
+that only verified nodes are able to give commands, but the importance of
+getting this information available outweighs the need to verify the nodes/actors
+receiving this information.
+
+\subsection{How routing occurs hereafter, neighbor checking\ldots}
 
 \section{Requirements}
 Ad hoc networks have some desired characteristics such as quick and inexpensive

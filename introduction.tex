@@ -1,13 +1,80 @@
 \chapter{Introduction}
+\label{ch:intro}
+\acresetall
+
+Today, we have become accustomed with an almost complete presence of digital
+networks in our daily lives. Everywhere we go, you can either plug your laptop
+into an ethernet slot, connect your laptop to an available wifi hot spot, or
+just use your cell phone via 3G mobile data network. However, this is not
+universally true throughout the world. Many places are scarcely populated, or
+the people living there do not have the resources to deploy such networks.
+
+In emergency and/or military situations, this often applies. Even if it didn't,
+the networks may have been put out of operations due to the nature of the
+emergency (i.e. tsunami destroying the infrastructure). The military might be in
+an hostile environment where they cannot trust the network in place altogether.
+
+Emergency search and rescue and military tactical operations can greatly benefit
+from the use of digital communication for sharing operation critical
+information. If they have no trusted data network available, they should
+therefore set it up themselves. A realistic approach would have to be easy and
+quick to set up, be self-managing thus requiring minimal maintenance. It should
+to an extent always be available to the participants wherever they go, which
+calls for using a wireless network. Last but not least, the network needs to be
+trusted, i.e. you should trust that the infrastucture is not compromised and
+that the communicating parties on the network are who they claim to be.
+
+A \ac{MANET} solves some of these requirements. It does not need an existing
+communication infrastructure, it is self-organizing and the network coverage
+range can easily be extended by placing intermediate nodes in strategic
+locations. The latter requirement however, is a more challenging task to solve
+with \acp{MANET}.
+
+With the lack of infrastructure in \acp{MANET} and no guarantees they are
+connected to the Internet, establishing trust between the nodes become different
+from that on the Internet which can rely on e.g. \acp{PKI}.
+
+With this thesis I will propose and implement solution to establish a trust
+mechanism, i.e. an authentication scheme, which combines features of a typical
+\ac{PKI} with \ac{WOT} ideas [TODO: ref of gpg project maybe?].
 
 \section{Motivation}
+TODO: Hva bør egentlig stå her? Syns det vi hadde under prosjektet var VELDIG
+svada\ldots Burde jeg også ha en 'Contributions' seksjon for å påpeke allerede
+her hva jeg bidrar med??
 
 \section{Objectives}
-
 
 \section{Limitations}
 
 \section{Method}
 
 \section{Document Structure}
+This thesis report is structured as follows:
 
+\textbf{Chapter \ref{ch:background}: Background} aims to give the reader the
+necessary insight about the technologies, ideas and theories discussed later in
+this thesis.
+
+\textbf{Chapter \ref{ch:design}: System Design} propose an original solution
+for an authentication scheme for \acp{MANET}.
+
+\textbf{Chapter \ref{ch:implementation}: Implementation} presents the
+implementation of the system design. The implementation is a modification of the
+\ac{BATMAN} source code.
+
+\textbf{Chapter \ref{ch:testing}: Testing} devise different tests for checking
+the performance of the implementation compared to the original \ac{BATMAN}
+implementation, and how well the implementation withstands some known \ac{MANET}
+cryptographic attacks.
+
+\textbf{Chapter \ref{ch:results}: Results} presents the results of the tests
+from the previous chapter.
+
+\textbf{Chapter \ref{ch:discussion}: Discussion}
+
+\textbf{Chapter \ref{ch:conclusion}: Conclusion}
+
+\textbf{Appendix \ref{appendix:source}: Source Code}
+
+\textbf{Appendix \ref{appendix:irc}: IRC Chat Logs}
