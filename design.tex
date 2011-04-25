@@ -6,7 +6,7 @@ This chapter portrays the design for the proposed implementation of the secure
 ad hoc network.
 
 \section{Brief Overview}
-The design here is based on a working pro-active ad hoc routing protocol. The
+The design here is based on a functional pro-active ad hoc routing protocol. The
 routing is left to the chosen routing protocol, i.e. \ac{BATMAN}, and the
 changes made will not affect how the routing is performed. The system design can
 be said to be an extension of the protocol, which requires nodes to be
@@ -16,18 +16,18 @@ dropped from the network.
 
 The network setup start with an out-of-band authentication where a master node,
 hereafter \ac{SP}, verifies new nodes. How this is done can be up to the
-application, but lets assume that the actors carrying their communication
-devices, hereafter nodes, physically meets the \ac{SP} at the scene and exchange
-their public key fingerprints.
+application, but let us assume that the actors carrying their communication
+devices, hereafter nodes, physically meets the \ac{SP} at the scene and
+exchange their public key fingerprints.
 
 When a new node is discovered by the \ac{SP} using regular routing announcements
 as part of the pro-active routing protocol, the \ac{SP} will invite the new node
 to a handshake to establish a trust between the two nodes. The new node will
 receive the \ac{SP}'s certificate (proxy certificate), and will after verifying
-the fingerprint request a proxy certificate itself. The \ac{SP} will after
-verifying the nodes fingerprint be able to issue a proxy certificate with at
-least the rights to participate in building the \ac{MANET} by broadcasting its
-own and re-broadcasting other trusted nodes routing announcements.
+the fingerprint request a proxy certificate itself. After verifying the node's
+fingerprint, the \ac{SP} will issue a proxy certificate with (possibly) the
+rights to participate in building the \ac{MANET} by broadcasting its own and
+re-broadcasting other trusted nodes' routing announcements.
 
 \subsection{Why use Proxy Certificates?}
 \acp{PC}, as described in Section \ref{sect:pc}, is used to delegate

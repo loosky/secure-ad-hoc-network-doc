@@ -1,6 +1,6 @@
 \documentclass[a4paper, twoside, english, 11pt]{book}
 
-\usepackage{graphicx,subfig,url,acronym,fancyhdr,listings}
+\usepackage{graphicx,subfig,url,acronym,fancyhdr,listings,eurofont,supertabular,longtable,multibib,verbatim,enumerate,courier,caption}
 \usepackage[latin1]{inputenc}
 \usepackage[pdftex,colorlinks]{hyperref}
 \usepackage[top=3.0cm, bottom=2.5cm, left=2.5cm, right=2.5cm, bindingoffset=1cm, includefoot]{geometry}
@@ -20,23 +20,37 @@
 
 \setlength{\parindent}{0pt} 
 \setlength{\parskip}{2ex}
+\addtolength{\headheight}{0.5pt}
+\addtolength{\footskip}{0.5pt}
 
 
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[RO]{\bfseries\rightmark}
+\fancyhead[LE]{\bfseries\leftmark}
+\renewcommand{\headrulewidth}{0.5pt}
+\cfoot{\thepage} 
 
 
 \begin{document}
 
-
+\pagestyle{empty}
 \input{front_page}
 
 \cleardoublepage
 \input{problem_description}
 
 \cleardoublepage
+
 \pagenumbering{roman}
+\pagestyle{fancy}
 \input{abstract}
 
+\pagestyle{empty}
 \cleardoublepage
+
+\pagestyle{fancy}
 \input{preface}
 
 \clearpage
