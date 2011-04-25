@@ -72,7 +72,46 @@ that only verified nodes are able to give commands, but the importance of
 getting this information available outweighs the need to verify the nodes/actors
 receiving this information.
 
-\subsection{How routing occurs hereafter, neighbor checking\ldots}
+\subsection{Post-Authentication Operation}
+After being issued with a \ac{PC} the newly authenticated node will start
+periodically broadcasting a signature message, which is a message with a
+pseudo-random string and its signed hash value. The new node will then use a
+smaller extract from this signed hash value and append it to its regular routing
+announcements from this point on, changing only whenever a new signature
+message is constructed and sent. The signature message will be received and
+verified by all its direct neighbors, and they will now only allow routing
+announcements from that node appended with the correct signature hash value. If
+this value is absent or incorrect, the announcement will be dropped and regarded
+as a spoofing message.
+
+Whenever a routing announcement is re-broadcasted by another trusted node, that
+node will change the signature extract appended to the announcement to its own
+signature extract. This means that every node only checks its direct neighbor
+for authentication, which is a design choice. This proposal assumes that because
+every node is verified by the \ac{SP} in the first place, all nodes in the
+network will be able to trust each other, which also means they will trust their
+neighbors to properly verify their neighbors again. This technique also helps
+prevent a wormhole attack, which will be discussed later.
+
+In order for trusted nodes to learn of newly trusted nodes existence, the
+\ac{SP} reularly broadcasts lists containing the id, address and public key of
+each trusted node in the network. This needs to be done, because before learning
+about a new node the other trusted nodes will not accept any messages from this
+node. This means the new node will not be able to exchange its own \ac{PC} with
+other nodes directly - only through the \ac{SP}.
+
+The list, hereafter \ac{AL}, also adds some \ac{WOT} like capabilities. The list
+is signed by the \ac{SP}, which means the integrity of the list is guaranteed by
+the \ac{SP}. This means that if the \ac{SP} should go offline, e.g. it could be
+out of range, other trusted nodes in the \ac{MANET} can continue to broadcast
+the \ac{SP} on behalf of the \ac{SP} - to ensure all nodes in the network know
+each other. This can be especially important when the network grows large and
+become fully or partially separated and nodes in one part may not have learnt of
+the existence of newly trusted nodes yet. It also applies to trusted nodes who
+have been offline while new nodes have been verified, then re-enter the network
+while the \ac{SP} is offline. [TODO: kanskje ref til mitt eget essay?]
+
+TODO: kanskje en figur som viser dette og?
 
 \section{Requirements}
 Ad hoc networks have some desired characteristics such as quick and inexpensive
