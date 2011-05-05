@@ -415,13 +415,81 @@ to make sure all nodes in the network know and trust each other.
 This section describes the different entities in greater detail. How they are
 used and why they are present is some of the questions that will be answered.
 
-\subsection{\acf{SP}}
-The term \acl{SP} was coined by Dr. Lawrie Brown [TODO: ref lawries technotes].
-
 \subsection{\acf{PC}}
+
 
 \subsubsection*{\acf{PC0}}
 
 \subsubsection*{\acf{PC1}}
 
+\subsection{\acf{SP}}
+The term \acl{SP} was coined by Dr. Lawrie Brown \cite{lawrie:technotes}.
+\acp{SP} are used in place of regular \acp{CA} for \acp{PC}. The \ac{SP}
+determines whether a node should be issued a \ac{PC} and if so which policies to
+attach. The \ac{SP} drastically distinguishes itself from regular \acp{CA}
+because it breaks the hierarchical model usually associated with \acp{CA} when
+they are part of a \ac{PKI}.
+
+A \ac{SP} can also be part of a \ac{PKI} (issued a regular public key
+certificate), but because of our scenario, it can be difficult or impossible to
+verify its regular certificate. Therefore, no distinction is made whether the
+\ac{SP} has had a regular ``\ac{CA}-signed'' certificate sign its \ac{PC0} or if
+its \ac{PC0} is self-signed.
+
+
 \subsection{\acf{AL}}
+
+
+\section{Authentication Module Messages}
+This section describes the different messages sent within, or modified by, the
+\ac{AM} extension. This includes how they are created, what payload they
+contain, if and how the information is secured from malicious actors, and
+finally to whom and how often they are sent during normal operation.
+
+\subsection{Authentication Handshake}
+The authentication handshake describes which messages are sent while
+authenticating a new node to the network. The handshake is triggered by the
+event where the \ac{SP} discover a new and unauthenticated neighbor node.
+
+\subsubsection*{Node Discovery}
+Node discovery is not actually a part of the handshake itself, but it is the
+event that triggers the handshake and is described here to make the context more
+clear to the reader.
+
+TODO: Write about the neighbor list before this section\ldots
+
+As described earlier each node stores a local copy of the \ac{AL} and a direct
+neighbor node list. Whenever a trusted node receives a routing announcement from
+a new neighbor, i.e. a node which is not in the direct neighbor list, the
+trusted node needs to check the \ac{AL} to see if the node is a trusted node. If
+the node can be found in the \ac{AL} the trusted node will request the signature
+of the node and store it alongside the address of the node in its neighbor list.
+
+If the node is an unknown node however, regular trusted nodes, i.e. nodes issued
+with a \ac{PC1}, will discard the announcement and go on with its other
+operations. \acp{SP} will initiate an authentication handshake in the same
+event.
+
+\subsubsection*{Handshake Invite}
+
+\subsubsection*{\acf{PC} Request}
+
+\subsubsection*{\acf{PC} Issue}
+
+\subsubsection*{ACK ?}
+
+
+
+\subsection{Signature}
+
+\subsubsection*{Signature Message}
+
+\subsubsection*{Signed Routing Announcements}
+
+
+
+\subsection{\acf{AL}}
+
+\subsubsection*{\acf{AL} Update}
+
+\subsubsection*{\acf{AL} Single Row Update}
