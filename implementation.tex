@@ -137,3 +137,47 @@ message flow\ldots
 \subsection{Validate the signed \ac{PC1}}
 
 \subsection{Creating a Signature with \ac{PC} (0 and 1)}
+
+\section{Routing Announcement Authentication}
+TODO: write this fully, for now only bulletpoints\ldots
+
+\definecolor{darkgray}{rgb}{0.95,0.95,0.95}
+\lstset{
+	language=c,
+	basicstyle=\footnotesize,
+	numbers=left,
+	numberstyle=\footnotesize,
+	stepnumber=0,
+	numbersep=5pt,
+	backgroundcolor=\color{darkgray},
+	showspaces=false,
+	showstringspaces=false,
+	showtabs=false,
+	frame=single,
+	tabsize=2,
+	captionpos=b,
+	breaklines=true,
+	breakatwhitespace=false,
+	escapeinside={\%*}{*)}
+}
+
+\begin{lstlisting}
+
+- Initialization Phase: Generate a master key (Km) 128 bit AES with
+OpenSSL_RAND()
+
+- Signature messages:
+  - Generate Ki = AES[Km](i) where i=1,2,3\ldots
+  - Generate RANDi x? bytes with OpenSSL_psuedo_RAND()
+  - Send Ki|RANDi (encrypted unicast to each neighbor with their public keys)
+  - Generate the MACi = AES[Ki](RANDi)  (both sender and neighbors do this)
+
+- Routing Announcements / OGMs:
+  - Append 16 bits of MACi to the OGM
+  - Add counterval/sequence num for which 16 bits of the MACi is sent
+  - Neighbor will check this val:
+    - If received bits does not match the ones he generates himself, discard the
+    OGM
+    - If received seq num has been used before, discard the OGM
+
+\end{lstlisting}

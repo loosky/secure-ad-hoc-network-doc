@@ -316,7 +316,7 @@ outside the network at this point (physically).
 The new node does not have any \ac{PC} at this point, unless it has a \ac{PC}
 issued within and valid only for another network. This is however not covered
 here, and it is assumed the node has no certificate at all. The same goes for
-its \ac{AL}, or one can rather say it has an empty \ac{AL} - denoted by the 'Ø'
+its \ac{AL}, or one can rather say it has an empty \ac{AL} - denoted by the 'ï¿½'
 in the figure.
 
 \subsection{Authentication Handshake}
@@ -477,14 +477,44 @@ event.
 \subsubsection*{\acf{PC} Issue}
 
 \subsubsection*{ACK ?}
+Maybe share the signature (rand+aes-key) in this ack?
 
 
 
-\subsection{Signature}
+\subsection{Routing Announcement Authentication}
+In the ideal world every routing announcement broadcasted on the network would
+be signed for authenticity and integrity, but for our scenarios and \acp{MANET}
+in general the world is far from ideal.
 
-\subsubsection*{Signature Message}
+One huge limitation is packet size - because each routing announcement is
+broadcasted throughout the network, and the network in our case is a higly lossy
+one, one needs to constrain the packet size or else all the throughput in the
+network would be used on routing messages. The decision was therefore made to
+include only a small value of 16 bits to deduce node authentication and to
+assume packet integrity. The size chosen is discussed later in Chapter
+\ref{ch:discussion}.
 
-\subsubsection*{Signed Routing Announcements}
+TODO: write about this in discussion!!
+
+\subsubsection*{Signature?? Message}
+
+The idea is similar to other \ac{MAC} solutions [TODO: find ref] except only a
+special packet sent periodically is verified - instead of each routing message.
+This packet contains a pseudo-randomly generated value and a symmetric key
+generated from the master key.
+
+TODO: mention master key here or earlier??
+
+\subsubsection*{Extended Routing Announcements}
+
+The routing announcements are appended with 16 bits of the \ac{MAC} code, which
+is the pseudo-random value encrypted with the symmetric key. For each routing
+announcement there is a counter, which tells the receiving neighbor at which
+offset of the \ac{MAC} value the 16 bits belong to.
+
+TODO: Add figure showing these messages, and explicitly the 16 bits extracted
+from the mac\ldots
+
 
 
 
