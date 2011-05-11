@@ -491,8 +491,11 @@ broadcasted throughout the network, and the network in our case is a higly lossy
 one, one needs to constrain the packet size or else all the throughput in the
 network would be used on routing messages. The decision was therefore made to
 include only a small value of 16 bits to deduce node authentication and to
-assume packet integrity. The size chosen is discussed later in Chapter
-\ref{ch:discussion}.
+assume packet integrity.
+
+Later in Section \ref{sect:routing_auth_solution} the idea  behind this
+solution is discussed, partly defending why this solution was chosen, and partly
+what limitations this solution has compared to more traditional ways.
 
 TODO: write about this in discussion!!
 
@@ -500,10 +503,19 @@ TODO: write about this in discussion!!
 
 The idea is similar to other \ac{MAC} solutions [TODO: find ref] except only a
 special packet sent periodically is verified - instead of each routing message.
-This packet contains a pseudo-randomly generated value and a symmetric key
-generated from the master key.
+This packet contains a pseudo-randomly generated value, a temporary symmetric
+key generated from the master key, and signed hash value of the packet.
 
 TODO: mention master key here or earlier??
+
+The neighbor receiving the packet first computes a message digest, hash, of the
+first part of the packet, and decrypts the signed hash value contained in the
+packet and checks to see if they are identical. If so, the neighbor trusts this
+packet to be from an actual trusted neighbor.
+
+The packet cannot be broadcasted, because there is no shared group key between
+all nodes in the network, but has to be unicasted to each of the direct
+neighbors - encrypted with their public keys.
 
 \subsubsection*{Extended Routing Announcements}
 
@@ -512,11 +524,30 @@ is the pseudo-random value encrypted with the symmetric key. For each routing
 announcement there is a counter, which tells the receiving neighbor at which
 offset of the \ac{MAC} value the 16 bits belong to.
 
+Depending on how fast the \ac{MAC} is exhausted, the sender can instruct its
+neighbors to create a bigger value based on the same pseudo-random value. For
+example the nodes can be instructed to generate a \ac{MAC} ten times the size of
+the pseudo-random value - easily done by incrementing and encrypting the random
+bytes ten times.
+
 TODO: Add figure showing these messages, and explicitly the 16 bits extracted
 from the mac\ldots
 
+For each routing announcement a neighbor receives, he checks the 16 bits at the
+given offset of the self-generated \ac{MAC} and if it matches - he assumes the
+message is from his trusted neighbor. If any packet contains 16 bits extract
+that does not match the \ac{MAC} at the given offset, the packet will be
+regarded untrusted and dropped.
 
-
+\begin{figure}[h]
+	\centering
+  	\includegraphics{images/mac_ogm_msc.png}
+  	\caption{Node A peridically generates a new pseudo-random value and a
+  	corresponding symmetric key which it shares with its neighbor B. Node A use
+  	an extract of a generated MAC of this value in each of its routing
+  	announcements hereafter.}
+	\label{fig:node_states_authorized}
+\end{figure}
 
 \subsection{\acf{AL}}
 

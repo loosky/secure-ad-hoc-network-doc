@@ -9,6 +9,59 @@ ECC has short key sizes compared to same strength RSA keys.
 RSA have less energy consumption (claimed by \cite{hosseinisecure}) - need to
 check it out, or at least mention somewhere\ldots
 
+\section{Routing Authentication Solution}
+\label{sect:routing_auth_solution}
+As proposed in Chapter \ref{ch:design} the proposed system design uses an novel
+solution to continuously verify routing announcements received from ones
+neighbors.
+
+For this system to be used on typical mobile devices with all their constraints,
+one has to acknowledge the limitations to computing power, battery lifetime, and
+saturation in the wireless network.
+
+Because all nodes in a \ac{MANET} using a pro-active routing protocol broadcasts
+their routing announcements and forward all received routing announcements, the
+network traffic will increase exponentially to the amount of nodes in the
+network and how closely bound they are. Therefore all routing announcements
+needs to be as small as possible, as discussed by several others before [TODO:
+find some refs, multiple]. A typical signature is usually on the order of one or
+two larger than a regular routing announcement, so by adding a signature to the
+routing announcement - most of the data sent in the network would be signature
+data. This is far from ideal.
+
+The first solution that one would think of would be to only sign a very few of
+the announcements, periodically. This however, would be totally disastrous. This
+would have no protection against spoofing attacks whatsoever, as an attacker
+could wait for a legitimate node to send a signed announcement and then send his
+own fake announcements spoofed with the legitimate node's address.
+
+The solution proposed in this thesis, solves the problem in a different manner.
+Periodically, more than a second and less than a minute, a node sends a special
+packet to all its direct neighbors. The packet contains a random value string,
+a temporary symmetric key and a signed hash value of the packet (HMAC). Each
+copy of the packet is also encrypted with the neighbors' public key in order to
+keep the random value and symmetric key hidden from adversaries.
+
+Now, each neighbor shares a secret with the node and this can be used in a trust
+scheme on the following routing announcements. The node and its neighbors
+computes a new value by encrypting the previously sent random value with the
+corresponding symmetric key. This value is then split in parts, or extracts, of
+16 bits. Each extract is then appended, along with an offset value declaring at
+which offset of the whole value the 16 bits belongs, to all routing
+announcements the node sends - both his own and rebroadcasts of other nodes'
+announcements. Each offset of 16 bits will only be allowed to be sent once, as
+to avoid replay attacks using the same values. 
+
+Neighbors can now easily check whether the extract it receives matches the
+correct offset in the value it computed, and if it does the neighbor will trust
+the announcement is actually sent by the legitemate node. 
+
+This scheme is fully based on trust. You trust that your trusted nodes will only
+send you its own annoucement (correctly) and rebroadcast only its trusted nodes
+announcements without modification. If for some reason a trusted node should
+behave maliciously, this scheme will not detect this and allow the trusted node
+to potentially disrupt the network.
+
 \section{Future Work}
 
 \section{Limitations}
