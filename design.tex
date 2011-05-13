@@ -497,8 +497,6 @@ Later in Section \ref{sect:routing_auth_solution} the idea  behind this
 solution is discussed, partly defending why this solution was chosen, and partly
 what limitations this solution has compared to more traditional ways.
 
-TODO: write about this in discussion!!
-
 \subsubsection*{Signature?? Message}
 
 The idea is similar to other \ac{MAC} solutions [TODO: find ref] except only a
@@ -548,6 +546,20 @@ regarded untrusted and dropped.
   	announcements hereafter.}
 	\label{fig:node_states_authorized}
 \end{figure}
+
+\subsubsection*{REWRITE OVER\ldots}
+In a typical MAC algorithm you send a message appended with a MAC value. Then
+the receiver takes the message, creates his own MAC value and compares it with
+the received MAC value\ldots 
+
+In this solution, the first message, find a name for it!, will contain a message
+(pseudo-random value), WITHOUT the MAC value. (It must also be encrypted and
+signed.,..). 
+
+The MAC value is instead sent with the routing announcements, instead of with
+the initial message itself.
+
+Will be rewritten later.
 
 \subsection{\acf{AL}}
 
