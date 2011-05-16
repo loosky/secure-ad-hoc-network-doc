@@ -62,6 +62,61 @@ announcements without modification. If for some reason a trusted node should
 behave maliciously, this scheme will not detect this and allow the trusted node
 to potentially disrupt the network.
 
+\subsection{Routing Announcement Modification}
+The \ac{MAC} value extract appended to the routing announcements could have been
+used with the routing announcements without adding extra bits to the message. By
+using a simple technique such as XOR'ing the extract with e.g. the originator
+address field of the packet one would save 16 bits of extra overhead on each
+packet.
+
+There are two reasons why this is not done in this design proposal:
+
+\begin{itemize}
+  \item It would not be modular to different protocols, but be BATMAN specific,
+  and
+  \item It might confuse the reader to beleive it is would increase the security
+  of the protocol.
+\end{itemize}
+
+That said, in real life implementations it should probably be done for saving
+the overhead.
+
+Because the different ad hoc routing protocols this design is created for are
+pro-active protocols sending packets over the network layer, the IP addresses of
+each node will, and must be, visible in the IP packet. Using the address inside
+the routing announcement XOR'ed with the \ac{MAC} value extract would hide this
+address from an observer, but the observer would be able to see the address in
+the network layer packet - so in the end, no information has been hidden from
+the observer after all.
+
+\section{Compromised Trusted Nodes}
+One attack vector not previously discussed in this thesis is an internal attack
+from a trusted node that acts maliciously - typically a compromised node which
+have previously been trusted to participate in the network.
+
+The solution proposed does not handle this attack vector, as it assumes all
+trusted neighbors acts with good intentions. However, this is a broadly
+discussed field of research and several solutions have been proposed
+\cite{Pirzada_McDonald} \cite{dhurandher2010network}. In both of these papers
+the authors generate a trust value of their neighbors based on observed
+behaviour. For instance, after sending a message to a non-neighbor in the
+network, you would expect your mutually trusted neighbor on the path between
+you and the recipient of your message to forward your packet. After sending the
+packet, you can check whether your neighbor actually forwards the packet by
+sniffing for the recipients address in promiscous mode. If no packet is ever
+sent from your neighbor, this can lead you to believe hi is a black hole. If you
+observe several possible malicious acts by a neighbor, you can choose to not
+trust this neighbor anymore and add it to a blacklist.
+
+This kind of solution, among others, already exist and should be incorporated in
+addition to the design proposed in this thesis. Without this form of neighbor
+checking, you cannot trust your neighbor and therefore not use this design at
+all. To clarify once more - the solution proposed in this thesis only covers
+external attacks, whereas the attack vector mentioned in this section is an
+internal attack.
+
+TODO: Trengs det noe mer?
+
 \section{Future Work}
 
 \section{Limitations}
