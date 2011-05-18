@@ -30,8 +30,8 @@ rights to participate in building the \ac{MANET} by broadcasting its own and
 re-broadcasting other trusted nodes' routing announcements.
 
 \subsection{Why use Proxy Certificates?}
-\acp{PC}, as described in Section \ref{sect:pc}, is used to delegate
-rights on behalf of the issuer. That means that the issuer, i.e. the \ac{SP},
+\acp{PC}, as described in Section \ref{sect:pc}, are used to delegate
+rights on behalf of their issuers. That means that the issuer, i.e. the \ac{SP},
 can chose to delegate all or a subset of its rights to the receiver of the
 \ac{PC}. This can be very useful in a situation where the nodes themselves are
 unable to properly authenticate themselves with their pre-existing \acp{LLPKC}
@@ -46,8 +46,8 @@ not usually have on this specific scene, depending on the situation. This is
 easier to achieve when the \ac{SP} can delegate its own rights.
 
 An important feature of the \acp{PC} is that the \ac{SP} can delegate different
-kind of rights, as long as it is a subset of its own rights, to different nodes.
-There are countless of different rights that can be useful, given the situation
+kinds of rights, as long as it is a subset of its own rights, to different
+nodes. There are countless of different rights that can be useful, given the situation
 they are used in, but here is a few possible rights/privileges to give the
 reader an understanding of the possibilities they give:
 
@@ -71,6 +71,12 @@ receive the orders. In this situation it might be of great importance to know
 that only verified nodes are able to give commands, but the importance of
 getting this information available outweighs the need to verify the nodes/actors
 receiving this information.
+
+Lastly but not least, proxy certificates commonly have short valid lifetime
+compared to regular certificates, meaning an implementation using proxy
+certificates does not necessarily need to implement a certificate revocation
+scheme, which makes for less management operations in the management-hostile
+envirnontment that is \acp{MANET}.
 
 \subsection{Post-Authentication Operation}
 After being issued with a \ac{PC} the newly authenticated node will start

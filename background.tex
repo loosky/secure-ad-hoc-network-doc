@@ -6,6 +6,52 @@ This chapter aims to give the reader the necessary background to understand this
 thesis.
 
 \section{\acf{MANET}}
+An ad hoc network is a network of nodes which communicate with each other and
+through each other, i.e. nodes act as both regular end nodes and as intermediate
+nodes, similar to routers in regular networks. Because nodes in an ad hoc
+network can route packets from one node to another until its destination, ad hoc
+networks does not need an infrastructure with routers such as regular networks
+do \cite{perkins2008ad}. Without an infrastructure ad hoc networks can be
+established spontaneously and with no, or minimum, pre-configuration depending
+on the implementation in use.
+
+\begin{figure}[h]
+	\centering
+	\subfloat[Infrastructure Mode]{\label{fig:infrastructure_mode}\includegraphics[width=0.3\textwidth]{images/background_net_infrastucture.png} }
+	\hspace{15mm}
+	\subfloat[Ad Hoc Mode]{\label{fig:adhoc_mode}\includegraphics[width=0.3\textwidth]{images/background_net_adhoc.png}} 
+	\caption{Difference between a regular infrastructure network and an ad hoc network}
+	\label{fig:background_networks}
+\end{figure}
+
+Figure \ref{fig:background_networks} depicts the difference between regular
+networks and ad hoc networks. In \ref{fig:infrastructure_mode} there is three
+mobile nodes connected to each other through two wireless access points
+(infrastructure), while in \ref{fig:adhoc_mode} there is five nodes connected to
+each other and through each other. In infrastructure mode an end node only
+accepts packets packets addressed to itself, while in ad hoc mode the node will
+try to forward packets addressed to other nodes (on the network layer). They
+will however not accept packets sent to other link-layer addresses.
+
+
+
+A \ac{MANET} is a subset of ad hoc networks, in which nodes are specified as
+non-stationary wireless nodes. I.e. a \ac{MANET} consists of several mobile
+nodes communicating with each other, and through each other even while on the
+move. With \acp{MANET} nodes are always on the move and must therefore update
+their routing tables continously to make sure full paths between nodes are
+updated as quickly as possible, i.e. a minimal routing path convergence is
+necessary.
+
+In this thesis the terms network, \ac{MANET}, and ad hoc network are used
+interchangeably meaning a \ac{MANET} as described in this section unless
+otherwise specified.
+
+\subsection{Routing}
+
+\subsection{Challenges}
+
+\subsection{Security}
 
 \section{B.A.T.M.A.N.}
 BATMAN \cite{batman_rfc} is an increasingly more popular routing protocol for
