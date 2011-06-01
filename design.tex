@@ -17,16 +17,16 @@ dropped from the network.
 The network setup start with an out-of-band authentication where a master node,
 hereafter \ac{SP}, verifies new nodes. How this is done can be up to the
 application, but let us assume that the actors carrying their communication
-devices, hereafter nodes, physically meets the \ac{SP} at the scene and
-exchange their public key fingerprints.
+devices, hereafter nodes, physically meets the \ac{SP} at the scene and verifies
+each others public keys out-of-band.
 
 When a new node is discovered by the \ac{SP} using regular routing announcements
 as part of the pro-active routing protocol, the \ac{SP} will invite the new node
 to a handshake to establish a trust between the two nodes. The new node will
 receive the \ac{SP}'s certificate (proxy certificate), and will after verifying
-the fingerprint request a proxy certificate itself. After verifying the node's
-fingerprint, the \ac{SP} will issue a proxy certificate with (possibly) the
-rights to participate in building the \ac{MANET} by broadcasting its own and
+public key requests a proxy certificate itself. After verifying the node's
+public key, the \ac{SP} issues a proxy certificate with (possibly) the rights to
+participate in building the \ac{MANET} by broadcasting its own and
 re-broadcasting other trusted nodes' routing announcements.
 
 \subsection{Why use Proxy Certificates?}
@@ -79,43 +79,72 @@ scheme, which makes for less management operations in the management-hostile
 envirnontment that is \acp{MANET}.
 
 \subsection{Post-Authentication Operation}
-After being issued with a \ac{PC} the newly authenticated node will start
-periodically broadcasting a signature message, which is a message with a
-pseudo-random string and its signed hash value. The new node will then use a
-smaller extract from this signed hash value and append it to its regular routing
-announcements from this point on, changing only whenever a new signature
-message is constructed and sent. The signature message will be received and
-verified by all its direct neighbors, and they will now only allow routing
-announcements from that node appended with the correct signature hash value. If
-this value is absent or incorrect, the announcement will be dropped and regarded
-as a spoofing message.
+After being issued with a \ac{PC} the newly authenticated node will periodically
+``broadcast'' - unicast to each neighbor - a message containing an ephemeral key
+and corresponding IV, a nonce, and a signature (HMAC) of this message. It is
+important to note that the ephemeral key is encrypted with the neighbor's public
+key (hence multiple unicasts instead of an actual broadcast), but the HMAC is
+generated using the unencrypted key (to avoid generating a HMAC for each
+neighbor).
+
+After sending this signed ``broadcast" to each neighbor, the node and its
+neighbors will generate a keystream from the ephemeral key, IV, and nonce. The
+node will then append two new bytes from this keystream to each routing
+announcement, and re-broadcasts of neighbors announcements, sent from this point
+forward with a sequence number for the recipient to be able to match this
+``extract'' with the keystream at an offset given by the sequence number.
+
+The neighbors will only accept a routing announcement if and only if:
+
+\begin{itemize}
+  \item the routing announcement is appended with a key extract and,
+  \item it matches the keystream at the sequence number offset and,
+  \item the sequence number has not been received earlier (replay).
+\end{itemize}
+
+This ``key extract'' of the keystream is comparable to regular one-time-password
+as used by e.g. online banks [TODO: ref?] and it is important to note that they
+are not ``connected'' to the announcements sent, meaning they do not
+provide integrity for the packet.
 
 Whenever a routing announcement is re-broadcasted by another trusted node, that
-node will change the signature extract appended to the announcement to its own
-signature extract. This means that every node only checks its direct neighbor
-for authentication, which is a design choice. This proposal assumes that because
-every node is verified by the \ac{SP} in the first place, all nodes in the
-network will be able to trust each other, which also means they will trust their
-neighbors to properly verify their neighbors again. This technique also helps
-prevent a wormhole attack, which will be discussed later.
+node will change the key extract, or one-time-password, appended to the
+announcement to an extract from its own keystream. This means that every node
+only checks its direct neighbor for authentication, which is a design choice.
+This proposal assumes that because every node is verified by the \ac{SP} in the
+first place, all nodes in the network will be able to trust each other, which
+also means they will trust their neighbors to properly verify their neighbors
+again. This technique also helps prevent a wormhole attack, which will be
+discussed later.
 
-In order for trusted nodes to learn of newly trusted nodes existence, the
-\ac{SP} reularly broadcasts lists containing the id, address and public key of
-each trusted node in the network. This needs to be done, because before learning
-about a new node the other trusted nodes will not accept any messages from this
-node. This means the new node will not be able to exchange its own \ac{PC} with
-other nodes directly - only through the \ac{SP}.
+%In order for trusted nodes to learn of newly trusted nodes existence, the
+%\ac{SP} reularly broadcasts lists containing the id, address and public key of
+%each trusted node in the network. This needs to be done, because before
+%learning about a new node the other trusted nodes will not accept any messages
+%from this node. This means the new node will not be able to exchange its own
+%\ac{PC} with other nodes directly - only through the \ac{SP}.
 
-The list, hereafter \ac{AL}, also adds some \ac{WOT} like capabilities. The list
-is signed by the \ac{SP}, which means the integrity of the list is guaranteed by
-the \ac{SP}. This means that if the \ac{SP} should go offline, e.g. it could be
-out of range, other trusted nodes in the \ac{MANET} can continue to broadcast
-the \ac{SP} on behalf of the \ac{SP} - to ensure all nodes in the network know
-each other. This can be especially important when the network grows large and
-become fully or partially separated and nodes in one part may not have learnt of
-the existence of newly trusted nodes yet. It also applies to trusted nodes who
-have been offline while new nodes have been verified, then re-enter the network
-while the \ac{SP} is offline. [TODO: kanskje ref til mitt eget essay?]
+When a trusted node discover a new neighbor, which is a trusted node in the
+network - they first have to exchange their \acp{PC} and verify the signatures
+on the certificates. Their knowledge of the corresponding private keys to their
+\acp{PC} are only indirectly verified because they need to know the private key
+in order to decrypt the ephemeral keys sent with the signed broadcasts by their
+neighbors. Each of the two nodes then stores the other's public key, subject
+name, id, and address in a list called \ac{AL}.
+
+%The list, hereafter \ac{AL}, also adds some \ac{WOT} like capabilities. The
+%list is signed by the \ac{SP}, which means the integrity of the list is
+%guaranteed by the \ac{SP}. This means that if the \ac{SP} should go offline,
+%e.g. it could be out of range, other trusted nodes in the \ac{MANET} can
+%continue to broadcast the \ac{SP} on behalf of the \ac{SP} - to ensure all
+%nodes in the network know each other. This can be especially important when the
+%network grows large and become fully or partially separated and nodes in one
+%part may not have learnt of the existence of newly trusted nodes yet. It also
+%applies to trusted nodes who have been offline while new nodes have been
+%verified, then re-enter the network while the \ac{SP} is offline. [TODO:
+%kanskje ref til mitt eget essay?]
+
+TODO: Skriv om  at jeg legger ny nabo i nabolista også blabla\ldots
 
 TODO: kanskje en figur som viser dette og?
 

@@ -33,8 +33,6 @@ accepts packets packets addressed to itself, while in ad hoc mode the node will
 try to forward packets addressed to other nodes (on the network layer). They
 will however not accept packets sent to other link-layer addresses.
 
-
-
 A \ac{MANET} is a subset of ad hoc networks, in which nodes are specified as
 non-stationary wireless nodes. I.e. a \ac{MANET} consists of several mobile
 nodes communicating with each other, and through each other even while on the
@@ -43,11 +41,23 @@ their routing tables continously to make sure full paths between nodes are
 updated as quickly as possible, i.e. a minimal routing path convergence is
 necessary.
 
-In this thesis the terms network, \ac{MANET}, and ad hoc network are used
-interchangeably meaning a \ac{MANET} as described in this section unless
-otherwise specified.
+In this thesis the terms ``network'', ``\ac{MANET}'', and ``ad hoc network''
+are used interchangeably meaning a ``\ac{MANET}'' as described in this section
+unless otherwise specified.
 
 \subsection{Routing}
+There are many routing protocols for ad hoc networks and some of the popular
+protocols are OLSR \cite{olsr_paper}, B.A.T.M.A.N. \cite{batman_rfc}, Babel
+\cite{rfc6126}, DSDV \cite{he2002destination}, and AODV
+\cite{Perkins:2003:AHO:RFC3561} which all fall into one of the two main
+categories of ad hoc routing - i.e. ``reactive'' and ``pro-active'' routing
+protocols.
+
+\subsubsection*{Reactive Routing Protocols}
+
+
+\subsubsection*{Pro-active Routing Protocols}
+
 
 \subsection{Challenges}
 
