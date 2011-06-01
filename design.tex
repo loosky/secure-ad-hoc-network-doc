@@ -14,6 +14,8 @@ authenticated and trusted before being allowed into the network. To strengthen
 the system each node also has to verify their identity periodically, or they are
 dropped from the network.
 
+
+\subsection{Initial Authentication}
 The network setup start with an out-of-band authentication where a master node,
 hereafter \ac{SP}, verifies new nodes. How this is done can be up to the
 application, but let us assume that the actors carrying their communication
@@ -29,63 +31,14 @@ public key, the \ac{SP} issues a proxy certificate with (possibly) the rights to
 participate in building the \ac{MANET} by broadcasting its own and
 re-broadcasting other trusted nodes' routing announcements.
 
-\subsection{Why use Proxy Certificates?}
-\acp{PC}, as described in Section \ref{sect:pc}, are used to delegate
-rights on behalf of their issuers. That means that the issuer, i.e. the \ac{SP},
-can chose to delegate all or a subset of its rights to the receiver of the
-\ac{PC}. This can be very useful in a situation where the nodes themselves are
-unable to properly authenticate themselves with their pre-existing \acp{LLPKC}
-if the \ac{SP} on the scene has no way to verify their certificates. This can be
-true if their certificates are issued by an unknown root certificate (\ac{CA})
-or simply if there is no Internet access and the certificate is signed by an
-unknown entity (unknown to the \ac{SP}), even if it knows and trusts the root
-\ac{CA}.
-
-Also, the \ac{SP} could be interested in giving the node rights the node would
-not usually have on this specific scene, depending on the situation. This is
-easier to achieve when the \ac{SP} can delegate its own rights.
-
-An important feature of the \acp{PC} is that the \ac{SP} can delegate different
-kinds of rights, as long as it is a subset of its own rights, to different
-nodes. There are countless of different rights that can be useful, given the situation
-they are used in, but here is a few possible rights/privileges to give the
-reader an understanding of the possibilities they give:
-
-\begin{itemize}
-  \item Announce itself - let the \ac{MANET} know of your existence
-  \item Re-broadcast other nodes announcements - reshape the network topology
-  \item Announce a gateway - give the \ac{MANET} access to another network
-  \item Use the gateway - allow you to communicate outside the \ac{MANET}
-  \item Send and receive messages with a defined application - full application
-  rights
-  \item Only receive messages from a defined application - limited application
-  rights
-\end{itemize}
-
-The different choices are essentially up to the \ac{SP} managing the network.
-One can ask why this is necessary, and again it depends on the application. If
-you are setting up a \ac{MANET} on the scene of a disaster to assist emergency
-personnel, you could have some actors be able to organize the effort by sending
-orders/commands to the other actors, while some actors only are allowed to
-receive the orders. In this situation it might be of great importance to know
-that only verified nodes are able to give commands, but the importance of
-getting this information available outweighs the need to verify the nodes/actors
-receiving this information.
-
-Lastly but not least, proxy certificates commonly have short valid lifetime
-compared to regular certificates, meaning an implementation using proxy
-certificates does not necessarily need to implement a certificate revocation
-scheme, which makes for less management operations in the management-hostile
-envirnontment that is \acp{MANET}.
-
-\subsection{Post-Authentication Operation}
+\subsection{Continuous Authentication}
 After being issued with a \ac{PC} the newly authenticated node will periodically
 ``broadcast'' - unicast to each neighbor - a message containing an ephemeral key
-and corresponding IV, a nonce, and a signature (HMAC) of this message. It is
-important to note that the ephemeral key is encrypted with the neighbor's public
-key (hence multiple unicasts instead of an actual broadcast), but the HMAC is
-generated using the unencrypted key (to avoid generating a HMAC for each
-neighbor).
+and corresponding IV, a pseudo-randomly generated nonce, and a signature (HMAC)
+of this message. It is important to note that the ephemeral key is encrypted
+with the neighbor's public key (hence multiple unicasts instead of an actual
+broadcast), but the HMAC is generated using the unencrypted key (to avoid
+generating a HMAC for each neighbor).
 
 After sending this signed ``broadcast" to each neighbor, the node and its
 neighbors will generate a keystream from the ephemeral key, IV, and nonce. The
@@ -144,9 +97,65 @@ name, id, and address in a list called \ac{AL}.
 %verified, then re-enter the network while the \ac{SP} is offline. [TODO:
 %kanskje ref til mitt eget essay?]
 
-TODO: Skriv om  at jeg legger ny nabo i nabolista også blabla\ldots
+After a neighbor is added to the \ac{AL}, the node can then also add the
+neighbor to another list, called a neighbor list. This list is used to keep
+track of current direct neighbors and their current keystreams. While nodes in
+the \ac{AL} is kept in that list throughout the lifetime of the network, or
+until the lifetimes of the nodes have passed, a node in the neighbor list is
+removed when it is no longer a direct neighbor. How to detect this will be
+discussed later.
 
 TODO: kanskje en figur som viser dette og?
+
+\subsection{Why use Proxy Certificates?}
+\acp{PC}, as described in Section \ref{sect:pc}, are used to delegate
+rights on behalf of their issuers. That means that the issuer, i.e. the \ac{SP},
+can chose to delegate all or a subset of its rights to the receiver of the
+\ac{PC}. This can be very useful in a situation where the nodes themselves are
+unable to properly authenticate themselves with their pre-existing \acp{LLPKC}
+if the \ac{SP} on the scene has no way to verify their certificates. This can be
+true if their certificates are issued by an unknown root certificate (\ac{CA})
+or simply if there is no Internet access and the certificate is signed by an
+unknown entity (unknown to the \ac{SP}), even if it knows and trusts the root
+\ac{CA}.
+
+Also, the \ac{SP} could be interested in giving the node rights the node would
+not usually have on this specific scene, depending on the situation. This is
+easier to achieve when the \ac{SP} can delegate its own rights.
+
+An important feature of the \acp{PC} is that the \ac{SP} can delegate different
+kinds of rights, as long as it is a subset of its own rights, to different
+nodes. There are countless of different rights that can be useful, given the situation
+they are used in, but here is a few possible rights/privileges to give the
+reader an understanding of the possibilities they give:
+
+\begin{itemize}
+  \item Announce itself - let the \ac{MANET} know of your existence
+  \item Re-broadcast other nodes announcements - reshape the network topology
+  \item Announce a gateway - give the \ac{MANET} access to another network
+  \item Use the gateway - allow you to communicate outside the \ac{MANET}
+  \item Send and receive messages with a defined application - full application
+  rights
+  \item Only receive messages from a defined application - limited application
+  rights
+\end{itemize}
+
+The different choices are essentially up to the \ac{SP} managing the network.
+One can ask why this is necessary, and again it depends on the application. If
+you are setting up a \ac{MANET} on the scene of a disaster to assist emergency
+personnel, you could have some actors be able to organize the effort by sending
+orders/commands to the other actors, while some actors only are allowed to
+receive the orders. In this situation it might be of great importance to know
+that only verified nodes are able to give commands, but the importance of
+getting this information available outweighs the need to verify the nodes/actors
+receiving this information.
+
+Lastly but not least, proxy certificates commonly have short valid lifetime
+compared to regular certificates, meaning an implementation using proxy
+certificates does not necessarily need to implement a certificate revocation
+scheme, which makes for less management operations in the management-hostile
+envirnontment that is \acp{MANET}.
+
 
 \section{Requirements}
 Ad hoc networks have some desired characteristics such as quick and inexpensive
@@ -181,9 +190,6 @@ authentication tokens, i.e. certificates, required by the authentication scheme
 in the network.
 
 \subsection{List of Requirements}
-TODO: Use Martins requirement paper, add requirements, write about each one, not
-only nr1 and 4.
-
 Based on the scenario above these requirements can be extracted and made into
 general requirements that needs to be addressed by the system design. The work
 presented here is based on several sources, most prevalent being the research
@@ -193,26 +199,52 @@ and the doctoral project of Eli Winjum carried out at UniK
 
 \begin{table}[ht!]
 	\centering
-	\begin{tabular}{ | l | p{11cm} | }
+	%\begin{tabular}{ | l | p{11cm} | }
+	\begin{tabular*}{\textwidth}{ | p{5mm} | p{388pt} | }
 	\hline
-	\textbf{Requirement} & \textbf{Requirement Description}\\\hline
-		R1 & A node must be authorized in order to get full rights in a
-		network \cite{dahill2001secure}, \cite{sanzgiri2002secure}\\\hline
-		R2 & A node without a recognized authentication token should be able to become
-		authorized if necessary\\ \hline
-		R3 & Networks need a master node which handles access control\\\hline
-		R4 & Different networks should be able to collaborate
-		\cite{ffi_2005_04015}\\\hline
-	\end{tabular}
+	\textbf{\#} & \textbf{Requirement Description}\\\hline
+		R1 & A node must be authorized in order to get full rights in a network \cite{dahill2001secure}, \cite{sanzgiri2002secure}\\\hline
+		R2 & A node without a recognized authentication token should be able to become authorized if necessary\\\hline
+		R3 & Networks need a master node to handle authentication of new nodes\\\hline
+		R4 & Access control (after initial authentication) should work without centralized nodes\\\hline
+		R5 & Different networks should be able to collaborate \cite{ffi_2005_04015}\\\hline
+		R6 & Only master nodes can decide access policies of users/nodes\\\hline
+		R7 & Nodes must not be able to alter their access policies\\\hline
+	\end{tabular*}
 	\caption{Requirements based upon our simplified and general scenario.}
 	\label{tab:our_req}
 \end{table}
 
 An early study produced security requirements of ad hoc networks demanding
 that the routing logic must not be spoofed or altered to produce different
-behavior \cite{dahill2001secure}. This means authorization is required (R1)
-before someone can partake in routing logic. FFI also requires seamless radio coverage over the
-area giving us R4.
+behavior \cite{dahill2001secure}. R1 is constructed from that requirement.
+During the OASIS project, a requirement ensuring different actors such as
+police, fire and medical professionals can participate in the network, gives R2
+\cite{5683058}.
+
+Because of R2 there needs to be some sort of authority managing the
+authentication and access management, which leads to R3. However, verifying
+nodes access rights after the fact should be possible even without the
+availability (R4) - also a requirement given by the OASIS project.
+
+The doctoral project of Winjum recommends seamless radio coverage over the whole
+crisis area, possibly requiring merging or at least collaboration between
+different networks, R5.
+
+R7 comes implicitly from R6 because R6 would be useless if regular nodes could
+alter their priveleges without the permission of a master or management node. R6
+is necessary in this design as no authentication is required prior to the
+network setup, and it is therefore no way to know which rights one actor/node
+shuold have. As will be discussed in Chapter \ref{ch:discussion} the network
+might also be able to recognize authentication tokens, such as long lived
+certificates, issued prior to this setup. If this is the case, one might have to
+re-evaluate this requirement.
+
+The OASIS had another important requirement which is not covered here, but is
+important to mention - there should be mechanisms in place to detect misbehaving
+nodes, i.e. already trusted nodes that acts maliciously. This detection is not
+covered in this thesis as pointed out in \ref{limit:malicious_behaviour}, but is
+nevertheless important to take notice of.
 
 \section{Design Overview}
 The secure ad hoc network designed here does not change any fundamental workings
@@ -266,7 +298,7 @@ will be used as a template for other figures later in this thesis report.
 
 \begin{figure}[h]
 	\centering
-  	\includegraphics{images/simple_example_entities.png}
+  	\includegraphics[width=\textwidth]{images/simple_example_entities.png}
   	\caption{Different entities in the Simple Example.}
 	\label{fig:simple_example_entities}
 \end{figure}
