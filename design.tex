@@ -248,16 +248,21 @@ nevertheless important to take notice of.
 
 \section{Design Overview}
 The secure ad hoc network designed here does not change any fundamental workings
-of regular ad hoc routing protocols. Assuming all nodes in the network already
-have been authenticated, the routing in the network should behave as if there
-were no secure extension to the routing protocol.
+of regular ad hoc routing protocols. When nodes have been authenticated and
+neighbors have verified their neighbors respectively, the routing annoucements
+are generated, broadcasted, forwarded, and handled by the routing protocol as
+usual.
 
 The proposed design should work with most pro-active ad hoc routing protocols
-with limited alterations - but this design is specifically made for the
-BATMAN \cite{batman_rfc} routing protocol chosen for its simpler design compared to
-e.g. OLSR \cite{clausen2003rfc3626} because it only uses the third layer of the
-\ac{OSI} Model \cite{zimmermann1980osi}. How to incorporate this design into
-BATMAN will be explained in Chapter \ref{ch:implementation}.
+operating on the network layer with limited alterations - but this design is
+specifically made for the BATMAN \cite{batman_rfc} routing protocol chosen for
+its simpler design compared to e.g. OLSR \cite{clausen2003rfc3626} and because
+it operates on the third layer of the \ac{OSI} model \cite{zimmermann1980osi}.
+Whether this design would work on a link-layer protocol is unknown, and there is
+still a discussion whether having routing protocols on the link-layer is a good
+thing, as it breaks the layering principles of the \ac{OSI} model
+\cite{5680190}. How this design is incorporated, or added, to the BATMAN
+protocol will be explained in Chapter \ref{ch:implementation}.
 
 The basic principle of the proposed design is that an authenticated node accepts
 other authenticated nodes' routing messages and forwards them as normal, while
@@ -268,9 +273,7 @@ authorizing new nodes into the network. A special certificate called a \ac{PC}
 place such that other nodes in the network will be able to authenticate and
 accept the new node.
 
-
 \subsection{Entity Explanation}
-
 Before a simplified example can be given, a few new entities in this design
 needs to be explained further. This is the short version, just enough for the
 reader to understand the example - the full description of these entities
@@ -289,11 +292,20 @@ will be used as a template for other figures later in this thesis report.
   private key of the \ac{SP}). All authenticated nodes in one network, has a
   \ac{PC1} signed by a \ac{SP} from that network.
   \item \textbf{\acf{AL}} is a list containing the necessary information about
- 	all authorized nodes in the network. The \ac{SP} signs and broadcasts a copy
- 	of the \ac{AL} periodically, and all nodes keep a local copy of the \ac{AL}
-  	which they use to authenticate other nodes in the network.
-  \item \textbf{Authenticated Node} bla bla.
-  \item \textbf{Unauthenticated Node} bla bla.
+ 	all known and authorized nodes in the network. All nodes keep a local copy of
+ 	the \ac{AL} which they use to authenticate other nodes in the network.
+  \item \textbf{Neighbor List} is a list containing the current trusted direct
+    neighbors (must also be in \ac{AL}) with a copy of their keystreams used for
+    verifying their routing announcements.
+  \item \textbf{Authenticated Node} is a node which has been isseud a \ac{PC1}
+    from the \ac{SP} and is considered a trusted node in the network. This node
+    can take part in sending its own routing announcements and forwarding other
+    authenticated nodes routing announcements, i.e. they take part in changing
+    the network topology.
+  \item \textbf{Unauthenticated Node} is a node which has not yet been
+    authorized, or denied access, by the \ac{SP}. They do not possess a
+    certificate for which the other nodes can verify, and its routing
+    announcements are ignored by other trusted nodes in the network.
 \end{itemize}
 
 \begin{figure}[h]
@@ -304,44 +316,106 @@ will be used as a template for other figures later in this thesis report.
 \end{figure}
 
 \subsection{Simple Example}
-TODO: Why proxy certs, and not just regular certs. Explain this very short in
-this example.
+Two nodes are within transmitting range of each other, i.e. they are direct
+neighbors. One of the nodes is a \ac{SP} and the other is unauthenticated. The
+pro-active ad hoc routing protocol used on both nodes regularly broadcasts
+routing announcements, so the two nodes learn of each others' existence. Upon
+reception of a routing announcement from the unauthenticated node, the \ac{SP}
+will invite the node for a handshake. The invite message contains the \ac{SP}'s
+\ac{PC0} which assumably the unauthenticated node is able to verify , possibly
+based on a prior out-of-band sharing of public key fingerprints.
 
-Two nodes are within transmitting range of each other. One of the
-nodes is a \ac{SP} and the other is unauthenticated. The pro-active ad hoc
-routing protocol used on both nodes regularly broadcasts routing messages, so
-the two nodes learn about each others' existence. Upon reception of a routing
-message from the unauthenticated node, the \ac{SP} will invite the node for a
-handshake. During this handshake, the unauthenticated node will send a \ac{PC}
-request. The \ac{SP} can create and sign a \ac{PC} for this node - i.e. the node
-is issued a \ac{PC1}.
+After verifying the \ac{PC1}, the unauthenticated node will send a \ac{PC}
+request with its own public key. If the \ac{SP} is able to verify the senders
+public key (same assumption as above) and the \ac{SP} decides this node should
+have access to network, it will create and sign \ac{PC} for this node - i.e. the
+node is issued a \ac{PC1}.
 
-Before the \ac{SP} actually signs the \ac{PC} requested from the unauthenticated
-node, it needs some verification that the node is an actor that should be
-allowed access to the network. The actor will therefore meet the \ac{SP} in the
-field and give its public key fingerprint (out-of-band) so the \ac{SP} can
-verify the incoming public key in the \ac{PC} request as the actor's request.
+%Before the \ac{SP} actually signs the \ac{PC} requested from the
+%unauthenticated node, it needs some verification that the node is an actor that
+%should be allowed access to the network. The actor will therefore meet the
+%\ac{SP} in the field and give its public key fingerprint (out-of-band) so the
+%\ac{SP} can verify the incoming public key in the \ac{PC} request as the
+%actor's request.
 
-Using the public key of the \ac{PC1}, the newly trusted node will now create and 
-broadcast a signature, and use an excerpt (offset value) from this signature
-in its routing messages. The signature excerpt is just a value used in the
-following routing messages, and not the cryptographic signature itself, but
-will be used for recognition. This will be described further later in the
-chapter. The \ac{SP}, recognizing the signature offset value will rebroadcast
-the routing messages so regular ad hoc routing follows.
+%Using the public key of the \ac{PC1}, the newly trusted node will now create
+%and broadcast a signature, and use an excerpt (offset value) from this
+%signature in its routing messages. The signature excerpt is just a value used
+%in the following routing messages, and not the cryptographic signature itself,
+%but will be used for recognition. This will be described further later in the
+%chapter. The \ac{SP}, recognizing the signature offset value will rebroadcast
+%the routing messages so regular ad hoc routing follows.
 
-Also upon handshake completion is the generation an \ac{AL}. The \ac{SP} will
-use this list in order to save certain necessary details about the other node,
-such as its address, public key, last signature, and more. Also in this list is
-the corresponding information about the \ac{SP} itself. When the list is created
-or updated it is broadcasted to the network - signed by the \ac{SP} to ensure no
-other node can alter the information about trusted nodes in the network.
+When the handshake completes both nodes will add the other node of the handshake
+to their \ac{AL} - storing their id, address, unique subject name, role, and
+public key.
 
-Whenever a new node is discovered by the \ac{SP} this procedure repeats, and a
-new addition is made to the \ac{AL}. Other previously trusted nodes will learn
-the identity of new nodes when they receive the updated list from the \ac{SP}.
+At this point, both the newly authenticated/trusted node and the \ac{SP} will
+send one another a message containing their current (or new in the case of the
+trusted node) ephemeral key, IV, nonce value and a signed hash value (HMAC) of
+these values. The ephemeral key part is encrypted with the other's public key to
+keep this information secret. The HMAC however, is computed over the unencrypted
+key in order to re-use this signature if more nodes connect.
 
-TODO: add an MSC or figure with the entities to explain the example\ldots
+Both nodes can now generate two keystreams based on these values, their own and
+the other node's keystream. These keystreams, address, id, an empty ``last
+sequence number'', and an empty sliding window of the other node is then stored
+in the neighbor list.
+
+%Also upon handshake completion is the generation an \ac{AL}. The \ac{SP} will
+%use this list in order to save certain necessary details about the other node,
+%such as its address, public key, last signature, and more. Also in this list is
+%the corresponding information about the \ac{SP} itself. When the list is
+%created or updated it is broadcasted to the network - signed by the \ac{SP} to
+%ensure no other node can alter the information about trusted nodes in the
+%network.
+
+From this point forward, the two nodes use an two-byte extract of the keystream
+and append it together with a sequence number (for finding the correct offset
+in keystream) to future routing announcements. This goes for both original
+routing announcements from the node itself, and when they forward other trusted
+nodes routing announcements. The two nodes never re-use the same extract from
+the keystream, and they use a sliding window stored in their neighbor list to
+keep track of which extracts they have received from their neighbor. This last
+part is crucial in order to be able to drop announcements containing re-used
+extracts, and therefore to avoid replay attacks. Once more, these key extracts
+should be viewed as one-time-passwords, and must never be allowed to be re-used.
+
+Whenever a new node is discovered by the \ac{SP} the procedure above repeats,
+and a new addition is made to the \ac{AL} and neighbor list. Other previously
+trusted nodes will learn the identity of new nodes when they discover the new
+node and initiate in a ``keystream'' exchange - discussed later.
+
+\begin{figure}[ht]
+	\centering
+  	\includegraphics[height=13cm]{images/simple_example_msc.png}
+  	\caption{Message sequence chart of the simple example showing authentication
+  	  handshake and keystream material sharing between SP and new node A. Routing
+  	  announcements at the end contain one-time-passwords (OTP) from keystreams}
+	\label{fig:simple_example_msc}
+\end{figure}
+
+Figure \ref{fig:simple_example_msc} shows a message sequence chart of the
+messages sent between two nodes during the simple example. Routing announcements
+without one-time-passwords are sent periodically throughout the sequence until
+keystreams are generated, but this is left out of the figure as they do not
+affect the nodes. Only the routing announcements in the beginning and in the end
+(appended with one-time-passwords) are portrayed as they show how the handshake
+is initiated (by discovery) and ended after successfully ending the handshake
+and keystream material sharing.
+
+If a new node enters transmitting range of the two nodes similar messages are
+exchanged, as shown in Figure \ref{fig:simple_example_msc_2}.
+
+\begin{figure}[h]
+	\centering
+  	\includegraphics[height=13cm]{images/simple_example_msc_2.png}
+  	\caption{Message sequence chart of the simple example showing another node B
+  	  attempting to join the network, and the messages between A and B after B
+  	  is autneticated by the SP}
+	\label{fig:simple_example_msc_2}
+\end{figure}
+
 
 \section{Node States}
 This section is devoted to explain the different states a node can be in, and
@@ -611,7 +685,7 @@ regarded untrusted and dropped.
   	corresponding symmetric key which it shares with its neighbor B. Node A use
   	an extract of a generated MAC of this value in each of its routing
   	announcements hereafter.}
-	\label{fig:node_states_authorized}
+	\label{fig:mac_ogm_msc}
 \end{figure}
 
 \subsubsection*{REWRITE OVER\ldots}
