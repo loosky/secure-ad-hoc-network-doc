@@ -238,7 +238,7 @@ network setup, and it is therefore no way to know which rights one actor/node
 shuold have. As will be discussed in Chapter \ref{ch:discussion} the network
 might also be able to recognize authentication tokens, such as long lived
 certificates, issued prior to this setup. If this is the case, one might have to
-re-evaluate this requirement.
+re-evaluate these requirements.
 
 The OASIS had another important requirement which is not covered here, but is
 important to mention - there should be mechanisms in place to detect misbehaving
@@ -265,8 +265,8 @@ thing, as it breaks the layering principles of the \ac{OSI} model
 protocol will be explained in Chapter \ref{ch:implementation}.
 
 The basic principle of the proposed design is that an authenticated node accepts
-other authenticated nodes' routing messages and forwards them as normal, while
-discarding routing messages from unauthenticated nodes. One or more nodes in the
+other authenticated nodes' routing announcements and forwards them as normal, while
+discarding routing announcements from unauthenticated nodes. One or more nodes in the
 network will assume a role as master node(s), with the extra capability of
 authorizing new nodes into the network. A special certificate called a \ac{PC}
 \cite{rfc3820} will be used for authentication after this authorization has taken
@@ -340,11 +340,11 @@ node is issued a \ac{PC1}.
 
 %Using the public key of the \ac{PC1}, the newly trusted node will now create
 %and broadcast a signature, and use an excerpt (offset value) from this
-%signature in its routing messages. The signature excerpt is just a value used
-%in the following routing messages, and not the cryptographic signature itself,
+%signature in its routing announcements. The signature excerpt is just a value used
+%in the following routing announcements, and not the cryptographic signature itself,
 %but will be used for recognition. This will be described further later in the
 %chapter. The \ac{SP}, recognizing the signature offset value will rebroadcast
-%the routing messages so regular ad hoc routing follows.
+%the routing announcements so regular ad hoc routing follows.
 
 When the handshake completes both nodes will add the other node of the handshake
 to their \ac{AL} - storing their id, address, unique subject name, role, and
@@ -417,39 +417,42 @@ exchanged, as shown in Figure \ref{fig:simple_example_msc_2}.
 \end{figure}
 
 
-\section{Node States}
-This section is devoted to explain the different states a node can be in, and
-how it behaves during these different states. These states should be similar for
-most pro-active routing protocols as the main thing triggering these phases
-is the routing messages (announcements) sent as per normal operation of any
-pro-active routing protocol [some def of pro-active routing protocols].
+\section{Node States/Phases?}
+This section is devoted to explain the different states(/phases?) a node can be
+in, and how it behaves during these different states(/phases?). These
+states(/phases?) should be similar for most network layer pro-active routing
+protocols as the main trigger of these phases is the routing announcements sent
+as per normal operation of any pro-active routing protocol.
 
 \subsection{Node Discovery}
 Upon entering the network area, the node is both unauthenticated and unknown to
-the network. The node regularly broadcasts routing messages to be received by
-any potential node in the area. Assume all nodes are configured with addresses
-on the same subnet so they can receive the sent broadcast (See Limitations in
-Section \ref{ip_address_conf}).
+the network. Because it use a pro-active routing protocol, the node regularly
+broadcasts routing announcements to be received by any potential node in the
+area. At this point an assumption that all nodes are configured with unique
+addresses and with the same netmask is done in order to focus on the security
+challenges, rather the non-trivial task of assigning addresses in \acp{MANET}
+(See Limitations in Section \ref{ip_address_conf}). With this assumption all
+nodes within transmitting range of the new node can receive its broadcasts.
 
-Simultaneously, the node also listens to other nodes' routing messages.
+Simultaneously, the node also listens to other nodes' routing announcements.
 Depending on the time interval between the broadcasts and whether the nodes
 within each other's transmitting range are asymmetrical, they will discover each
 other approximately at the same time.
 
 \begin{figure}[h]
 	\centering
-  	\includegraphics[width=0.5\textwidth]{images/node_states_discovery.png}
+  	\includegraphics[width=0.6\textwidth]{images/node_states_discovery.png}
   	\caption{Discovery Phase between a \acf{SP} and an unauthenticated node (A)}
 	\label{fig:node_states_discovery}
 \end{figure}
 
-Figure \ref{fig:node_states_discovery} illustrate the routing messages
+Figure \ref{fig:node_states_discovery} illustrate the routing announcements
 periodically sent by two nodes until they discover each other. One of the nodes
 have already assumed the master role and is a \ac{SP} while the other node is
 unauthenticated.
 
 The \ac{SP} will have its own self-issued (and signed) \ac{PC0} and its \ac{AL}
-has only one entry - its own \ac{PC}. Note that if it had authorized another
+has only one entry - its own \ac{PC0}. Note that if it had authorized another
 node at an earlier point in time (but within the lifetime of the \ac{PC}) that
 node's \ac{PC1} would also be represented in the \ac{AL}, even if the node was
 outside the network at this point (physically).
@@ -457,97 +460,131 @@ outside the network at this point (physically).
 The new node does not have any \ac{PC} at this point, unless it has a \ac{PC}
 issued within and valid only for another network. This is however not covered
 here, and it is assumed the node has no certificate at all. The same goes for
-its \ac{AL}, or one can rather say it has an empty \ac{AL} - denoted by the '�'
-in the figure.
+its \ac{AL}, or one can rather say it has an empty \ac{AL} - denoted by the
+'\O' in the figure.
 
 \subsection{Authentication Handshake}
-Once the two nodes have discovered each other, they will enter the
-authentication handshake state. Note that while the nodes are executing the
-authentication handshake, they will also continue to execute the regular routing
-operations because this authentication step will be executed in a separate
-thread. This is further elaborated in the next chapter.
-
-The unknown node will wait for a predefined amount of time, for it may not ever
-receive a request. The discovery might have been of an authenticated node with a
-\ac{PC1} and not a \ac{SP}, which does not have the rights to authenticate new
-nodes. It might also have been that of a \ac{SP}, but because of the flaky
-nature of ad hoc networks, the two nodes might have become invisible to each
-other before the handshake could be initiated.
-
-While the new node is waiting for an invite, the \ac{SP} generate the invite
-message which is a message containing the public key, i.e. the \ac{PC0}, and a
-list of requirements regarding the allowed cryptographic encryption schemes, key
-sizes and so on. The \ac{SP} will then send the invite directly addressed to the
-new node. The \ac{SP} will then wait for a certificate request (\ac{PC} Request)
-for a predefined time before re-sending the invite. It will do this at a maximum
-three(TODO: maybe find a source claiming a number of times is better based on
-statistics or whatever..) times before aborting the authentication handshake
-with the new node.
-
-Based on the requirements set by the \ac{SP} in the invite message, the new node
-will generate an asymmetric key pair and a \ac{PC} request which it will send
-back. This request abides by the rules for making a proxy certificate
-\cite{rfc3820}, setting the Issuer Name as the Subject Name from the received
-\ac{PC0}, the Subject Name as the Issuer Name appended with its own unique
-Common Name from a hash of its own public key, and the Serial Number from the
-same hash value. Why proxy certificates are used will be discussed later.
-
-As Figure \ref{fig:node_states_handshake} shows, the last message to be sent in
-the handshake is the actual signed certificate (\ac{PC1}) from the \ac{SP} to
-the new node. At this point the \ac{SP} will add the \ac{PC1} to its local
-\ac{AL} (which will be broadcasted later) and the new node will store the
-certificate for making signatures later.
 
 \begin{figure}[h]
 	\centering
-  	\includegraphics[width=0.5\textwidth]{images/node_states_handshake.png}
-  	\caption{Handshake between a \acf{SP} and an unauthenticated node (A).}
+  	\includegraphics[width=0.6\textwidth]{images/node_states_handshake.png}
+  	\caption{Handshake between a \acf{SP} and an unauthenticated node A.}
 	\label{fig:node_states_handshake}
 \end{figure}
 
-\subsubsection*{Out-Of-Band}
-In the section above the different states and messages shared between the two
-nodes were discussed. How and and on what grounds the \ac{SP} accepts the
-\ac{PC} request from the new node however, was not discussed. There are many
-possible authentication schemes, but when it comes to \acp{MANET}, possibly with
-no Internet connection, proper authentication becomes a difficult task. In
-the discussion in Chapter \ref{ch:discussion} different schemes will be
-discussed, but here only one scheme is accounted for.
+Once the two nodes have discovered each other, the \ac{SP} will enter an
+authentication handshake state, while the unauthenticated node will not do
+anything. The authentication handshake state of the \ac{SP}, and later of the
+other node, does not obstruct regular routing announcements to be sent. The
+current state only affects how the \ac{AM} operates, not how the original
+routing protocol operates. Actually, the handshake and all other messages and
+operations handled by the \ac{AM} is executed in a separate thread from the rest
+of the protocol. This is further elaborated in the next chapter.
+
+Because the unauthenticated node does not enter a new state upon the discovery
+of the \ac{SP}, which could just be a regular authenticated node as well, there
+will be no deadlock if for some reason the \ac{SP} should never initiate the
+handshake, or invite to the handshake. This could happen for a multitude of
+reasons being the two nodes looses their connectivity between each other
+because of the flaky nature of wireless ad hoc networks, or the assumed \ac{SP}
+was only a regular authenticated, trusted, node. From the routing announcements
+it is not possible to derive whether a node is simply authenticated, or if it
+also has master role capabilities being a \ac{SP}. It is only possible to
+derive that a node is authenticated in some network or not.
+
+%The unknown node will wait for a predefined amount of time, for it may not ever
+%receive a request. The discovery might have been of an authenticated node with
+%a \ac{PC1} and not a \ac{SP}, which does not have the rights to authenticate
+%new nodes. It might also have been that of a \ac{SP}, but because of the flaky
+%nature of ad hoc networks, the two nodes might have become invisible to each
+%other before the handshake could be initiated.
+
+While the new node is waiting for an invite, or simply not doing anything
+interesting announcing its existence - the \ac{SP} generates an invite message
+which is a message containing the public key, i.e. the \ac{PC0}. The invite
+will be directly addressed to the new node, and not broadcasted as regular
+routing announcements are. The \ac{SP} will then wait for a certificate request
+(\ac{PC} Request) for a short predefined time before aborting the handshake and
+entering its ready-state. If the two nodes discover each other once more, the
+\ac{SP} will once again try to invite the other node to the handshake. If this
+fails several times, the \ac{SP} will eventually ignore the all discoveries of
+the other node (based on address) for a predefined time before it tries again.
+
+If the new node is able to verify the public key received from the \ac{SP} in
+the invite message it will use its public key pair and generate a \ac{PC}
+request which it will send back. This request abides by the rules for making a
+proxy certificate \cite{rfc3820}, setting the Issuer Name as the Subject Name
+from the received \ac{PC0}, the Subject Name as the Issuer Name appended with
+its own unique Common Name, which is the hash value of its own public key, and
+the Serial Number from the same hash value.
+
+These, and the last step of issuing the \ac{PC1} is shown in Figure
+\ref{fig:node_states_handshake}. Before issuing the \ac{PC1} the \ac{SP}
+verifies the public key received in the request message. As before, the
+knowledge necessary to be able to verify the public key is assumed to have been
+communicated out-of-band prior to this setup. The \ac{PC1} is appended with the
+proxy policies the \ac{SP} seems fit for the node, and then signed with the
+\ac{SP}'s private key. After sending the \ac{PC1} to the new node the \ac{SP}
+will add the \ac{PC1} and other relevant data to its local \ac{AL} and the new
+node will, after verifying the signature, store the issued certificate for
+later.
+
+\subsubsection*{Out-Of-Band Authentication}
+Above, only brief mention was made to how the initial verification of each nodes
+public keys were made. For this purpose, many authentication schemes have been
+produced, but when it comes to \acp{MANET}, possibly with no Internet
+connection, proper authentication becomes a difficult task. In the discussion
+in Chapter \ref{ch:discussion} different schemes will be discussed, but here
+only one ``scheme'' is accounted for.
 
 If you have no pre-shared information between the parties involved in the
 network, the simplest way to authenticate a new node is to use an out-of-band
 authentication. The implementation of such an authentication scheme will be
 discussed in the next chapter, and will only be briefly mentioned here.
 
-New users will have to use share their public key fingerprint with the \ac{SP}
-physically, and vice versa. By doing this, the \ac{SP} can store the fingerprint
-and use it to check the received public key in the \ac{PC} request for
-authenticity in order to make sure the new node is run by the actual person he
-met and verified physically. The new node can similarly verify the \ac{SP}.
+In the PGP model new users will have to use share their public key fingerprint
+with the \ac{SP} physically or through a different communication channel than
+the one the authentication process is supposed to secure, and vice versa
+\cite{zimmermann1995official}. By doing this, the \ac{SP} can store the
+fingerprint and use it to check the received public key in the \ac{PC} request
+for authenticity in order to make sure the new node is run by the actual person
+he met and verified physically. The new node can similarly verify the \ac{SP}.
+
+To implement this, the application running the routing protocol and the
+authentication service could either read a file for ``allowed'' fingerprints, or
+simply have user interaction with a pop-up window showing the fingerprint and
+asking the user whether to trust the public key or not.
+
+This implementation is relatively simple compared to the rest of the design, so
+in this design chapter and in the implementation chapter this part will be
+ignored, and rather assume that if you are a direct neighbor of the \ac{SP}, you
+are automatically allowed to enter the network and therefore no real
+verification of the certificates are done. This must however, be thought through
+and most likely changed in a real-world implementation.
 
 \subsection{Authorized Operation}
-Once a node is authorized and has its own \ac{PC1}, it can send its own routing
-announcements, receive announcements, and forward other nodes' announcements.
-This means that the node is a fully worthy member of the MANET. However, there
-is one thing missing before the node can be verified and verify other nodes
-(than the \ac{SP}) - i.e. it has to learn the public key and address of all its
-neighbors.
+%Once a node is authorized and has its own \ac{PC1}, it can send its own routing
+%announcements, receive announcements, and forward other nodes' announcements.
+%This means that the node is a fully worthy member of the MANET. However, there
+%is one thing missing before the node can be verified and verify other nodes
+%(than the \ac{SP}) - i.e. it has to learn the public key and address of all its
+%neighbors.
 
-Figure \ref{fig:node_states_authorized} shows the authorized node receiving
-an \ac{AL} Update from the \ac{SP}. This message contains the full \ac{AL} list
-and lets the newly authorized node learn the public key and address of potential
-other nodes in the network. The list is broadcasted by the \ac{SP} periodically
-to make sure all nodes in the network know and trust each other.
+%Figure \ref{fig:node_states_authorized} shows the authorized node receiving
+%an \ac{AL} Update from the \ac{SP}. This message contains the full \ac{AL} list
+%and lets the newly authorized node learn the public key and address of
+%potential other nodes in the network. The list is broadcasted by the \ac{SP}
+%periodically to make sure all nodes in the network know and trust each other.
 
-\begin{figure}[h]
-	\centering
-  	\includegraphics[width=0.5\textwidth]{images/node_states_authorized.png}
-  	\caption{Normal operation between a \acf{SP} and an unauthenticated node
-  	(A)including an \ac{AL} Update message.}
-	\label{fig:node_states_authorized}
-\end{figure}
+%\begin{figure}[h]
+%	\centering
+%  	\includegraphics[width=0.5\textwidth]{images/node_states_authorized.png}
+%  	\caption{Normal operation between a \acf{SP} and an unauthenticated node
+%  	(A)including an \ac{AL} Update message.}
+%	\label{fig:node_states_authorized}
+%\end{figure}
 
-
+TODO: i morgen foer middag!
 
 \subsubsection*{Discovering New Nodes}
 
@@ -630,7 +667,7 @@ in general the world is far from ideal.
 One huge limitation is packet size - because each routing announcement is
 broadcasted throughout the network, and the network in our case is a higly lossy
 one, one needs to constrain the packet size or else all the throughput in the
-network would be used on routing messages. The decision was therefore made to
+network would be used on routing announcements. The decision was therefore made to
 include only a small value of 16 bits to deduce node authentication and to
 assume packet integrity.
 
@@ -641,7 +678,7 @@ what limitations this solution has compared to more traditional ways.
 \subsubsection*{Signature?? Message}
 
 The idea is similar to other \ac{MAC} solutions [TODO: find ref] except only a
-special packet sent periodically is verified - instead of each routing message.
+special packet sent periodically is verified - instead of each routing announcement.
 This packet contains a pseudo-randomly generated value, a temporary symmetric
 key generated from the master key, and signed hash value of the packet.
 
