@@ -707,11 +707,130 @@ This section describes the different entities in greater detail. How they are
 used and why they are present is some of the questions that will be answered.
 
 \subsection{\acf{PC}}
+In a scenario where actors try to communicate with each other, without the
+Internet or other communication infrastructure available one cannot depend on a
+\ac{PKI} for authentication of the actors. One needs the option of bein able to
+verify actors physically (out-of-band) and then issuing them an authentication
+token to be used during this scenario. This is where the \aclp{PC} comes in
+handy. Regular \acp{EEC} should not be used for issuing new certificates, per
+the RFC2459 \cite{rfc2459}, and even if one did use them for this purpose there
+is no definition on how to handle topics as path validation and such.
 
+Using \acp{PC} this issue can be handled in a well-defined manner. The field
+``pCPathLenConstraint'' is used for constraining the depth of the certificate
+chain below the \ac{PC} itself. I.e. if a \ac{PC} has a pCPathLenConstraint of
+zero, the \ac{PC} cannot issue any other \acp{PC} itself, while if the 
+pCPathLenConstraint value is one the \ac{PC} can be used to issue new \acp{PC}
+which again will have a pCPathLenConstraint of zero, and so on.
+
+For our scenario, the pCPathLenConstraint value should never exceed one, or else
+it will once again be difficult to handle path validations. Every node trying to
+verify a \ac{PC} need to know the issuer of the certificate directly, and not
+indirectly through root \acp{CA} as is possible if you have a \ac{PKI}.
 
 \subsubsection*{\acf{PC0}}
+One, or possibly more, \ac{SP}(s) have a self-signed \ac{PC0}, or a \ac{PC0}
+signed by the ``original \ac{SP}'' if more \acp{SP} are present. The zero in the
+abbreviation is used to indicate that the certificate is at a depth of zero and
+has a pCPathLenConstraint of one. If a \ac{PC0} is signed by another \ac{PC0}
+it would actually be of depth one in the certificate chain, but because the node
+has possibly the same rights as the issuer, i.e. the issuer has delegated all
+its rights to this node, there is no practical difference between them. One
+natural restriction however, would be to restrict the non-original \acp{PC0}
+not to be able to issue other \acp{PC0}, only \acp{PC1}.
+
+For the rest of this section, it is assumed there is only one \ac{PC0} for
+clarity, and because only one \ac{PC0} will be implemented in this thesis due to
+time restrictions.
+
+The \ac{SP} fills its \ac{PC0} with these values:
+\begin{itemize}
+  \item Subject Name: ``CN: $<$SHA-1(Public Key)$>$''
+  \item Issuer Name: Same as Subject Name
+  \item Serial Number: Same as Subject Name
+  \item X509v3 Extensions:
+  \begin{itemize}
+    \item Key Usage: ``Digital signature, Key encipherment''
+    \item ProxyCertInfo:
+    \begin{itemize}
+      \item pCPathLenConstraint: ``1''
+      \item proxyPolicy: 
+      \begin{itemize}
+        \item policyLanguage: ``id-ppl-anyLanguage''
+        \item policy: ``Role:sp,Routing:full,Application:full''
+      \end{itemize}
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+Per the RFC3820 (\cite{rfc3820}) the issuer name is the same as the subject name
+of the issuing certificate. In this case the \ac{PC0} is self-signed, and the
+issuer name is therefore the same as the subject name. 
+
+The subject name is has the constraint that it ``should be unique amongst all
+Proxy Certificates issued by a particular Proxy Issuer''. The modal verb
+``should'' used in this requirement is used in order to ease this requirement so
+that a method creating a unique name with a high possibility, but not provable
+uniqueness, should be accepted. Therefore using a SHA-1 digest of the public key
+used by the node is regarded as ``good enough'', or ``unique enough''.
+
+The same requirement is true for the serial number, and allows the serial number
+to be the same as the subject name.
+
+The specifications requires the ``Digital signatures'' value for the ``Key
+Usage'' extension because a \ac{PC} can be used to sign and issue other
+\acp{PC}. Also, in this design the asymmetric key pair belonging to the \ac{PC}
+is both used for signing keystream material messages, and to encrypt the keys
+sent in the same messages. Therefore the value ``Key encipherment'' is also
+necessary in this extension.
+
+The pCPathLenConstraint of one means that the \ac{SP} is allowed to issue new
+\acp{PC}, but that the children of the \ac{PC0} cannot be used to issue new
+\acp{PC} again. If multiple \acp{SP} should be allowed in the network, one of
+these \acp{SP} would need a pCPathLenConstraint of value ``two''.
+
+The ``policyLanguage'' field is set to the ``default'' value, leaving the
+language used in the policy field later to be handled correctly by the
+application, rather than being universally understandable.
+
+Finally, the last field might be of most interest. This field explains what
+rights the given \ac{PC} has for this design. Three values has been defined:
+
+\begin{itemize}
+  \item Role - Node's role in the network
+  \item Routing - Whether the node can partake in the routing
+  \item Application - Whether the node has access to the application layer
+\end{itemize}
+
+These values are specific to this design, and might not be of any desire in
+other applications. The first value, ``role'', is used to declare which role the
+node has been given. It can be ``sp'' which means the node as administrative
+rights in the network, or ``authenticated'' meaning the node is trusted by the
+\ac{SP} and should be trusted by all other nodes in the network.
+
+The ``routing'' value can be ``full'' or ``limited''. If it is full the node is
+able to generate and broadcast its own routing announcements, and forward its
+trusted nodes routing annoucements. This means the node partakes completeley in
+the network and might be placed in a path between two nodes in the network. The
+``limited'' value is used so a node can become an end-node, but not a node in a
+path between other nodes. I.e., it can send its own routing announcements, but
+it cannot forward other nodes' routing annoucements. If a node with limited
+rights does forward other nodes' announcements they must drop the packets. In
+addition, a detection system of misbehaving nodes should pick up this as
+potentially malicious behaviour, but this is not being implemented as previously
+explained in Limitations (\ref{limit:malicious_behaviour}).
+
+The last value, ``application'', is used to declare whether the node should have
+access to the upper layers and being able to use the applications running on top
+of the \ac{MANET}. This restriction is useful if one has special devices in the
+field only used to route/forward packets in the network, acting similar to
+routers in the regular Internet, but not being able to e.g. respond to
+application requests. Nodes which does not use the application layer will reside
+in each nodes routing tables, but should not show up as available nodes on the
+upper layers.
 
 \subsubsection*{\acf{PC1}}
+TODO: Move some of the stuff above to PC subsection and only use the specifics
+for PC0 and PC1 in these subsubsections..
 
 \subsection{\acf{SP}}
 The term \acl{SP} was coined by Dr. Lawrie Brown \cite{lawrie:technotes}.
