@@ -7,7 +7,7 @@ discussed. The two tests measure and compare the time performance in two common
 stages for both the original implementation of BATMAN, and the extended version
 proposed and implemented in this thesis.
 
-\section{Initialization Phase}
+\section{Test I - Initialization Phase}
 The ``initialization phase'' is the setup phase between two or more nodes trying
 to create a network. With the original implementation of BATMAN this phase only
 consist of two stages; namely discovering a neighbor node, and deciding to add
@@ -19,6 +19,9 @@ are added. After the discovery, the authentication handshake stage and the
 keystream sharing stage are conducted before the last stage where BATMAN adds
 the node as a new direct link in its routing table.
 
+The time measured here in this test is the time between the first discovery of a
+new neighbor, until that node is added to the routing table.
+
 \subsection{Hypothesis}
 With the modified version of BATMAN proposed in this thesis, one should observe
 a small extra delay in the setup of the network, compared to the original
@@ -27,7 +30,6 @@ i.e. it should be relatively constant and at no time should any linear increase
 in delay be observed.
 
 \subsection{Setup}
-
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.5\textwidth]{images/setup_test_1.png}
@@ -56,7 +58,7 @@ of mobile nodes and time this became out of the option.
 
 \subsection{Procedure}
 In order to get the same behaviour each run for the modified version, each run
-had to be run discretly, i.e. after each run the daemon was shut down and
+had to be run discretely, i.e. after each run the daemon was shut down and
 restarted. This way each run will include all four stages explained above:
 discovery, authentication handshake, keystream material sharing, and routing
 table update. This was also done on the original implementation, even though
@@ -72,21 +74,82 @@ For each run, these steps were followed:
   all daemons
   \item Record the log from node B
 \end{enumerate}
-
 These steps were taken 10 times in order to have a reasonable data set and
-average.
+average. Then for each of the 10 logs, record the time between the first routing
+announcement received from a node, until both nodes have been added to the
+routing table.
 
-\section{Route Convergence}
+\section{Test II - Route Convergence}
+The next test is to check how quick route convergence the protocols deliver when
+a path between nodes in the network changes. As with the previous test, a
+node running the original protocol needs to discover a new direct neighbor and
+add it to its routing table. In addition, it will have to receive not only the
+neighbors own routing announcements, but also routing announcements it has
+forwarded on behalf of its own direct neighbors. When this happens, the node
+receiving these re-broadcasts determines new routes to possibly new nodes -
+adding them to its routing table.
+
+Additionally, nodes using the modified BATMAN protocol needs to share
+their keystream material with their new direct neighbor before adding that
+neighbor in their routing table. When this has happened, any re-broadcasted
+routing announcements from that neighbor is accepted and paths to those nodes
+are updated, or added if new nodes. Note also that no authentication handshake
+or sharing of certificates are mentioned, as they are assumed to have been
+shared prior to this route change.
 
 \subsection{Hypothesis}
+As before, a small and relatively constant (mathematical term) extra delay is
+expected when running the modified version of the protocol compared to running
+the original. As the keystream material sharing only occurs between the direct
+neighbors, it should only happen once during one run and not for each of the new
+nodes added by the path through the direct neighbor - i.e. there should be no
+linear increase in convergence time even if multiple new nodes are added to the
+routing table with paths through a new neighbor.
 
 \subsection{Setup}
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.5\textwidth]{images/setup_test_1.png}
+	\caption{Physical network layout used in test 2. The Laptop (node C) is moved further out of range and is periodically rejoining the network when a Tablet Pc (node D) is moved within range. When using the modified version node B acts as the SP of the network}
+	\label{fig:setup_test_2}
+\end{figure}
+For this test a new mobile node was needed. As Figure \ref{fig:setup_test_2}
+shows the Laptop, or node C, from the previous test is moved much further away,
+so far in fact the newly added Tablet Pc, node D, needs to place itself with
+approximately the same distance to node B as to node C in order for node C to
+take part in the network.
+
+Node A and B is positioned at the same place as in the previous test, in the
+same office landscape. The line of sight is, however better between node B and
+D, and between D and C. Their line of sighs are only obstructed by a single wall
+with huge windows.
 
 \subsection{Procedure}
-
+With this test running each of the 10 iterations discretely would be too time
+consuming, because it would have meant that the Laptop (node C) would have to be
+physically moved inside the transmitting range of node B for each run. Instead
+the laptop was only started within the range of the other nodes, in order to be
+authorized and share certificates with the other nodes (only node B and D was
+necessary) and then moved to its position long outside the transmitting range of
+the rest of the network. After this ``initial setup'' plus some minutes to
+clear the neighbor lists, these steps were followed:
+\begin{enumerate}
+  \item Walk node D in between node B and C
+  \item Wait until the whole network has stabilized
+  \item Walk node D back out of node C's range
+  \item Wait until BATMAN has cleared node D from other nodes routing tables,
+  and node D has cleared all other nodes from its routing table
+  \item If modified version is used, make also sure node D is removed from the
+  \ac{NL} (should be before routing tables are cleared)
+\end{enumerate}
+These steps were repeated 10 times for both implementations. The records used
+from this test are from the logs of node C. The convergence times measured
+are the time between each time a new neighbor (node D) is discovered by BATMAN,
+and until a path to the furthermost node (A) is added to the routing table.
 
 
 \section{Results}
+
 
 \subsection{Initialization Phase}
 
