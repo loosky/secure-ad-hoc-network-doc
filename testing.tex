@@ -2,16 +2,79 @@
 \label{ch:testing_results}
 \acresetall
 
+In this chapter two tests are described and their results presented and
+discussed. The two tests measure and compare the time performance in two common
+stages for both the original implementation of BATMAN, and the extended version
+proposed and implemented in this thesis.
 
 \section{Initialization Phase}
+The ``initialization phase'' is the setup phase between two or more nodes trying
+to create a network. With the original implementation of BATMAN this phase only
+consist of two stages; namely discovering a neighbor node, and deciding to add
+the node as a direct link, or ``last-hop'' per BATMAN terminology, in its
+routing table.
+
+With the proposed design and implementation from this thesis, two more stages
+are added. After the discovery, the authentication handshake stage and the
+keystream sharing stage are conducted before the last stage where BATMAN adds
+the node as a new direct link in its routing table.
 
 \subsection{Hypothesis}
+With the modified version of BATMAN proposed in this thesis, one should observe
+a small extra delay in the setup of the network, compared to the original
+BATMAN protocol. This extra delay should however, not be significantly higher,
+i.e. it should be relatively constant and at no time should any linear increase
+in delay be observed.
 
 \subsection{Setup}
 
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.5\textwidth]{images/setup_test_1.png}
+	\caption{Physical network layout used in test 1. When using the modified version node B acts as the SP of the network}
+	\label{fig:setup_test_1}
+\end{figure}
+
+Figure \ref{fig:setup_test_1} presents the setup of the test machines used to
+conduct this first test. Node A and B are stationary boxes while node C is a
+laptop. Their hardware specifications are described in Appendix
+\ref{appendix:lab_setup}. The reasoning to use a different hardware for node C
+is the need to create distance in the network, and that outside the ethernet
+subnet for which the two other nodes were connected to, it would be easier to
+use a laptop during setup. In the next test, this laptop is yet again moved
+further away.
+
+An important feature to notice about how these nodes were set up is that node A
+and C are outside each other transmitting range, meaning they need an
+intermediate node to route their packets to and from each other. Node B is
+conveniently placed with almost equal distance to each of the two other nodes.
+
+The landscape the nodes are setup in is a typical office landscape, with varying
+obstructing materials such as concrete, wood, and glass. A more ideal setup
+would naturally be outdoors, as the network is intended for, but with the lack
+of mobile nodes and time this became out of the option.
+
 \subsection{Procedure}
+In order to get the same behaviour each run for the modified version, each run
+had to be run discretly, i.e. after each run the daemon was shut down and
+restarted. This way each run will include all four stages explained above:
+discovery, authentication handshake, keystream material sharing, and routing
+table update. This was also done on the original implementation, even though
+there are no authentication steps in between, but in order to have the exact
+same procedure each time.
 
+For each run, these steps were followed:
+\begin{enumerate}
+  \item Start Node A and C
+  \item Wait and make sure both nodes are stable
+  \item Start Node B
+  \item When both node A and C are discovered and added to routing table kill
+  all daemons
+  \item Record the log from node B
+\end{enumerate}
 
+These steps were taken 10 times in order to have a reasonable data set and
+average.
 
 \section{Route Convergence}
 
@@ -34,6 +97,9 @@
 	\caption{In a network of three nodes, the time spent by the \ac{SP} from its first neighbor discovery and until both neighbors are added to its routing table.}
 	\label{fig:results_test_1}
 \end{figure}
+
+Note that with this relatively low number of records and high variance, there
+are no statistically significant results. But sort of good enough :)
 
 \subsection{Route Convergence}
 
