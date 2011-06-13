@@ -109,10 +109,13 @@ routing table with paths through a new neighbor.
 \subsection{Setup}
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=0.5\textwidth]{images/setup_test_1.png}
+	\subfloat[1st Position]{\label{fig:test_2_1}\includegraphics[width=\textwidth]{images/setup_test_2_1.png}}
+	\\
+	\subfloat[2nd Position]{\label{fig:test_2_2}\includegraphics[width=\textwidth]{images/setup_test_2_2.png}}
 	\caption{Physical network layout used in test 2. The Laptop (node C) is moved further out of range and is periodically rejoining the network when a Tablet Pc (node D) is moved within range. When using the modified version node B acts as the SP of the network}
 	\label{fig:setup_test_2}
 \end{figure}
+
 For this test a new mobile node was needed. As Figure \ref{fig:setup_test_2}
 shows the Laptop, or node C, from the previous test is moved much further away,
 so far in fact the newly added Tablet Pc, node D, needs to place itself with
@@ -149,9 +152,20 @@ and until a path to the furthermost node (A) is added to the routing table.
 
 
 \section{Results}
-
+In this section the results from the two tests above are presented and discussed
+in terms of how they perform compared to the hypotheses. In both tests there
+were only a dataset of 10 trials, which given the variance shown below does not
+provide a statistical significant result. However, the first test shows good
+indication that the modified protocol behaves as expected, while the results
+from the seconds test are more ambiguous.
 
 \subsection{Initialization Phase}
+Figure \ref{fig:results_test_1} presents the first test's results for both the
+original and modified version of BATMAN. The two graphs shows the time in
+seconds on the y-axis and the trial/run number on the x-axis. The two colored
+lines on the graps shows the results from first neighbor discovery until the
+first neighbor is added to routing table (green line) and until both nodes are
+added to the routing table (red line).
 
 \begin{figure}[h]
 	\centering
@@ -161,10 +175,35 @@ and until a path to the furthermost node (A) is added to the routing table.
 	\label{fig:results_test_1}
 \end{figure}
 
-Note that with this relatively low number of records and high variance, there
-are no statistically significant results. But sort of good enough :)
+The results from the original protocol, shown in Figure
+\ref{fig:test_1_original}, shows high variance in the time needed to add one and
+two nodes to the routing table. For 7 out of 10 ``first nodes'' the time needed
+is relatively equal, being about one second. For both nodes to be added however,
+there are much more variance - variying from the best possible time, i.e. equal
+to adding one node, and up above 3 times longer than adding one node. As this is
+from the original implementation of BATMAN, this thesis will not try to explain
+why this behaviour is observed, nor does the writer know exacly why either.
+
+Figure \ref{fig:test_1_secure} shows the results from the modified version
+proposed in this thesis. These results indicates that the behaviour of the
+modified version seems to correlate with the behaviour expected from the
+hypothesis. A seemingly constant of about two seconds seems to be added to the
+process of adding both nodes to the routing table. 
+
+Another interesting observation is that the time variance seems to be much less
+from that of the original version. This might be because the authentication
+handshake and the keystream sharing happens in a separate thread from the
+regular BATMAN operations, meaning the BATMAN protocol continously receives
+routing announcements to process while the \ac{AM} handles its part. The idea
+being that while the \ac{AM} thread runs the BATMAN thread ``gets ready'' to do
+its part of the job.
 
 \subsection{Route Convergence}
+The results of the second test is shown in Figure \ref{fig:results_test_2}. In
+this figure, the axes are the same as in the figures above: y-axis shows the
+time in seconds, and the x-axis shows the trial run. The red line shows the
+performance of the original implementation, while the green line shows the
+modified.
 
 \begin{figure}[h]
 	\centering
@@ -172,3 +211,45 @@ are no statistically significant results. But sort of good enough :)
 	\caption{Routing path convergence time observed by a distant source node to another sink node in the network. The source node is only sporadically connected to the network through a mobile intermediate node.}
 	\label{fig:results_test_2}
 \end{figure}
+
+As indicated earlier, this test's results are somewhat unclear. While the
+results using the original implementation seems relatively uniform, with only
+about 1 second variance, the results from the modified implementation is highly
+irregular.
+
+Looking through the logs from this test one thing become apparent. With
+different hardware on the different nodes in the network, their wireless cards
+send at different strengths meaning while one node can receive packets from a
+``stronger node'', the packets sent might not be received by the other nodes.
+
+The BATMAN protocol messages (routing announcements) are sent quite often,
+depending on the number of re-broadcasts being sent, meaning the time from when
+a node is within transmitting range and until its broadcasts are received by
+nodes within its transmitting range will be quite short. The \ac{AM} messages
+however, was mostly tested in an ideal environment where most packets were
+received, so this was not properly accounted for. Therefore, if a routing
+announcement from a ``stronger node'' is received by a ``weaker node'', the
+weaker node might send its keystream material without the other node receiving
+it.
+
+Re-transmitting mechanisms based on guessing that the receiving node has not
+received the \ac{AM} messages are in place, but as the mechanism wait until it
+beleives the other node has not received, instead of knowing it instantly. This
+can of course be managed adding ACK'ing to each \ac{AM} message, which was not
+added initially because of the wish to minimize overhead. This however, might
+have to be re-evaluated.
+
+Another thing to notice is how multiple trial runs using the modified version
+actually performed better than the original version. This is impossible to
+explain talking about the design and implementations themselves, but is probably
+most accuratly explained in the terms of external environment.
+
+In this test, one major factor is the movement of the Tablet Pc, or node D. This
+movement is not perfect, and will vary in speed, timing, and accurate position
+for each run. As self-generated routing announcements is only generated every
+one second, a difference in almost two seconds can be seen based on the
+difference in distance each run. Also, the original implementation only starts
+its whole neighbor discovery after an original (self-generated/produced) routing
+annoucement is received from a new neighbor. The \ac{AM} is triggered on the
+first routing annoucement received from that new neighbor, even if that
+annouement is a re-broadcast from another node in the new neighbor's network.
