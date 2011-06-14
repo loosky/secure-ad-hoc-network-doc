@@ -3,17 +3,20 @@
 \acresetall
 
 This chapter portrays the design for the proposed implementation of the secure
-ad hoc network.
+ad hoc network. The design here is based on a functional pro-active ad hoc
+routing protocol. The routing is left to the chosen routing protocol, i.e.
+\ac{BATMAN}, and the changes made will not affect how the routing is performed.
+The system design is an extension of the protocol, which requires nodes to be
+authenticated and trusted before being allowed into the network. To strengthen
+the system each node also has to verify its identity periodically, or it is
+dropped from the network.
 
 \section{Brief Overview}
-The design here is based on a functional pro-active ad hoc routing protocol.
-The routing is left to the chosen routing protocol, i.e. \ac{BATMAN}, and the
-changes made will not affect how the routing is performed. The system design is
-an extension of the protocol, which requires nodes to be authenticated and
-trusted before being allowed into the network. To strengthen the system each
-node also has to verify its identity periodically, or it is dropped from the
-network.
-
+In this section a short version of the system design is described. It is far
+from complete when it comes to explaining the entities, messages being sent,
+system states, and why certain choices have been made. This section is
+suggested to read through in its entirety just in order to get an overview of
+what the system does, leaving the explanations to the subsequent sections.
 
 \subsection{Initial Authentication}
 The network setup starts with an out-of-band authentication where a master node,
@@ -24,51 +27,54 @@ each others' public keys out-of-band.
 
 When a new node is discovered by the \ac{SP} using regular routing announcements
 as part of the pro-active routing protocol, the \ac{SP} will invite the new node
-to a handshake to establish a trust relationship between the two nodes. With the
-invite the \ac{SP} shares its certificate. If the node can verify the public key
-of that certificate, it will request a proxy certificate. If the \ac{SP} can
-verify its public key, too, it will issue a proxy certificate with (possibly)
-the rights to participate in building the \ac{MANET} by broadcasting its own
-and re-broadcasting other trusted nodes' routing announcements.
+to a handshake to establish a trust relationship between the two nodes. In the
+invite message the \ac{SP} shares its certificate. If the node can verify the
+public key of that certificate, it will request a proxy certificate. If the
+\ac{SP} can verify its public key, too, it will issue a proxy certificate with
+(possibly) the rights to participate in building the \ac{MANET} by broadcasting
+its own and re-broadcasting other trusted nodes' routing announcements.
 
 \subsection{Continuous Authentication}
 After being issued with a \ac{PC} the newly authenticated node will periodically
 ``broadcast'' - unicast to each neighbor - a message containing an ephemeral key
-and corresponding \ac{IV}, a pseudo-randomly generated nonce, and a signature (HMAC)
-of this message. It is important to note that the ephemeral key is encrypted
-with the neighbor's public key (hence multiple unicasts instead of an actual
-broadcast), but the HMAC is generated using the unencrypted key (to avoid
-generating a HMAC for each neighbor).
+and corresponding \ac{IV}, a pseudo-randomly generated nonce, and a digital
+signature over this message. The ephemeral key is encrypted with the neighbor's
+public key (hence multiple unicasts instead of an actual broadcast), but the
+digital signature is generated using the hash of the unencrypted key and the
+other contents of the message.
 
 After sending this signed ``broadcast" to each neighbor, the node and its
-neighbors will generate a keystream from the ephemeral key, , and nonce. The
-node will then append two new bytes from this keystream to each routing
+neighbors will generate a keystream from the ephemeral key, \ac{IV}, and nonce.
+The node will then append two new bytes from this keystream to each routing
 announcement, and re-broadcasts of neighbors announcements, sent from this point
 forward with a sequence number for the recipient to be able to match this
 ``extract'' with the keystream at an offset given by the sequence number.
 
-The neighbors will only accept a routing announcement if and only if:
+The neighbors accepts a routing announcement if and only if:
 
 \begin{itemize}
   \item the routing announcement is appended with a key extract and,
-  \item it matches the keystream at the sequence number offset and,
-  \item the sequence number has not been received earlier (replay).
+  \item it matches the sender's keystream at the sequence number offset and,
+  \item that sender's sequence number has not been received earlier (replay).
 \end{itemize}
 
-This ``key extract'' of the keystream is comparable to regular one-time-password
-as used by e.g. online banks [TODO: ref?] and it is important to note that they
-are not ``connected'' to the announcements sent, meaning they do not
-provide integrity for the packet.
+This ``key extract'' of the keystream is comparable to regular \acp{OTP} as used
+by e.g. online banks and it is important to note that they are not ``connected''
+to the routing announcements sent, meaning they do not provide integrity for the
+packet.
 
-Whenever a routing announcement is re-broadcasted by another trusted node, that
-node will change the key extract, or one-time-password, appended to the
-announcement to an extract from its own keystream. This means that every node
-only checks its direct neighbor for authentication, which is a design choice.
-This proposal assumes that because every node is verified by the \ac{SP} in the
-first place, all nodes in the network will be able to trust each other, which
-also means they will trust their neighbors to properly verify their neighbors
-again. This technique also helps prevent a wormhole attack, which will be
-discussed later.
+Note also that each node has its own keystream, and that it shares the message
+above, hereafter ``keystream-material message'', with each of its direct
+neighbors.
+
+Whenever a routing announcement is forwarded by another trusted node, that
+node will replace the one-time password with an \ac{OTP} from its own keystream.
+This way every node only checks its direct neighbor for authentication, which is
+a design choice. This proposal assumes that because every node is verified by
+the \ac{SP} in the first place, all nodes in the network will be able to trust
+each other, which also means they will trust their neighbors to properly verify
+their neighbors again. This technique also helps prevent a wormhole attack,
+which will be discussed later.
 
 %In order for trusted nodes to learn of newly trusted nodes existence, the
 %\ac{SP} reularly broadcasts lists containing the id, address and public key of
@@ -77,7 +83,7 @@ discussed later.
 %from this node. This means the new node will not be able to exchange its own
 %\ac{PC} with other nodes directly - only through the \ac{SP}.
 
-When a trusted node discover a new neighbor, which is a trusted node in the
+When a trusted node discovers a new neighbor, which is a trusted node in the
 network - they first have to exchange their \acp{PC} and verify the signatures
 on the certificates. Their knowledge of the corresponding private keys to their
 \acp{PC} are only indirectly verified because they need to know the private key
@@ -98,12 +104,11 @@ name, id, and address in a list called \ac{AL}.
 %kanskje ref til mitt eget essay?]
 
 After a neighbor is added to the \ac{AL}, the node can then also add the
-neighbor to another list, called a neighbor list. This list is used to keep
+neighbor to another list, called a \ac{NL}. This list is used to keep
 track of current direct neighbors and their current keystreams. While nodes in
-the \ac{AL} is kept in that list throughout the lifetime of the network, or
-until the lifetimes of the nodes have passed, a node in the neighbor list is
-removed when it is no longer a direct neighbor. How to detect this will be
-discussed later.
+the \ac{AL} are kept in that list throughout the lifetime of the network, or
+until the lifetimes of the nodes' certificates have expired, a node in the
+\ac{NL} is removed when it is no longer a direct neighbor. 
 
 TODO: kanskje en figur som viser dette og?
 
