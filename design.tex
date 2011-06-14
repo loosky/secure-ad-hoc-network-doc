@@ -89,7 +89,7 @@ on the certificates. Their knowledge of the corresponding private keys to their
 \acp{PC} are only indirectly verified because they need to know the private key
 in order to decrypt the ephemeral keys sent with the signed broadcasts by their
 neighbors. Each of the two nodes then stores the other's public key, subject
-name, id, and address in a list called \ac{AL}.
+name, id, role, and address in a list called \ac{AL}.
 
 %The list, hereafter \ac{AL}, also adds some \ac{WOT} like capabilities. The
 %list is signed by the \ac{SP}, which means the integrity of the list is
@@ -446,32 +446,28 @@ figure. Before continuing they need to verify each other's certificate, which is
 to verify the signature on the \ac{PC1}'s up against the public key of the
 \ac{SP}.
 
-When both they've verified each other's certificates, they send each other their
-keystream-material messages\ldots..TODO lolol
+When both nodes have verified each other's certificates, they send each other
+their keystream-material messages, in which they verify each others' signatures
+to actually verify each other as the legitemate owners of the certificates. If
+they are able to verify each others' signature they will add each other to their
+\ac{AL} and \ac{NL}, respectively.
 
-\section{Node States/Phases?}
-This section is devoted to explain the different states(/phases?) a node can be
-in, and how it behaves during these different states(/phases?). These
-states(/phases?) should be similar for most network layer pro-active routing
-protocols as the main trigger of these phases is the routing announcements sent
-as per normal operation of any pro-active routing protocol.
+\section{Authentication Phase}
+This section is devoted to explain the phases a node goes through before and
+when authenticating itself to the network. These phases should be similar for
+most network layer pro-active routing protocols as the main trigger of these
+phases are the routing announcements sent as per normal operation of any
+pro-active routing protocol.
 
 \subsection{Node Discovery}
-TODO: Maybe some state-diagrams in this section as well?
-
 Upon entering the network area, the node is both unauthenticated and unknown to
-the network. Because it use a pro-active routing protocol, the node regularly
+the network. Because it uses a pro-active routing protocol, the node regularly
 broadcasts routing announcements to be received by any potential node in the
 area. At this point an assumption that all nodes are configured with unique
 addresses and with the same netmask is done in order to focus on the security
 challenges, rather the non-trivial task of assigning addresses in \acp{MANET}
-(See Limitations in Section \ref{ip_address_conf}). With this assumption all
+(See Limitations in Section \ref{limit:ip_address_conf}). With this assumption all
 nodes within transmitting range of the new node can receive its broadcasts.
-
-Simultaneously, the node also listens to other nodes' routing announcements.
-Depending on the time interval between the broadcasts and whether the nodes
-within each other's transmitting range are asymmetrical, they will discover each
-other approximately at the same time.
 
 \begin{figure}[h]
 	\centering
@@ -480,16 +476,21 @@ other approximately at the same time.
 	\label{fig:node_states_discovery}
 \end{figure}
 
+Simultaneously, the node also listens to other nodes' routing announcements.
+Depending on the time interval between the broadcasts and whether the nodes
+within each other's transmitting range are asymmetrical, they will discover each
+other approximately at the same time.
+
 Figure \ref{fig:node_states_discovery} illustrate the routing announcements
 periodically sent by two nodes until they discover each other. One of the nodes
 have already assumed the master role and is a \ac{SP} while the other node is
 unauthenticated.
 
-The \ac{SP} will have its own self-issued (and signed) \ac{PC0} and its \ac{AL}
-has only one entry - its own \ac{PC0}. Note that if it had authorized another
-node at an earlier point in time (but within the lifetime of the \ac{PC}) that
-node's \ac{PC1} would also be represented in the \ac{AL}, even if the node was
-outside the network at this point (physically).
+The \ac{SP} will have a \ac{PC0} and its \ac{AL} has only one entry - itself.
+Note that if it had authorized another node at an earlier point in time (but
+within the lifetime of the \ac{PC}) that node's values would also be
+represented in the \ac{AL}, even if the node was outside the network at this
+point in time (physically).
 
 The new node does not have any \ac{PC} at this point, unless it has a \ac{PC}
 issued within and valid only for another network. This is however not covered
@@ -512,19 +513,20 @@ anything. The authentication handshake state of the \ac{SP}, and later of the
 other node, does not obstruct regular routing announcements to be sent. The
 current state only affects how the \ac{AM} operates, not how the original
 routing protocol operates. Actually, the handshake and all other messages and
-operations handled by the \ac{AM} is executed in a separate thread from the rest
-of the protocol. This is further elaborated in the next chapter.
+operations handled by the \ac{AM} is executed in a separate thread and sent
+and received using another socket than the rest of the protocol. This is
+further elaborated in the next chapter.
 
 Because the unauthenticated node does not enter a new state upon the discovery
 of the \ac{SP}, which could just be a regular authenticated node as well, there
-will be no deadlock if for some reason the \ac{SP} should never initiate the
-handshake, or invite to the handshake. This could happen for a multitude of
-reasons being the two nodes looses their connectivity between each other
-because of the flaky nature of wireless ad hoc networks, or the assumed \ac{SP}
-was only a regular authenticated, trusted, node. From the routing announcements
-it is not possible to derive whether a node is simply authenticated, or if it
-also has master role capabilities being a \ac{SP}. It is only possible to
-derive that a node is authenticated in some network or not.
+will be no deadlock if for some reason the \ac{SP} should never initiate, or
+invite to, the handshake. This could happen for a multitude of reasons being
+the two nodes looses their connectivity between each other because of the flaky
+nature of wireless ad hoc networks, or the assumed \ac{SP} was only a regular
+authenticated, trusted, node. From the routing announcements it is not possible
+to derive whether a node is simply authenticated, or if it also has master role
+capabilities being a \ac{SP}. It is only possible to derive, or rather it seems,
+that a node is authenticated in some network or not.
 
 %The unknown node will wait for a predefined amount of time, for it may not ever
 %receive a request. The discovery might have been of an authenticated node with
@@ -533,37 +535,40 @@ derive that a node is authenticated in some network or not.
 %nature of ad hoc networks, the two nodes might have become invisible to each
 %other before the handshake could be initiated.
 
-While the new node is waiting for an invite, or simply not doing anything
-interesting announcing its existence - the \ac{SP} generates an invite message
-which is a message containing the public key, i.e. the \ac{PC0}. The invite
-will be directly addressed to the new node, and not broadcasted as regular
-routing announcements are. The \ac{SP} will then wait for a certificate request
-(\ac{PC} Request) for a short predefined time before aborting the handshake and
-entering its ready-state. If the two nodes discover each other once more, the
-\ac{SP} will once again try to invite the other node to the handshake. If this
-fails several times, the \ac{SP} will eventually ignore the all discoveries of
-the other node (based on address) for a predefined time before it tries again.
+While the new node is ``waiting'' for an invite, or simply not doing anything
+other than announcing its existence - the \ac{SP} generates an invite message
+which is a message containing its \ac{PC0}. The invite will be directly
+addressed to the new node, and not broadcasted as regular routing announcements
+are. The \ac{SP} will then wait for a certificate request (\ac{PC} Request) for
+a short predefined time before aborting the handshake and entering its
+ready-state. If the two nodes discover each other once more, the \ac{SP} will
+once again try to invite the other node to the handshake. If this fails several
+times, the \ac{SP} will eventually ignore the all discoveries of the other node
+(based on address) for a predefined time before it tries again.
 
-If the new node is able to verify the public key received from the \ac{SP} in
-the invite message it will use its public key pair and generate a \ac{PC}
-request which it will send back. This request abides by the rules for making a
-proxy certificate \cite{rfc3820}, setting the Issuer Name as the Subject Name
-from the received \ac{PC0}, the Subject Name as the Issuer Name appended with
-its own unique Common Name, which is the hash value of its own public key, and
-the Serial Number from the same hash value.
+If the new node is able to verify the SP's public key it will use its public
+key pair and generate a \ac{PC} request which it will send back to the \ac{SP}.
+This request abides by the rules for making a proxy certificate \cite{rfc3820},
+setting the ``Issuer Name'' the same as the ``Subject Name'' from the received
+\ac{PC0}, the ``Subject Name'' as the ``Issuer Name'' appended with its own
+unique Common Name, which is the hash value of its own public key, and setting
+the ``Serial Number'' to the same hash value.
 
 These, and the last step of issuing the \ac{PC1} is shown in Figure
-\ref{fig:node_states_handshake}. Before issuing the \ac{PC1} the \ac{SP}
-verifies the public key received in the request message. As before, the
-knowledge necessary to be able to verify the public key is assumed to have been
+\ref{fig:node_states_handshake}. But before issuing the \ac{PC1} the \ac{SP}
+also has to verify the public key received in the request message. As before,
+the knowledge necessary to be able to verify the public key is assumed to have been
 communicated out-of-band prior to this setup. The \ac{PC1} is appended with the
 proxy policies the \ac{SP} seems fit for the node, and then signed with the
 \ac{SP}'s private key. After sending the \ac{PC1} to the new node the \ac{SP}
-will add the \ac{PC1} and other relevant data to its local \ac{AL} and the new
-node will, after verifying the signature, store the issued certificate for
-later.
+will add the new node to its local \ac{AL} and the new node will, after
+verifying the signature on its newly issued certificate, store the issued
+certificate for later and add the \ac{SP} to its own local \ac{AL}.
 
-\subsubsection*{Out-Of-Band Authentication}
+
+ICH BIN HIER!!!
+
+\subsection{Out-Of-Band Authentication}
 Above, only brief mention was made to how the initial verification of each nodes
 public keys were made. For this purpose, many authentication schemes have been
 produced, but when it comes to \acp{MANET}, possibly with no Internet
