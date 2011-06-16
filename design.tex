@@ -749,12 +749,13 @@ used and why they are present is some of the questions that will be answered.
 \subsection{\acf{PC}}
 In a scenario where actors try to communicate with each other, without the
 Internet or other communication infrastructure available one cannot depend on a
-\ac{PKI} for authentication of the actors. One needs the option of bein able to
-verify actors physically (out-of-band) and then issuing them an authentication
-token to be used during this scenario. This is where the \aclp{PC} comes in
-handy. Regular \acp{EEC} should not be used for issuing new certificates, per
-the RFC2459 \cite{rfc2459}, and even if one did use them for this purpose there
-is no definition on how to handle topics as path validation and such.
+\ac{PKI} for authentication of the actors. One needs the option of being able
+to verify actors physically (out-of-band) and then issuing them an
+authentication token to be used during this scenario. This is where the
+\aclp{PC} comes in handy. Regular \acp{EEC} should not be used for issuing new
+certificates, per the RFC2459 \cite{rfc2459}, and even if one did use them for
+this purpose there is no definition on how to handle topics as path validation
+and such.
 
 Using \acp{PC} this issue can be handled in a well-defined manner. The field
 ``pCPathLenConstraint'' is used for constraining the depth of the certificate
@@ -768,72 +769,52 @@ it will once again be difficult to handle path validations. Every node trying to
 verify a \ac{PC} need to know the issuer of the certificate directly, and not
 indirectly through root \acp{CA} as is possible if you have a \ac{PKI}.
 
-\subsubsection*{\acf{PC0}}
-One, or possibly more, \ac{SP}(s) have a self-signed \ac{PC0}, or a \ac{PC0}
-signed by the ``original \ac{SP}'' if more \acp{SP} are present. The zero in the
-abbreviation is used to indicate that the certificate is at a depth of zero and
-has a pCPathLenConstraint of one. If a \ac{PC0} is signed by another \ac{PC0}
-it would actually be of depth one in the certificate chain, but because the node
-has possibly the same rights as the issuer, i.e. the issuer has delegated all
-its rights to this node, there is no practical difference between them. One
-natural restriction however, would be to restrict the non-original \acp{PC0}
-not to be able to issue other \acp{PC0}, only \acp{PC1}.
-
-For the rest of this section, it is assumed there is only one \ac{PC0} for
-clarity, and because only one \ac{PC0} will be implemented in this thesis due to
-time restrictions.
-
-The \ac{SP} fills its \ac{PC0} with these values:
+A \ac{PC} is almost a regular certificate, except for some values that are
+forbidden to use, some values that are required to use, and some values that
+must be used in a well defined way \cite{rfc3820}. Below are the
+fields that are included in this system design:
 \begin{itemize}
-  \item Subject Name: ``CN: $<$SHA-1(Public Key)$>$''
-  \item Issuer Name: Same as Subject Name
-  \item Serial Number: Same as Subject Name
+  \item Subject Name: $<$Isser Name$>$ + ``CN: $<$SHA-1(Public Key)$>$''
+  \item Issuer Name: $<$Subject Name of Issuer$>$
+  \item Serial Number: ``$<$SHA-1(Public Key)$>$''
   \item X509v3 Extensions:
   \begin{itemize}
     \item Key Usage: ``Digital signature, Key encipherment''
     \item ProxyCertInfo:
     \begin{itemize}
-      \item pCPathLenConstraint: ``1''
+      \item pCPathLenConstraint: $<$0 or 1$>$
       \item proxyPolicy: 
       \begin{itemize}
         \item policyLanguage: ``id-ppl-anyLanguage''
-        \item policy: ``Role:sp,Routing:full,Application:full''
+        \item policy: ``Role:$<$sp or authenticated$>$,Routing:$<$full or limited$>$,Application:$<$full or limited$>$''
       \end{itemize}
     \end{itemize}
   \end{itemize}
 \end{itemize}
-Per the RFC3820 (\cite{rfc3820}) the issuer name is the same as the subject name
-of the issuing certificate. In this case the \ac{PC0} is self-signed, and the
-issuer name is therefore the same as the subject name. 
-
-The subject name is has the constraint that it ``should be unique amongst all
-Proxy Certificates issued by a particular Proxy Issuer''. The modal verb
-``should'' used in this requirement is used in order to ease this requirement so
-that a method creating a unique name with a high possibility, but not provable
-uniqueness, should be accepted. Therefore using a SHA-1 digest of the public key
-used by the node is regarded as ``good enough'', or ``unique enough''.
+Per RFC3820 (\cite{rfc3820}) the subject name has the constraint that it
+``should be unique amongst all Proxy Certificates issued by a particular Proxy
+Issuer''. The modal verb ``should'' used in this requirement is used in order
+to ease this requirement so that a method creating a unique name with a high
+probability, but not provable uniqueness, should be accepted. Therefore using a
+SHA-1 digest of the public key used by the node is regarded as ``good enough'',
+or ``unique enough''.
 
 The same requirement is true for the serial number, and allows the serial number
-to be the same as the subject name.
+to be the same as the subject name except for the ``CN:'' prefix.
 
 The specifications requires the ``Digital signatures'' value for the ``Key
-Usage'' extension because a \ac{PC} can be used to sign and issue other
-\acp{PC}. Also, in this design the asymmetric key pair belonging to the \ac{PC}
-is both used for signing keystream material messages, and to encrypt the keys
-sent in the same messages. Therefore the value ``Key encipherment'' is also
-necessary in this extension.
+Usage'' extension because a \ac{PC} can be used to sign the keystream material
+messages. ``Key encipherment'' is also necessary in this extension because other
+neighbors need to use your public key to encrypt their ephemeral keys when they
+want to share their keystream with you.
 
-The pCPathLenConstraint of one means that the \ac{SP} is allowed to issue new
-\acp{PC}, but that the children of the \ac{PC0} cannot be used to issue new
-\acp{PC} again. If multiple \acp{SP} should be allowed in the network, one of
-these \acp{SP} would need a pCPathLenConstraint of value ``two''.
-
-The ``policyLanguage'' field is set to the ``default'' value, leaving the
+The ``policyLanguage'' field is set to the default value, leaving the
 language used in the policy field later to be handled correctly by the
 application, rather than being universally understandable.
 
-Finally, the last field might be of most interest. This field explains what
-rights the given \ac{PC} has for this design. Three values has been defined:
+Finally, the last field called ``policy'' might be of greates interest. This
+field explains what rights the given \ac{PC} has for this design. Three values
+have been defined for use in this design:
 
 \begin{itemize}
   \item Role - Node's role in the network
@@ -868,9 +849,51 @@ application requests. Nodes which does not use the application layer will reside
 in each nodes routing tables, but should not show up as available nodes on the
 upper layers.
 
+\subsubsection*{\acf{PC0}}
+A \acl{SP}'s \ac{PC0} would typically be filled with the values in the
+\ref{tab:pc0_values}. For illustration, this \ac{PC} has been issued by the
+\ac{SP}'s regular \ac{LLPKC} issued by NTNU.
+\begin{table}[h]
+	\begin{tabularx}{\linewidth}{ | l | X |}
+		\hline
+ 		\textbf{X.509 Field} & \textbf{Value}\\\hline
+		Subject Name & C=NO, L=Trondheim, O=NTNU, OU=ITEM, CN=Espen, CN=$<$SHA-1(Public Key)$>$ \\\hline
+		Issuer Name & C=NO, L=Trondheim, O=NTNU, OU=ITEM, CN=Espen \\\hline 
+		Serial Number & $<$SHA-1(Public Key)$>$ \\\hline 
+		Key Usage & Digital signature, Key encipherment \\\hline 
+		pCPathLenConstraint & 1 \\\hline 
+		policyLanguage & id-ppl-anyLanguage \\\hline 
+		policy & Role:sp,Routing:full,Application:full \\\hline 
+	\end{tabularx}
+	\caption{Values in \acf{PC0}}
+	\label{tab:pc0_values}
+\end{table}
+The zero in the PC0 abbreviation is used to indicate that the certificate is at
+a depth of zero and has a pCPathLenConstraint of one which means that the
+\ac{SP} is allowed to issue new \acp{PC}, but that the children of the \ac{PC0}
+cannot be used to issue new \acp{PC} again. 
+
 \subsubsection*{\acf{PC1}}
-TODO: Move some of the stuff above to PC subsection and only use the specifics
-for PC0 and PC1 in these subsubsections..
+If the PC0 above was used to issue a regular PC1 to an authenticated node, the
+values might look like the ones in Table \ref{tab:pc1_values}.
+\begin{table}[h]
+	\begin{tabularx}{\linewidth}{ | l | X |}\hline
+ 		\textbf{X.509 Field} & \textbf{Value}\\\hline
+		Subject Name & C=NO, L=Trondheim, O=NTNU, OU=ITEM, CN=Espen, CN=$<$SHA-1(PubKey(SP))$>$, CN=$<$SHA-1(Public Key)$>$ \\\hline
+		Issuer Name & C=NO, L=Trondheim, O=NTNU, OU=ITEM, CN=Espen, CN=$<$SHA-1(PubKey(SP))$>$ \\\hline
+		Serial Number & $<$SHA-1(Public Key)$>$ \\\hline 
+		Key Usage & Digital signature, Key encipherment \\\hline 
+		pCPathLenConstraint & 0 \\\hline 
+		policyLanguage & id-ppl-anyLanguage \\\hline 
+		policy & Role:authenticated,Routing:full,Application:full \\\hline 
+	\end{tabularx}
+	\caption{Values in \acf{PC1} if issued by the \ac{PC0} above.}
+	\label{tab:pc1_values}
+\end{table}
+The interesting part here is too see that the subject name contains the full
+subject name of the issuer in addition to the hash value of the public key used
+in the PC1. Note also that the pCPathLenConstraint now denies the owner to issue
+other acp{PC} using this certificate.
 
 \subsection{\acf{SP}}
 The term \acl{SP} was coined by Dr. Lawrie Brown \cite{lawrie:technotes}.
@@ -882,15 +905,153 @@ they are part of a \ac{PKI}.
 
 A \ac{SP} can also be part of a \ac{PKI} (issued a regular public key
 certificate), but because of our scenario, it can be difficult or impossible to
-verify its regular certificate. Therefore, no distinction is made whether the
-\ac{SP} has had a regular ``\ac{CA}-signed'' certificate sign its \ac{PC0} or if
-its \ac{PC0} is self-signed.
+verify its regular certificate. Therefore, this verification is handled
+out-of-band instead.
 
+In this design, the \ac{SP} is a master node which decides which nodes can get
+access to the network and if so what rights they have. The \ac{SP} assigns its
+\ac{PC0} with all the rights which might be useful for the current scenario, so
+that it can delegate those rights to other nodes when issuing them \acp{PC1}. In
+a larger network, there would typically be more than one \ac{SP}
 
 \subsection{\acf{AL}}
+The \ac{AL} is a local list that each trusted node including the \ac{SP} in
+the network maintain to keep track of which nodes they knows and the necessary
+information about them. An \acl{AL} stores these values for each node they have
+met and shared their \acp{PC} with:
+\begin{table}[h]
+	\centering
+	\begin{tabular}{| l |}\hline
+ 		\textbf{\acl{AL}}\\\hline
+		ID\\\hline
+		Address \\\hline
+		Role \\\hline 
+		Subject Name \\\hline 
+		Public Key \\\hline  
+	\end{tabular}
+	\caption{\acf{AL} content}
+	\label{tab:al_content}
+\end{table}
+Both the ``ID'' and ``Subject Name'' fields stored for each node are unique, so
+one could ask why one needs the ID field when the unique subject name is used in
+accordance with RFC3820 (\cite{rfc3820}). The answer is actually quite simple,
+it is easier and safer to look for the ID value when going searching in the
+\ac{AL} because it is a number while the subject name value is a text.
 
+For all nodes but the \ac{SP} in the network, the first entry in the \ac{AL} is
+the \ac{SP}. This is only natural because the \ac{SP} is the first node they
+start to trust as it is the one node that actually issued their \ac{PC} in the
+first place. To illustrate this, if you go back to the two nodes' \acp{PC} in
+Tables \ref{tab:pc0_values} and \ref{tab:pc1_values} and you have a third node
+with these two nodes in its \ac{AL}, the \ac{AL} might look like Table
+\ref{tab:al_content_3_nodes}.
+\begin{table}[h]
+	\centering
+	\begin{tabularx}{\linewidth}{| l | X |}\hline
+ 		\textbf{Fields} & \textbf{Values}\\\hline
+ 		\hline
+		ID & 45251\\\hline
+		Address & 192.168.57.1\\\hline
+		Role & SP\\\hline 
+		Subject Name & C=NO, L=Trondheim, O=NTNU, OU=ITEM, CN=Espen, CN=$<$SHA-1(2AF2E5C75C\ldots)$>$\\\hline
+		Public Key & 2AF2E5C75C\ldots\\\hline
+		\hline
+		ID & 1341\\\hline
+		Address & 192.168.57.45\\\hline
+		Role & Authenticated\\\hline 
+		Subject Name & C=NO, L=Trondheim, O=NTNU, OU=ITEM, CN=Espen, CN=$<$SHA-1(2AF2E5C75C\ldots)$>$, CN=$<$SHA-1(DA912BC9F5\ldots)$>$\\\hline
+		Public Key & DA912BC9F5\ldots\\\hline  
+	\end{tabularx}
+	\caption{An \acf{AL} in a network with three trusted nodes.}
+	\label{tab:al_content_3_nodes}
+\end{table}
+Note that the arbitrarily chosen values for e.g. the Public Key here does not
+show a complete size public key. Also, the public keys stored in the \ac{AL}
+would be stored as their real binary values, and not Base64-encoded as the table
+portrays. In the subject name there is a common name part with ``SHA-1()'' -
+meaning that the content here would actually be the sha-1 digest of the content
+inside the brackets.
 
-\section{Authentication Module Messages}
+\subsection{\acf{NL}}
+The \acl{NL} is a list each node in the network maintains to keep track of its
+current neighbors and the necessary information about them.
+\begin{table}[h]
+	\centering
+	\begin{tabular}{| l |}\hline
+ 		\textbf{\acl{NL}}\\\hline
+		ID\\\hline
+		Address\\\hline
+		Sliding window\\\hline 
+		Last sequence number\\\hline 
+		Keystream\\\hline
+		Number of wrong OTPs\\\hline
+		Time keystream received\\\hline
+	\end{tabular}
+	\caption{\acf{NL} content}
+	\label{tab:nl_content}
+\end{table}
+Table \ref{tab:nl_content} shows the content fields for each entry in the
+\ac{NL}. The first important thing to recognize is that the node entries in the
+\ac{NL} are not necessarily the same as the node entries in the \ac{AL}. When a
+node meets new neighbors and looses old direct neighbors (which are still in
+the network nevertheless) new entries are added while old entries are removed.
+This means also that the index in the two lists are not the same - and here's
+where the use of the ID field comes in. Whenever both lists has to be looked up,
+the ID field is used in order to retrieve the same node from both lists.
+
+Besides the ID and the address the keystream field should be expected to reside
+in the \ac{NL} by the observant reader. If not, this is where the keystreams of
+your neighbors are stored, and updated each time you receive a new
+keystream-material message from said neighbor. There are four other fields too
+however, which might not be expected by the reader. These fields play an
+important part in mainstaining this list and most importantly - replay attack
+protection.
+
+First, the ``Time keystream received'' field stores the time (in seconds) when
+the last keystream from this neighbor was received. The \acl{AM} regularly
+checks to see if it has not received keystreams from nodes in the \ac{NL} for
+some time, and purges all entries older than a defined timeframe. This is mainly
+to keep the \ac{NL} up to date and short, as the keystreams take up memory
+storage.
+
+The remaining three fields are quite more interesting, as they are used for
+replay attack protection.
+
+\subsubsection*{Sliding Window}
+The sliding window is a bit array of 64 bits size \cite{peterson2007computer}.
+This window is used in order to decide whether a routing announcement should be
+allowed through to the routing protocol, or if the \ac{AM} should block and
+drop the announcement. Each bit in the window can either be 0 or 1, and it is
+used to declare whether an \acf{OTP} already has been received (bit set to 1)
+or not (bit set to 0).
+
+The ``last sequence number'' field is used to indicate the last, or highest,
+keystream sequence number of the last routing announcement received from this
+neighbor. If the last sequence number is X, then the sliding window corresponds
+to the the sequence numbers between X-63 and X. I.e. the sliding window shows
+whether an \ac{OTP} from this range has been received or not.
+
+For a node to accept a routing annoucement from a direct neighbor (which is in
+its \ac{NL}), the following MUST be true:
+\begin{itemize}
+  \item the \ac{OTP} sequence number must either be inside the sliding window,
+  	or higher than the current last sequence number, and
+  \item the same sequence number must not have been received before, i.e. the
+  	bit at its sliding window position must be 0, and
+  \item the \ac{OTP} must match the keystream at this sequence number offset.
+\end{itemize}
+Note that when a new keystream is calculated for a neighbor, the old sliding
+window and last sequence number are replaced so the same sequence numbers can be
+used again.
+
+The last field, ``Number of wrong OTPs'', is increased whenever a received
+routing announcement fails the checks above, i.e. if its an too old sequence
+number, it has been received before, or if the \ac{OTP} does not match the
+expected \ac{OTP} from the keystream. If this value is too high, the node will
+delete the neighbor entry from its \ac{NL} and request a new keystream-material
+message.
+
+\section{\acf{AM} Messages}
 \label{sect:am_messages}
 This section describes the different messages sent within, or modified by, the
 \ac{AM} extension. This includes how they are created, what payload they
@@ -899,15 +1060,16 @@ finally to whom and how often they are sent during normal operation.
 
 \subsection{Authentication Handshake}
 The authentication handshake describes which messages are sent while
-authenticating a new node to the network. The handshake is triggered by the
-event where the \ac{SP} discover a new and unauthenticated neighbor node.
+authenticating a new node to the network. The handshake is triggered by an event
+where the \ac{SP} discover a new and unauthenticated neighbor node.
 
 \subsubsection*{Node Discovery}
+
+TODO: ICH BIN HIER!
+
 Node discovery is not actually a part of the handshake itself, but it is the
 event that triggers the handshake and is described here to make the context more
 clear to the reader.
-
-TODO: Write about the neighbor list before this section\ldots
 
 As described earlier each node stores a local copy of the \ac{AL} and a direct
 neighbor node list. Whenever a trusted node receives a routing announcement from
