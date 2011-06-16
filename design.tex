@@ -22,7 +22,7 @@ what the system does, leaving the explanations to the subsequent sections.
 The network setup starts with an out-of-band authentication where a master node,
 hereafter \ac{SP}, verifies new nodes. How this is done can be up to the
 application, but let us assume that the actors carrying their communication
-devices, hereafter nodes, physically meets the \ac{SP} at the scene and verifies
+devices, hereafter nodes, physically meet the \ac{SP} at the scene and verify
 each others' public keys out-of-band.
 
 When a new node is discovered by the \ac{SP} using regular routing announcements
@@ -30,9 +30,13 @@ as part of the pro-active routing protocol, the \ac{SP} will invite the new node
 to a handshake to establish a trust relationship between the two nodes. In the
 invite message the \ac{SP} shares its certificate. If the node can verify the
 public key of that certificate, it will request a proxy certificate. If the
-\ac{SP} can verify its public key, too, it will issue a proxy certificate with
-(possibly) the rights to participate in building the \ac{MANET} by broadcasting
-its own and re-broadcasting other trusted nodes' routing announcements.
+\ac{SP} can verify the new node's public key, too, it will issue a proxy
+certificate with (possibly) the rights to participate in building the
+\ac{MANET} by broadcasting its own and re-broadcasting other trusted nodes'
+routing announcements. Note that the routing announcements of the new node will
+not have been forwarded by other nodes up until this point, and therefore the
+new node and the \ac{SP} would have had to be direct neighbors throughout this
+handshake.
 
 \subsection{Continuous Authentication}
 After being issued with a \ac{PC} the newly authenticated node will periodically
@@ -41,7 +45,9 @@ and corresponding \ac{IV}, a pseudo-randomly generated nonce, and a digital
 signature over this message. The ephemeral key is encrypted with the neighbor's
 public key (hence multiple unicasts instead of an actual broadcast), but the
 digital signature is generated using the hash of the unencrypted key and the
-other contents of the message.
+other contents of the message. If you at this point want to see how this
+keystream generation works, you can jump to Figure
+\ref{fig:keystream_generation}.
 
 After sending this signed ``broadcast" to each neighbor, the node and its
 neighbors will generate a keystream from the ephemeral key, \ac{IV}, and nonce.
@@ -49,6 +55,8 @@ The node will then append two new bytes from this keystream to each routing
 announcement, and re-broadcasts of neighbors announcements, sent from this point
 forward with a sequence number for the recipient to be able to match this
 ``extract'' with the keystream at an offset given by the sequence number.
+
+TODO: FIGURE SHOWING KEYSTREAM-MATERIAL PACKET, JUST PACKET NOT MSC
 
 The neighbors accepts a routing announcement if and only if:
 
@@ -65,7 +73,8 @@ packet.
 
 Note also that each node has its own keystream, and that it shares the message
 above, hereafter ``keystream-material message'', with each of its direct
-neighbors.
+neighbors. Each neighbor then use this node's keystream to verify its routing
+announcements.
 
 Whenever a routing announcement is forwarded by another trusted node, that
 node will replace the one-time password with an \ac{OTP} from its own keystream.
@@ -84,12 +93,13 @@ which will be discussed later.
 %\ac{PC} with other nodes directly - only through the \ac{SP}.
 
 When a trusted node discovers a new neighbor, which is a trusted node in the
-network - they first have to exchange their \acp{PC} and verify the signatures
+network, they first have to exchange their \acp{PC} and verify the signatures
 on the certificates. Their knowledge of the corresponding private keys to their
-\acp{PC} are only indirectly verified because they need to know the private key
-in order to decrypt the ephemeral keys sent with the signed broadcasts by their
-neighbors. Each of the two nodes then stores the other's public key, subject
-name, id, role, and address in a list called \ac{AL}.
+\acp{PC} are verified later when they check each other's digital signatures on
+the keystream-material messages. Also, without the knowledge of the private key
+they would not be able to decrypt the ephemeral keys received in the same
+packets. Each of the two nodes then stores the other's public key, subject name,
+id, role, and address in a list called \ac{AL}.
 
 %The list, hereafter \ac{AL}, also adds some \ac{WOT} like capabilities. The
 %list is signed by the \ac{SP}, which means the integrity of the list is
@@ -119,15 +129,14 @@ covered in this section.
 
 \subsection{Scenario}
 The design and implementation presented in this thesis is mostly based on an
-emergency situation scenario, in which communication infrastructure is
+emergency situation scenario, in which a communication infrastructure is
 unavailable. This thesis will also reflect on some possible requirements given
 by a military application.
 
 If there is a major emergency situation such as an earthquake or tsunami, it is
 likely that parts or the entire communication infrastructure at the scene
 is destroyed or temporarily down. The remaining communication lines will then
-probably be congested, such that little communication actually goes through
-[TODO: find a ref].
+probably be congested, such that little communication actually goes through.
 
 In this situation, it is of great importance that Emergency Personnel, such as
 Paramedics, Firemen, Policemen and the Military, are able to communicate
@@ -193,11 +202,12 @@ might also be able to recognize authentication tokens, such as long lived
 certificates, issued prior to this setup. If this is the case, one might have to
 re-evaluate these requirements.
 
-The OASIS had another important requirement which is not covered here, but is
-important to mention - there should be mechanisms in place to detect misbehaving
-nodes, i.e. already trusted nodes that acts maliciously. This detection is not
-covered in this thesis as pointed out in \ref{limit:malicious_behaviour}, but is
-nevertheless important to take notice of.
+The OASIS project had another important requirement which is not covered here,
+but is important to mention - there should be mechanisms in place to detect
+misbehaving nodes, i.e. already trusted nodes that act maliciously. This
+detection is not covered in this thesis as pointed out in
+\ref{limit:malicious_behaviour}, but is nevertheless important to take notice
+of.
 
 \section{Why use Proxy Certificates?}
 \acp{PC}, as described in Section \ref{sect:pc}, are used to delegate
@@ -211,10 +221,10 @@ or simply if there is no Internet access and the certificate is signed by an
 unknown entity (unknown to the \ac{SP}), even if it knows and trusts the root
 \ac{CA}. 
 
-In addition, proxy certificates commonly have short valid lifetime compared to
+In addition, proxy certificates commonly have a short valid lifetime compared to
 regular certificates, meaning an implementation using proxy certificates does
 not necessarily need to implement a certificate revocation scheme, which makes
-for less management operations in the management-hostile envirnontment that is
+for less management operations in the management-hostile environment that is
 \acp{MANET}. If a certificate is compromised in this \ac{MANET}, the time of
 exposure is limited because of the short valid lifetimes on the \acp{PC}.
 Regular \acp{LLPKC} on the other hand, could be compromised throughout the
@@ -285,9 +295,10 @@ to authenticate and accept the new node.
 Before a simplified example can be given, a few new entities in this design
 needs to be explained further. This is the short version, just enough for the
 reader to understand the example - the full description of these entities
-and why they are necessary will be given later. All of these entities are also
-portrayed in Figure \ref{fig:simple_example_entities}. The portrayed entities
-will be used as a template for other figures later in this thesis report.
+and why they are necessary will be given in Section \ref{sect:detailed_ent}. All
+of these entities are also portrayed in Figure
+\ref{fig:simple_example_entities}. The portrayed entities will be used as a
+template for other figures later in this thesis report.
 
 \begin{itemize}
   \item \textbf{\acf{SP}} is responsible for tasks similar to that of a \ac{CA}
@@ -309,10 +320,10 @@ will be used as a template for other figures later in this thesis report.
   \item \textbf{Authenticated/Trusted Node} is a node which has been issued a
     \ac{PC1} from the \ac{SP} and is considered a trusted node in the network.
     This node can take part in sending its own routing announcements and
-    forwarding other authenticated nodes routing announcements, i.e. they take
+    forwarding other authenticated nodes' routing announcements, i.e. they take
     part in changing the network topology.
   \item \textbf{Unauthenticated Node} is a node which has not yet been
-    authorized, or denied access, by the \ac{SP}. They do not possess a
+    authorized, or denied access, by the \ac{SP}. It does not possess a
     certificate for which the other nodes can verify, and its routing
     announcements are ignored by other trusted nodes in the network.
 \end{itemize}
@@ -336,10 +347,10 @@ unauthenticated node is able to verify, possibly based on a prior out-of-band
 sharing of public key fingerprints.
 
 After verifying the \ac{PC0}, the unauthenticated node will send a \ac{PC}
-request with its own public key. If the \ac{SP} is able to verify the senders
+request with its own public key. If the \ac{SP} is able to verify the sender's
 public key (same assumption as above) and the \ac{SP} decides this node should
-have access to network, it will create and sign \ac{PC} for this node - i.e. the
-node is issued a \ac{PC1}.
+have access to network, it will create and sign a \ac{PC} for this node - i.e.
+the node is issued a \ac{PC1}.
 
 %Before the \ac{SP} actually signs the \ac{PC} requested from the
 %unauthenticated node, it needs some verification that the node is an actor that
@@ -388,9 +399,9 @@ in the \ac{NL}.
 
 From this point forward, the two nodes use a two-byte extract of the keystream
 as an one-time password and appends it, together with a sequence number (for
-finding the correct offset in keystream), to future routing announcements. This
-goes for both original routing announcements from the node itself, and when
-they forward other trusted nodes routing announcements. The two nodes never
+finding the correct offset in the keystream), to future routing announcements.
+This goes for both original routing announcements from the node itself, and when
+they forward other trusted nodes' routing announcements. The two nodes never
 re-use the same extract from the keystream, hence the name ``\acf{OTP}'', and
 they use a sliding window stored in their \ac{NL} to keep track of which
 extracts they have received from their neighbor. This last part is crucial in
@@ -400,15 +411,13 @@ replay attacks.
 Whenever a new node is discovered by the \ac{SP} the procedure above repeats,
 and a new addition is made to the \ac{AL} and \ac{NL}. Other previously
 trusted nodes will learn the identity of new nodes when they discover the new
-node and initiate in a keystream-material exchange, which will be discussed
+node and initiate a keystream-material exchange, which will be discussed
 later.
 
 \begin{figure}[ht]
 	\centering
   	\includegraphics[height=13cm]{images/simple_example_msc.png}
-  	\caption{Message sequence chart of the simple example showing authentication
-  	  handshake and keystream material sharing between SP and new node A. Routing
-  	  announcements at the end contain one-time-passwords (OTP) from keystreams}
+  	\caption{Authentication handshake and keystream-material between a new node A and the SP.}
 	\label{fig:simple_example_msc}
 \end{figure}
 
@@ -423,15 +432,13 @@ announcements in the beginning and in the end that are appended with \acp{OTP}
 are portrayed as they show how the handshake is initiated (by discovery) and
 ended after successfully ending the handshake and keystream material sharing.
 
-If a new node enters transmitting range of the two nodes similar messages are
+If a new node enters transmitting range of the two nodes, similar messages are
 exchanged, as shown in Figure \ref{fig:simple_example_msc_2}.
 
 \begin{figure}[h]
 	\centering
   	\includegraphics[height=13cm]{images/simple_example_msc_2.png}
-  	\caption{Message sequence chart of the simple example showing another node B
-  	  attempting to join the network, and the messages between A and B after B
-  	  is autneticated by the SP}
+  	\caption{Another node B joins the network from previous figure.}
 	\label{fig:simple_example_msc_2}
 \end{figure}
 
@@ -472,7 +479,7 @@ nodes within transmitting range of the new node can receive its broadcasts.
 \begin{figure}[h]
 	\centering
   	\includegraphics[width=0.6\textwidth]{images/node_states_discovery.png}
-  	\caption{Discovery Phase between a \acf{SP} and an unauthenticated node (A)}
+  	\caption{Discovery Phase between a SP and an unauthenticated node A.}
 	\label{fig:node_states_discovery}
 \end{figure}
 
@@ -481,7 +488,7 @@ Depending on the time interval between the broadcasts and whether the nodes
 within each other's transmitting range are asymmetrical, they will discover each
 other approximately at the same time.
 
-Figure \ref{fig:node_states_discovery} illustrate the routing announcements
+Figure \ref{fig:node_states_discovery} illustrates the routing announcements
 periodically sent by two nodes until they discover each other. One of the nodes
 have already assumed the master role and is a \ac{SP} while the other node is
 unauthenticated.
@@ -520,8 +527,8 @@ further elaborated in the next chapter.
 Because the unauthenticated node does not enter a new state upon the discovery
 of the \ac{SP}, which could just be a regular authenticated node as well, there
 will be no deadlock if for some reason the \ac{SP} should never initiate, or
-invite to, the handshake. This could happen for a multitude of reasons being
-the two nodes looses their connectivity between each other because of the flaky
+invite to, the handshake. This could happen for a multitude of reasons where
+the two nodes lose their connectivity between each other because of the flaky
 nature of wireless ad hoc networks, or the assumed \ac{SP} was only a regular
 authenticated, trusted, node. From the routing announcements it is not possible
 to derive whether a node is simply authenticated, or if it also has master role
@@ -543,7 +550,7 @@ are. The \ac{SP} will then wait for a certificate request (\ac{PC} Request) for
 a short predefined time before aborting the handshake and entering its
 ready-state. If the two nodes discover each other once more, the \ac{SP} will
 once again try to invite the other node to the handshake. If this fails several
-times, the \ac{SP} will eventually ignore the all discoveries of the other node
+times, the \ac{SP} will eventually ignore all the discoveries of the other node
 (based on address) for a predefined time before it tries again.
 
 If the new node is able to verify the SP's public key it will use its public
@@ -559,16 +566,16 @@ These, and the last step of issuing the \ac{PC1} is shown in Figure
 also has to verify the public key received in the request message. As before,
 the knowledge necessary to be able to verify the public key is assumed to have been
 communicated out-of-band prior to this setup. The \ac{PC1} is appended with the
-proxy policies the \ac{SP} seems fit for the node, and then signed with the
+proxy policies the \ac{SP} deems fit for the node, and then signed with the
 \ac{SP}'s private key. After sending the \ac{PC1} to the new node the \ac{SP}
 will add the new node to its local \ac{AL} and the new node will, after
 verifying the signature on its newly issued certificate, store the issued
 certificate for later and add the \ac{SP} to its own local \ac{AL}.
 
 \subsection{Out-Of-Band Authentication}
-Above, only brief mention was made to how the initial verification of each nodes
-public keys were made. For this purpose, many authentication schemes have been
-produced, but when it comes to \acp{MANET}, possibly with no Internet
+Above, only brief mention was made to how the initial verification of each
+node's public keys were made. For this purpose, many authentication schemes
+have been produced, but when it comes to \acp{MANET}, possibly with no Internet
 connection, proper authentication becomes a difficult task. In the discussion
 in Chapter \ref{ch:discussion} different schemes will be discussed, but here
 only one ``scheme'' is accounted for.
@@ -640,7 +647,7 @@ When the node is ready to share its keystream for the first time, the node will
 generate a new ephemeral key by encrypting $K_{ephemeral} =
 E_{K_{master}}\{i\}$ where $i = 1,2,3\ldots$ and a corresponding \ac{IV}
 generated in the same manner as the previous \ac{IV} for the master key. In
-addition a large nonce is generated with a pseudo-random function, also in the
+addition, a large nonce is generated with a pseudo-random function, also in the
 same pseudo-random fashion as the \acp{IV}. To elaborate, this pseudo-randomness
 does not need strong randomness with a high entropy like the master key, it only
 needs to be (with high probability) different for each time.
@@ -656,18 +663,14 @@ encryptions using the AES-CBC mode.
 In the first encryption (full AES-CBC) the supplied \ac{IV} is used, while in
 the next iterations a 16 byte extract of the output from the previous encryption
 (ciphertext) is used as \ac{IV}. To explain, this is basically a \ac{CBC} mode
-encryption of multiple AES-CBC blocks. To lessen any confusion a figure to
-illustrate this is in order. Figure \ref{fig:keystream_generation} shows
-process assuming the ephemeral key, IV and nonce has already been created.
+encryption of multiple AES-CBC blocks. Figure \ref{fig:keystream_generation}
+shows the process assuming the ephemeral key, IV and nonce have already been
+created.
 
 \begin{figure}[h]
 	\centering
   	\includegraphics[width=\textwidth]{images/keystream_generation.png}
-  	\caption{Keystream generation using a nonce value N times with a simple plus
-  		one multiplication. Each nonce will go through full AES-CBC encryption. The
-  		keystream output is all the generated ciphertexts appended. The different
-  		sizes between IV and nonce are not correct, the nonces are about 60 times
-  		larger in size than the IVs.}
+  	\caption{Keystream generation based on the supplied Nonce, Key and IV.}
 	\label{fig:keystream_generation}
 \end{figure}
 
@@ -680,14 +683,23 @@ size extract at the end of the ciphertext is used as an \ac{IV} for the next
 encryption step, instead of the whole ciphertext which would usually be done in
 CBC as there the ciphertext corresponds to the correct block size.
 
+The lifetime of a node's keystream is determined by two factors. First, the
+keystream is updated at a regular time interval (60 seconds is used in this
+thesis' implementation). Second, the keystream could be exhausted before this
+time interval. For whichever comes first, a new keystream has to be generated,
+and shared with all direct neighbors. Each time a new keystream-material message
+is created, the ephemeral key is generated by increasing the plaintext 'i'. I.e.
+the second time a keystream is generated, the ephemeral key is
+$E_{K_{master}}\{2\}$.
+
 \subsubsection*{Keystream Sharing}
 Now, before this keystream can be used to authenticate routing announcements,
 the node will have to share the keystream with its direct neighbors. This is
 done by sending all the material necessary for the neighbor to create the
 keystream themselves and signing the message with your private key. I.e. the
 node will have to send the ephemeral key, \ac{IV} and nonce to its neighbor.
-Here it is crucial that the key stay secret between the neighbors, therefore
-the node will have to encrypt the ephemeral key with its neighbors public keys
+Here it is crucial that the key stays secret between the neighbors, therefore
+the node will have to encrypt the ephemeral key with its neighbors' public keys
 and send a unicast message with the keystream material to each one of them. The
 details around sharing the keystreams will be further explained in the
 following section regarding all messages sent in the network
@@ -702,15 +714,15 @@ the node keeps a counter, or sequence number, to keep track of which
 \ac{OTP} it has used in order not to use the password twice.
 
 Similarily the node will have to both verify the correctness of the \acp{OTP}
-received in announcements from its trusted neighbors, and that it has not been
-received before. If the password has been received before the annoucement needs
-to be dropped, and assumed is part of a replay-attack. If the node would have
-accepted re-using of one-time-passwords, an attacker could listen and record
-valid one-time-passwords and re-use them with false routing information in
-order to disrupt the routing in the network.
+received in announcements from its trusted neighbors, and that they have not
+been received before. If the password has been received before the annoucement
+needs to be dropped, and assumed to be part of a replay-attack. If the node
+would have accepted re-using of one-time-passwords, an attacker could listen
+and record valid one-time-passwords and re-use them with false routing
+information in order to disrupt the routing in the network.
 
 How to check for replayed one-time-passwords is further elaborated in the next
-chapter, but simply put a sliding window recording the last announcements are
+chapter, but simply put - a sliding window recording the last announcements are
 used, setting a bit value to true if an announcement with the corresponding
 sequence number (keystream sequence number, not from original protocol) has been
 received, and zero if not.
@@ -718,7 +730,7 @@ received, and zero if not.
 \subsection{Discovering New Neighbors}
 Up until this point, the node only had only discovered the \ac{SP} and after the
 authentication handshake shared their keystream material in order to be able to
-trust each others routing annoucements. Because of the trust mode being used in
+trust each others' routing annoucements. Because of the trust mode being used in
 this design, each routing annoucement from the \ac{SP} are trusted, even if they
 are re-broadcasts (forwarded by the SP) originating from other nodes not yet
 known to the new node. This means that the routing table of our node could
@@ -743,17 +755,16 @@ compromized, the ownership of the neighbors are verified by checking the
 validity of said signatures.
 
 \section{Detailed Entity Description}
-This section describes the different entities in greater detail. How they are
-used and why they are present is some of the questions that will be answered.
-
+\label{sect:detailed_ent}
 \subsection{\acf{PC}}
+\label{subsect:detailed_pc_descr}
 In a scenario where actors try to communicate with each other, without the
 Internet or other communication infrastructure available one cannot depend on a
 \ac{PKI} for authentication of the actors. One needs the option of being able
 to verify actors physically (out-of-band) and then issuing them an
 authentication token to be used during this scenario. This is where the
 \aclp{PC} comes in handy. Regular \acp{EEC} should not be used for issuing new
-certificates, per the RFC2459 \cite{rfc2459}, and even if one did use them for
+certificates, per RFC2459 \cite{rfc2459}, and even if one did use them for
 this purpose there is no definition on how to handle topics as path validation
 and such.
 
@@ -791,11 +802,11 @@ fields that are included in this system design:
     \end{itemize}
   \end{itemize}
 \end{itemize}
-Per RFC3820 (\cite{rfc3820}) the subject name has the constraint that it
+Per RFC3820 \cite{rfc3820} the subject name has the constraint that it
 ``should be unique amongst all Proxy Certificates issued by a particular Proxy
 Issuer''. The modal verb ``should'' used in this requirement is used in order
 to ease this requirement so that a method creating a unique name with a high
-probability, but not provable uniqueness, should be accepted. Therefore using a
+probability, but not provable uniqueness, can be accepted. Therefore using a
 SHA-1 digest of the public key used by the node is regarded as ``good enough'',
 or ``unique enough''.
 
@@ -822,7 +833,7 @@ have been defined for use in this design:
   \item Application - Whether the node has access to the application layer
 \end{itemize}
 
-These values are specific to this design, and might not be of any desire in
+These values are specific to this design, and might not be desired in
 other applications. The first value, ``role'', is used to declare which role the
 node has been given. It can be ``sp'' which means the node as administrative
 rights in the network, or ``authenticated'' meaning the node is trusted by the
@@ -830,23 +841,23 @@ rights in the network, or ``authenticated'' meaning the node is trusted by the
 
 The ``routing'' value can be ``full'' or ``limited''. If it is full the node is
 able to generate and broadcast its own routing announcements, and forward its
-trusted nodes routing annoucements. This means the node partakes completeley in
+trusted nodes' routing annoucements. This means the node partakes completely in
 the network and might be placed in a path between two nodes in the network. The
 ``limited'' value is used so a node can become an end-node, but not a node in a
 path between other nodes. I.e., it can send its own routing announcements, but
 it cannot forward other nodes' routing annoucements. If a node with limited
-rights does forward other nodes' announcements they must drop the packets. In
+rights does forward other nodes' announcements they must be dropped. In
 addition, a detection system of misbehaving nodes should pick up this as
-potentially malicious behaviour, but this is not being implemented as previously
-explained in Limitations (\ref{limit:malicious_behaviour}).
+potentially malicious behaviour, but this is not being implemented as
+previously explained in Limitations (\ref{limit:malicious_behaviour}).
 
 The last value, ``application'', is used to declare whether the node should have
 access to the upper layers and being able to use the applications running on top
 of the \ac{MANET}. This restriction is useful if one has special devices in the
 field only used to route/forward packets in the network, acting similar to
 routers in the regular Internet, but not being able to e.g. respond to
-application requests. Nodes which does not use the application layer will reside
-in each nodes routing tables, but should not show up as available nodes on the
+application requests. Nodes which do not use the application layer will reside
+in each nodes' routing tables, but should not show up as available nodes on the
 upper layers.
 
 \subsubsection*{\acf{PC0}}
@@ -869,9 +880,9 @@ A \acl{SP}'s \ac{PC0} would typically be filled with the values in the
 	\label{tab:pc0_values}
 \end{table}
 The zero in the PC0 abbreviation is used to indicate that the certificate is at
-a depth of zero and has a pCPathLenConstraint of one which means that the
-\ac{SP} is allowed to issue new \acp{PC}, but that the children of the \ac{PC0}
-cannot be used to issue new \acp{PC} again. 
+a depth of zero and has a pCPathLenConstraint of one, meaning that the \ac{SP}
+is allowed to issue new \acp{PC}, but that the children of the \ac{PC0} cannot
+be used to issue new \acp{PC} again.
 
 \subsubsection*{\acf{PC1}}
 If the PC0 above was used to issue a regular PC1 to an authenticated node, the
@@ -1049,133 +1060,143 @@ routing announcement fails the checks above, i.e. if its an too old sequence
 number, it has been received before, or if the \ac{OTP} does not match the
 expected \ac{OTP} from the keystream. If this value is too high, the node will
 delete the neighbor entry from its \ac{NL} and request a new keystream-material
-message.
+message. This value is reset to zero when a routing announcement from the same
+neighbor pass all the checks above, assuming the problem has been fixed.
 
-\section{\acf{AM} Messages}
+\section{Authentication Module Messages}
 \label{sect:am_messages}
 This section describes the different messages sent within, or modified by, the
 \ac{AM} extension. This includes how they are created, what payload they
 contain, if and how the information is secured from malicious actors, and
 finally to whom and how often they are sent during normal operation.
 
+Each \ac{AM} message has a header field which declares what kind of message
+follows in the payload and the unique ID of the sender. Some messages contain
+the exact same payload, but might have different message identifiers because the
+message can be sent by different purposes.
+
+\subsection{Node Discovery}
+Node discovery is not actually a part of the \ac{AM} itself, but it is the
+main event that triggers the \ac{AM} and is described here to make the context
+more clear to the reader.
+
+Whenever a trusted node receives a routing announcement containing an \acf{OTP}
+from a new neighbor, i.e. a node which is not in the \acf{NL}, the trusted node
+needs to check the \acf{AL} to see if the node is a trusted node. If the node
+can be found in the \ac{AL} the trusted node will request and send its
+keystream-material message.
+
+If the neighbor is not found in the \ac{AL} however, the node will send its
+\ac{PC} and request the neighbor's \ac{PC}. In addition, both nodes will after
+verifying the other nodes' \ac{PC} send its keystream-material to the other.
+
+If the routing announcement does not contain an \ac{OTP} at all, meaning the
+neighbor is either a new or untrusted, regular authenticated nodes will ignore
+and drop it as they do not take part in the authentication of new nodes. If the
+trusted node is also the \acf{SP} however, it will invite the unknown neighbor
+to an authentication handshake before dropping the packet.
+
 \subsection{Authentication Handshake}
 The authentication handshake describes which messages are sent while
-authenticating a new node to the network. The handshake is triggered by an event
-where the \ac{SP} discover a new and unauthenticated neighbor node.
-
-\subsubsection*{Node Discovery}
-
-TODO: ICH BIN HIER!
-
-Node discovery is not actually a part of the handshake itself, but it is the
-event that triggers the handshake and is described here to make the context more
-clear to the reader.
-
-As described earlier each node stores a local copy of the \ac{AL} and a direct
-neighbor node list. Whenever a trusted node receives a routing announcement from
-a new neighbor, i.e. a node which is not in the direct neighbor list, the
-trusted node needs to check the \ac{AL} to see if the node is a trusted node. If
-the node can be found in the \ac{AL} the trusted node will request the signature
-of the node and store it alongside the address of the node in its neighbor list.
-
-If the node is an unknown node however, regular trusted nodes, i.e. nodes issued
-with a \ac{PC1}, will discard the announcement and go on with its other
-operations. \acp{SP} will initiate an authentication handshake in the same
-event.
+authenticating a new node to the network. If the handshake is successful the two
+nodes participating in the handshake will share their keystream-materials with
+one another.
 
 \subsubsection*{Handshake Invite}
+The handshake invite message is a rather simple message. Its header declares
+that it is an ``invite message'', and the payload only contains the SP's 
+\ac{PC}. The \ac{PC} is sent in the beginning in order for the new node to be
+able to verify the certificate before engaging in the handshake.
 
-\subsubsection*{\acf{PC} Request}
+\subsubsection*{\acl{PC} Request}
+This message contains the field declaring it is a ``certificate request
+message'' and its payload contains a X.509\_REQ data structure
+\cite{viega2002network}. This data is essentially a certificate without an
+issuer's signature, containing all the values it wishes the \ac{SP} to grant
+it.
+
+The request data structure also contains the extensions being used, and
+specifically the sender will request certain rights through the policy field of
+the proxy certificate. E.g. it can request full routing and full application
+rights as mentioned in Section \ref{subsect:detailed_pc_descr}.
 
 \subsubsection*{\acf{PC} Issue}
+Completing the handshake is a message containing the signed certificate. If the
+\ac{SP} was able to verify the new node's public key, the \ac{SP} would sign the
+request in addition to adding some values, possibly changing some of the
+requested values, and sending it all in one message.
 
-\subsubsection*{ACK ?}
-Maybe share the signature (rand+aes-key) in this ack?
+After this message, the \ac{SP} waits for the first keystream-material message
+from the newly authenticated node as an acknowledgement from the recipient,
+after which the \ac{SP} sends its keystream-material to the new node as well.
 
+\subsection{Keystream-Material Message}
+This message contains two headers - a regular AM header declaring the type of
+message and ID of the sender, and a special header declaring the different
+lengths of the contents in the payload.
 
+The payload contains everything needed to create the sender's keystream, i.e. a
+nonce, an ephemeral key encrypted with the recipients public key, an IV, and a
+digital signature. The signature is used tp prove the authenticity of the
+message, i.e. to prove the integrity of the message content and to authenticate
+the sender - or prove the sender is who is claims to be. The digital signature
+is created by creating a message digest of the nonce, IV, and unencrypted (!)
+ephemeral key and encrypting the message digest with the senders private key.
 
-\subsection{Routing Announcement Authentication}
-In the ideal world every routing announcement broadcasted on the network would
-be signed for authenticity and integrity, but for our scenarios and \acp{MANET}
-in general the world is far from ideal.
+TODO: FIGURE OF THE PACKET HERE!
 
-One huge limitation is packet size - because each routing announcement is
-broadcasted throughout the network, and the network in our case is a higly lossy
-one, one needs to constrain the packet size or else all the throughput in the
-network would be used on routing announcements. The decision was therefore made to
-include only a small value of 16 bits to deduce node authentication and to
-assume packet integrity.
+As can be seen in the figure above, the encrypted ephemeral key is appended at
+the end. This, and the decision to make the digital signature from the
+unencrypted key, is done in order to make the packet ``re-usable'' - remember
+this packet has to be sent by the creator to each of its neighbors, and with
+this design only the ephemeral key needs to be encrypted and appended to the
+``standard'' packet for each recipient. This not only makes the design easier,
+it saves overhead by not having to create a digital signature for each recipient
+of the packet.
 
-Later in Section \ref{sect:routing_auth_solution} the idea  behind this
-solution is discussed, partly defending why this solution was chosen, and partly
-what limitations this solution has compared to more traditional ways.
+This message is sent to all neighbors periodically (changing the keystream), or
+when the keystream has been exhausted - whichever comes first.
 
-\subsubsection*{Signature?? Message}
+\subsubsection*{Keystream-Material Request}
+There is a special case the keystream-material sharing. If a node continuously
+receives routing announcements with bad \acp{OTP}, the node will assume the
+neighbor has created a new keystream but its keystream-material message has not
+been successfully received by this node. Because this often happens if the
+packet delivery ratio is low, the node also assumes that the other neighbor does
+not have its keystream-material.
 
-The idea is similar to other \ac{MAC} solutions [TODO: find ref] except only a
-special packet sent periodically is verified - instead of each routing announcement.
-This packet contains a pseudo-randomly generated value, a temporary symmetric
-key generated from the master key, and signed hash value of the packet.
+The node therefore generates a regular keystream-material message, only
+different by the first header type declaring this to be a ``keystream request'',
+and sends it to its neighbor as if it was a new neighbor. Note that no new
+keystream-material is created here, it is only a ``re-sending'' of the old
+packet appended with the current ephemeral key (encrypted).
 
-TODO: mention master key here or earlier??
+\subsection{Modified Routing Announcements}
+The routing announcements are sent by the original routing protocol and not by
+the \ac{AM}, but a small but significant alteration to the routing protocol has
+to be made in order to append the \acp{OTP} to the routing announcements.
+Therefore this will be discussed here briefly.
 
-The neighbor receiving the packet first computes a message digest, hash, of the
-first part of the packet, and decrypts the signed hash value contained in the
-packet and checks to see if they are identical. If so, the neighbor trusts this
-packet to be from an actual trusted neighbor.
-
-The packet cannot be broadcasted, because there is no shared group key between
-all nodes in the network, but has to be unicasted to each of the direct
-neighbors - encrypted with their public keys.
-
-\subsubsection*{Extended Routing Announcements}
-
-The routing announcements are appended with 16 bits of the \ac{MAC} code, which
-is the pseudo-random value encrypted with the symmetric key. For each routing
-announcement there is a counter, which tells the receiving neighbor at which
-offset of the \ac{MAC} value the 16 bits belong to.
-
-Depending on how fast the \ac{MAC} is exhausted, the sender can instruct its
-neighbors to create a bigger value based on the same pseudo-random value. For
-example the nodes can be instructed to generate a \ac{MAC} ten times the size of
-the pseudo-random value - easily done by incrementing and encrypting the random
-bytes ten times.
+The routing announcements are appended with 16 bits extracts from the keystream,
+called one-time-passwords. Additionally, each routing announcement is also
+appended with a sequence number for which the offset of the keystream the
+\ac{OTP} matches.
 
 TODO: Add figure showing these messages, and explicitly the 16 bits extracted
-from the mac\ldots
+from the keystream\ldots
 
-For each routing announcement a neighbor receives, he checks the 16 bits at the
-given offset of the self-generated \ac{MAC} and if it matches - he assumes the
-message is from his trusted neighbor. If any packet contains 16 bits extract
-that does not match the \ac{MAC} at the given offset, the packet will be
-regarded untrusted and dropped.
+For each routing announcement a neighbor receives, it checks the \ac{OTP} at the
+given offset of the senders keystream and if it matches - it assumes the message
+is from its trusted neighbor. If the \ac{OTP} does not match the packet will be
+dropped as discussed earlier.
 
-\begin{figure}[h]
-	\centering
-  	\includegraphics{images/mac_ogm_msc.png}
-  	\caption{Node A peridically generates a new pseudo-random value and a
-  	corresponding symmetric key which it shares with its neighbor B. Node A use
-  	an extract of a generated MAC of this value in each of its routing
-  	announcements hereafter.}
-	\label{fig:mac_ogm_msc}
-\end{figure}
+%\begin{figure}[h]
+%	\centering
+%  	\includegraphics{images/mac_ogm_msc.png}
+%  	\caption{Node A peridically generates a new pseudo-random value and a
+%  	corresponding symmetric key which it shares with its neighbor B. Node A use
+%  	an extract of a generated MAC of this value in each of its routing
+%  	announcements hereafter.}
+%	\label{fig:mac_ogm_msc}
+%\end{figure}
 
-\subsubsection*{REWRITE OVER\ldots}
-In a typical MAC algorithm you send a message appended with a MAC value. Then
-the receiver takes the message, creates his own MAC value and compares it with
-the received MAC value\ldots 
-
-In this solution, the first message, find a name for it!, will contain a message
-(pseudo-random value), WITHOUT the MAC value. (It must also be encrypted and
-signed.,..). 
-
-The MAC value is instead sent with the routing announcements, instead of with
-the initial message itself.
-
-Will be rewritten later.
-
-\subsection{\acf{AL}}
-
-\subsubsection*{\acf{AL} Update}
-
-\subsubsection*{\acf{AL} Single Row Update}
