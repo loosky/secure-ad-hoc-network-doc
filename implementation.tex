@@ -3,181 +3,184 @@
 \acresetall
 
 This chapter goes into depth on how the design from the previous chapter is
-implemented into the BATMAN protocol. The layout of this chapter is a
-chronological order from the point of view of the programmer. The source code
-can be found in Appendix \ref{appendix:source}.
+implemented into the BATMAN protocol. Some code snippets will be shown in the
+following sections when applicable, and the full source code can be found in
+Appendix \ref{appendix:source}.
 
+%\begin{figure}[h]
+%	\centering
+%	\includegraphics[totalheight=1\textheight]{images/batman_if_statements.png}
+%	\caption{IF-Statements in the Batman Class}
+%	\label{fig:batman_if_statements}
+%\end{figure}
 
-\section{Classes}
+\section{Authentication Module}
+Almost all functionality added to BATMAN is within the borders of a separate
+class called \ac{AM}. The first thing to notice about the \ac{AM} is that it
+runs in its own thread and sockets, so all authentication mechanisms run
+concurrent to regular BATMAN routing operations. This separation was necessary
+in order to have BATMAN behave normally during e.g. the authentication of a
+node, so a large network should not suffer if an important node (centrally
+located) is 'hung up' in e.g. authenticating another node.
 
-\subsection{Authentication Module}
-Almost all functionality added to BATMAN is within the borders of this class.
-Some code however, had to be added elsewhere in order to call the \ac{AM}
-functions, or to use information from \ac{AM}. This segregation is primarily
-done in order to separate original BATMAN functions from new authentication
-functions.
+\subsection{AM Thread}
+In the setup phase in the original batman class, an \ac{AM} initiation function
+called \texttt{am\_thread\_init} from the \ac{AM} class is called. This function
+takes the network interface name and its corresponding IP address and broadcast
+address as input. These values are then stored locally in in the AM class for
+socket setup. For socket setup see Section \ref{subsect:am_socks}.
 
-The first thing to notice about the \ac{AM} is that it runs in its own thread,
-so all authentication mechanisms run concurrent to regular BATMAN routing
-operations. This separation was necessary in order to have BATMAN behave
-normally during authentication of a node, so a large network should not suffer
-if an important node (position) is 'hung up' in authentication.
+The function then goes on to create a new thread for the AM module which is the
+main thread taking care of most of the additions in this implementation. The
+thread first sets up two sockets for sending and receiving AM messages such as
+handshakes and keystream-materials.
 
-\subsection{Batman and Schedule Classes}
-These were the only classes of the original BATMAN code that had to be modified.
-The Batman class handles most of the logic when receiving an \ac{OGM} so this is
-where a check has been added to see if a node is known. If it is not, a thread
-in the \ac{AM} is initialized in order to try to authenticate with the other
-node, and then goes on to disregard the handling of that packet further, as to
-deny it being copied into the routing table by BATMAN. The \ac{OGM} packet
-format has also been slightly altered as to include an extra field for
-authentication purposes. This field will be used to include the signature offset
-of the node broadcasting or forwarding the \ac{OGM}.
+Next it generates a highly random (high entropy) master key using the OpenSSL
+function \texttt{RAND\_bytes}, which has been properly seeded - see Section
+\ref{subsect:posix.c}. This and an IV generated with OpenSSL's
+\texttt{RAND\_pseudo\_bytes} is then used to generate a master key encryption
+context for AES encryption, before deleting the master key. With the encryption
+context the necessary internal memory used by OpenSSL for encrypting with this
+key is stored, and therefore the key and IV is of no more use by themselves -
+making it a sound security choice to delete the key (and IV) entirely.
 
-In the Schedule class the signature offset, or the authentication token as
-described in the next section, was added at the end of the extended \ac{OGM}. If
-there is no authentication token or signature available, it will add a zero
-value, indicating the node is not authenticated with any network.
+The next important action is to generate either a \ac{PC0} or a \ac{PC} request
+depending on whether you are a \ac{SP} or just a regular node trying to
+authenticate with the network.
 
-\begin{figure}[h]
-	\centering
-	\includegraphics[totalheight=1\textheight]{images/batman_if_statements.png}
-	\caption{IF-Statements in the Batman Class}
-	\label{fig:batman_if_statements}
-\end{figure}
+After these steps the ``initiation phase'' of the AM thread is complete, and the
+rest of the code runs in a loop until the BATMAN daemon is terminated.
 
-\section{First Phase}
-The first phase of the implementation started with looking through the whole
-source code of BATMAN in order to get an understanding of where and how changes
-had to be made. The batman class has a nice setup where it goes through many
-different checks (if-statements) on a received \ac{OGM} to determine whether it
-should be added to the routing table, if information about the node should be
-modified, or if the node should be dropped for one of several reasons. These
-checks are shown in Figure \ref{fig:batman_if_statements}.
+\subsection{AM Sockets}\label{subsect:am_socks}
+Two sockets are used for the AM module, one for sending and one for receiving AM
+messages. Both sockets are bound to the interface device given by the AM
+initiation function. The receive socket is then bound to a designated port
+64305, regular BATMAN runs on port 4305, and the send socket is explicitly
+allowed to send to broadcast addresses.
 
-This first phase does not use any cryptographic functions, and will only be used
-as a ``framework'' for handling the sent messages and function calls, so adding
-actual secure methods later will become separated from the problems of altering
-the BATMAN source code.
+Sockets needs to be explicitly set to be allowed to send to broadcast addresses
+in UNIX systems, as a protection mechanism.
 
-Throughout all of these checks, there is a label it can jump to if any check
-fails, called 'send\_packets'. That is, it is a label in the received packet is
-disregarded and the program goes on to schedule its own and and forward other
-scheduled \acp{OGM}. In Figure \ref{fig:batman_if_statements} this is shown
-with the box at the bottom. This label is very useful because when checking if a
-node is already authenticated, the flow can be altered so that if a node is
-unknown the program can jump to this label and disregard the handling of the
-received \ac{OGM} after initializing a new authentication thread in \ac{AM}.
-This part is shown with the highlighted red in the same figure.
+The following shows a code snippet of how the sockets are setup:
+\begin{lstlisting}[frame=tb]
+int32_t *recvsock, *sendsock;
+addrinfo hints, *res;
 
-In this first phase, a method called 'authenticate\_init' in the \ac{AM} class
-is called when an \ac{OGM} is received from an unknown source. This method
-copies information about the node such as its IP-address to a local variable
-before it initiates a new authentication thread to handle the authentication
-phase. The original thread jumps back to the batman class and jumps to the
-'send\_packets' label. Until the authentication thread is completed, no new
-packets from unknown sources will be handled.
+/* Set family information */
+memset(&hints, 0, sizeof hints);
+hints.ai_family = AF_INET;
+hints.ai_socktype = SOCK_DGRAM;
+hints.ai_flags = AI_PASSIVE;
+hints.ai_protocol = IPPROTO_UDP;
 
-In the authentication thread the first thing that needs to be done is to
-determine which node is, or will become, the master node. Assuming both nodes
-are already authenticated in the network, which means they both have no
-signature offset value set in their \acp{OGM}, a very simple master node choice
-is made based on the address value. Whichever of the two nodes have the larger
-IP address value is assigned the master role. When authenticating with new nodes
-after this point, an authenticated node will disregard unknown nodes
-completely, and only the new node and the master node will initiate
-the authentication handshake, in which the new node will recognize that the
-master node is already authenticated, and therefore the master node, by looking
-at the non-zero authentication signature-offset.
+/* Puts the port-info inside a addrinfo data structure */
+getaddrinfo(NULL, port, &hints, &res);
 
-Next, the master node will send a pseudo-random challenge value (one-byte
-unsigned integer) in a challenge packet. It is important to mention once
-again that these packets are meant as a framework, and that the challenges in
-the final version will both be much larger in size and made with a
-cryptographic function. The challenge packet is defined with an \ac{AM}-header
-(ID and payload type) and its payload type which is the one-byte unsigned
-integer value of the challenge. This packet, and all following are addressed
-directly to each other, and they are not broadcasted through the whole network
-such as \acp{OGM}.
+/* Assign file descriptor for sockets */
+*recvsock = socket(PF_INET, SOCK_DGRAM, 0)
+*sendsock = socket(PF_INET, SOCK_DGRAM, 0)
 
-The recipient of the challenge will respond with a challenge-response packet
-which contains the response value, which is just a value generated as a simple
-function of the received challenge value, and a new challenge value for the
-master node. Once again, the response value will be created using
-cryptographic functions in the final version. This packet is similar to the
-challenge packet, only it contains one more field - i.e. for the response value.
+/* Binds the sockets to the network interface */
+setsockopt(*recvsock, SOL_SOCKET, SO_BINDTODEVICE, interface, strlen(interface) + 1)
+setsockopt(*sendsock, SOL_SOCKET, SO_BINDTODEVICE, interface, strlen(interface) + 1)
 
-The master node will try to verify the response value received in
-challenge-response packet and send a new response value to the received
-challenge in a new response-packet. This packet, in addition to the response
-value, also contains an authentication value, which will be used by all
-``authenticated'' nodes as the signature offset during this first phase of the
-programming. It should be noted that this is not in any way a secure
-authentication, because the authentication handshake contains no cryptographic
-functions and does not use any cryptographic keys of any sort, and because
-anyone sniffing the network can pick up the authentication value to be used.
+/* Binds receive socket to the port (rest of the address is empty/null) */
+bind(*recvsock, res->ai_addr, res->ai_addrlen);
 
-If the recipient of the response-packet accepts the response value, it will now
-copy the authentication token and use this in its \ac{OGM} later on, and
-recognize itself as an authenticated node. That means, as stated earlier, that
-it will now totally disregard any received \acp{OGM} for which it does not
-recognize the signature offset, or authentication value if you will.
+/* Allow the send socket to send broadcast messages */
+int broadcast_val = 1;
+setsockopt(*sendsock, SOL_SOCKET, SO_BROADCAST, &broadcast_val, sizeof int)
 
-TODO: Split into sections and add figures, maybe a MSC to depict the handshake
-message flow\ldots
-
-\section{\acf{PC}}
-
-\subsection{Creating a Public Key Pair}
-
-\subsection{Creating the \ac{PC} with the Public Key Pair}
-
-\subsection{\ac{SP} Signing the Unsigned \ac{PC}}
-
-\subsection{Validate the signed \ac{PC1}}
-
-\subsection{Creating a Signature with \ac{PC} (0 and 1)}
-
-\section{Routing Announcement Authentication}
-TODO: write this fully, for now only bulletpoints\ldots
-
-\definecolor{darkgray}{rgb}{0.95,0.95,0.95}
-\lstset{
-	language=c,
-	basicstyle=\footnotesize,
-	numbers=left,
-	numberstyle=\footnotesize,
-	stepnumber=0,
-	numbersep=5pt,
-	backgroundcolor=\color{darkgray},
-	showspaces=false,
-	showstringspaces=false,
-	showtabs=false,
-	frame=single,
-	tabsize=2,
-	captionpos=b,
-	breaklines=true,
-	breakatwhitespace=false,
-	escapeinside={\%*}{*)}
-}
-
-\begin{lstlisting}
-
-- Initialization Phase: Generate a master key (Km) 128 bit AES with
-OpenSSL_RAND()
-
-- Signature messages:
-  - Generate Ki = AES[Km](i) where i=1,2,3\ldots
-  - Generate RANDi x? bytes with OpenSSL_psuedo_RAND()
-  - Send Ki|RANDi (encrypted unicast to each neighbor with their public keys)
-  - Generate the MACi = AES[Ki](RANDi)  (both sender and neighbors do this)
-
-- Routing Announcements / OGMs:
-  - Append 16 bits of MACi to the OGM
-  - Add counterval/sequence num for which 16 bits of the MACi is sent
-  - Neighbor will check this val:
-    - If received bits does not match the ones he generates himself, discard the
-    OGM
-    - If received seq num has been used before, discard the OGM
+/* Set the send socket to non-blocking */
+fcntl(*sendsock, F_SETFL, O_NONBLOCK);
 
 \end{lstlisting}
+
+There are several practical reasons to choose UDP sockets over TCP sockets for
+this implementation. First and foremost, this system sends authentication
+handshake messages and keystream-material messages to nodes which has no route
+in the routing tables. If a connection-oriented protocol would try this the
+messages would be blocked on the kernel level and not sent. With an
+connectionless protocol like UDP no mechanisms will block this message being
+sent, it will just send the message not bothering whether the message is ever
+received by the recipient.
+
+Second, TCP was created with wired networks in mind, observing much less packet
+loss. In \acp{MANET} the packet losses are much higher than in wired and fixed
+infrastructure networks, and as nodes move around direct paths between nodes
+change much more frequently. TCP is not suitable for such environments because
+it will lead to a huge amount of re-sending of packets to ``non-existant''
+neighbors and much memory wasted in connection states being kept for dead links.
+
+\subsection{Main Operation of the AM Thread}
+Most of the interesting operation in the AM class happens within a single loop
+running throughout the lifetime of the BATMAN daemon. The program flow
+throughout this loop is shown in Figure \ref{fig:am_main_loop}.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{images/am_main_loop.png}
+	\caption{Main program flow in AM class.}
+	\label{fig:am_main_loop}
+\end{figure}
+
+For clarity the figure leaves out certain details, but the most important
+features are depicted. The handle incoming messages are shown as a sub-process
+in the figure.  This is not true, but depicting all possible messages would not
+fit the figure, and therefore left out altogether. However, each message are
+described in the following sections.
+
+The ``New Neighbor'' is one of the elements in the AM class that must be
+triggered by the batman class. If the batman class declares a new neighbor is
+discovered and the AM class is in a ready state to handle new neighbors the
+appropriate action is taken, whether the neighbor has been authenticated with
+the network or not. Not shown in the figure is how a regular authenticated node
+will act if a new neighbor which is not authenticated with the network is
+handled, but this is taken care of in the batman class and not here.
+
+The two last parts should be self-explanatory, they simply check the current
+time and then compares this against time values set on the nodes own current
+keystream to check if its old, or if any keystreams from other neighbors in the
+\ac{NL} are old and if so takes the appropriate action. Also checked is if a
+nodes own keystream is getting exhausted, in which also the appropriate action,
+namely creating and sharing a new one with each neighbor in the \ac{NL}.
+
+
+\section{Proxy Certificates}
+The \acp{PC} in this implementation are containers for short lived 1024 bits RSA
+public keys used in a single session only. Most of the design choices were taken
+into the implementation, but some however, were left due to time constraint.
+
+One such was that the original proxy certificate X.509v3 extension, introduced
+in RFC 3820 called ``proxyCertInfoExtension'' was not used to carry the policies as
+intented. Most of the OpenSSL documentation is not released to the general
+public for free, and this X.509v3 extension was no exception. The only examples
+found, amongst the original proxy certificate implementations from the Globus
+Project\footnote{Globus Project:
+\url{http://www.globus.org/toolkit/downloads/}}, but using the exact same setup
+did not work in my implementation. After some investigation it seems no open
+source code projects using proxy certificates have been publiished for years,
+giving me the idea that maybe the OpenSSL specifications have changed during
+the last version updates and that proxy certificates have to be implemented
+differently. The author have asked for an answer on this subject on both emails
+to the developers of OpenSSL, the OpenSSL's mailinglists, and on an
+OpenSSL ``IRC'' channel\footnote{OpenSSL IRC Channel: \#openssl on
+\url{irc://irc.freenode.net}}
+
+\subsection{Generating PC Requests}
+\subsection{Generating PCs}
+\subsection{Verifying PCs}
+
+\section{Authentication List}
+
+\section{Neighbor List}
+
+\section{Keystream}
+\subsection{Generating Keystreams}
+\subsection{Using One-Time Passwords From Keystream}
+\subsection{Verifying One-Time Passwords}
+
+\section{Changes to the BATMAN Protocol}
+\subsection{POSIX.C}\label{subsect:posix.c}
+\subsection{BATMAN.C}
+\subsection{SCHEDULE.C}

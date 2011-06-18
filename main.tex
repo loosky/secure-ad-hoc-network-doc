@@ -1,4 +1,4 @@
-\documentclass[a4paper, twoside, english, 11pt]{book}
+\documentclass[a4paper, twoside, english, 12pt]{book}
 
 \usepackage{graphicx,subfig,url,acronym,fancyhdr,listings,longtable,verbatim,enumerate,courier,caption,tabularx}
 \usepackage[latin1]{inputenc}
@@ -18,6 +18,7 @@
 		urlcolor=blue, 			% Color for linked URLs.
 }
 
+
 \setlength{\parindent}{0pt} 
 \setlength{\parskip}{2ex}
 \addtolength{\headheight}{0.5pt}
@@ -26,7 +27,7 @@
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
-\fancyhf{}
+\fancyhead{}
 \fancyhead[RO]{\bfseries\rightmark}
 \fancyhead[LE]{\bfseries\leftmark}
 \renewcommand{\headrulewidth}{0.5pt}
@@ -35,13 +36,25 @@
 
 \begin{document}
 
-%\pagestyle{empty}
-%\input{front_page}
-
-%\cleardoublepage
-%\input{problem_description}
-
-% %\cleardoublepage
+\definecolor{darkgray}{rgb}{0.95,0.95,0.95}
+\lstset{ %
+language=c,                % choose the language of the code
+basicstyle=\small,       % the size of the fonts that are used for the code
+numbers=left,                   % where to put the line-numbers
+numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+stepnumber=0,                   % the step between two line-numbers. If it is 1 each line will be numbered
+numbersep=5pt,                  % how far the line-numbers are from the code
+backgroundcolor=\color{darkgray},  % choose the background color. You must add \usepackage{color}
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+frame=single,   		% adds a frame around the code
+tabsize=2,  		% sets default tabsize to 2 spaces
+captionpos=b,   		% sets the caption-position to bottom
+breaklines=true,    	% sets automatic line breaking
+breakatwhitespace=false,    % sets if automatic breaks should only happen at whitespace
+escapeinside={\%*}{*)}          % if you want to add a comment within your code
+}
 
 \pagenumbering{roman}
 \pagestyle{fancy}
@@ -49,52 +62,109 @@
 
 \pagestyle{empty}
 \cleardoublepage
-
 \pagestyle{fancy}
+
 \input{preface}
 
-\clearpage
+\pagestyle{empty}
+\cleardoublepage
+\pagestyle{fancy}
+
 \input{acronyms}
 
-\clearpage
+\pagestyle{empty}
+\cleardoublepage
+\pagestyle{fancy}
+
 \input{definitions}
+
+\pagestyle{empty}
+\cleardoublepage
+\pagestyle{fancy}
 
 \setlength{\parskip}{0ex}
 \tableofcontents
+
+\pagestyle{empty}
+\cleardoublepage
+\pagestyle{fancy}
+
 \listoffigures
+
+\pagestyle{empty}
+\cleardoublepage
+\pagestyle{fancy}
+
 \listoftables
 \setlength{\parskip}{2ex}
 
+\pagestyle{empty}
 \cleardoublepage
+\pagestyle{fancy}
 
 \pagenumbering{arabic}
-
 \input{introduction}
+
+\pagestyle{empty}
+\cleardoublepage
+\pagestyle{fancy}
 
 \input{background}
 
+\pagestyle{empty}
+\cleardoublepage
+\pagestyle{fancy}
+
 \input{design}
+
+\pagestyle{empty}
+\cleardoublepage
+\pagestyle{fancy}
 
 \input{implementation}
 
+\pagestyle{empty}
+\cleardoublepage
+\pagestyle{fancy}
+
 \input{testing}
+
+\pagestyle{empty}
+\cleardoublepage
+\pagestyle{fancy}
 
 \input{discussion}
 
+\pagestyle{empty}
+\cleardoublepage
+\pagestyle{fancy}
+
 \input{conclusion}
 
-\clearpage
+\pagestyle{empty}
+\cleardoublepage
+\pagestyle{fancy}
 
 \addcontentsline{toc}{chapter}{Bibliography}
 \bibliographystyle{alpha}
 \bibliography{ref}
 
-\clearpage
+\pagestyle{empty}
+\cleardoublepage
+\pagestyle{fancy}
 
 \appendix
 \input{appendix_source_code}
 
+\pagestyle{empty}
+\cleardoublepage
+\pagestyle{fancy}
+
 \input{appendix_irc_logs}
+
+\pagestyle{empty}
+\cleardoublepage
+\pagestyle{fancy}
 
 \input{appendix_labsetup}
 
