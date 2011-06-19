@@ -117,7 +117,7 @@ Most of the interesting operation in the AM class happens within a single loop
 running throughout the lifetime of the BATMAN daemon. The program flow
 throughout this loop is shown in Figure \ref{fig:am_main_loop}.
 
-\begin{figure}[H]
+\begin{figure}[hb!]
 	\centering
 	\includegraphics[width=\textwidth]{images/am_main_loop.png}
 	\caption{Main program flow in AM class.}
@@ -131,12 +131,13 @@ fit the figure, and therefore left out altogether. However, each message are
 described in the following sections.
 
 The ``New Neighbor'' is one of the elements in the AM class that must be
-triggered by the batman class. If the batman class declares a new neighbor is
-discovered and the AM class is in a ready state to handle new neighbors the
-appropriate action is taken, whether the neighbor has been authenticated with
-the network or not. Not shown in the figure is how a regular authenticated node
-will act if a new neighbor which is not authenticated with the network is
-handled, but this is taken care of in the batman class and not here.
+triggered by the batman class. If the batman thread tells the AM thread a new
+neighbor is discovered and the AM thread is in a ready state to handle new
+neighbors the appropriate action is taken, whether the neighbor has been
+authenticated with the network or not. Not shown in the figure is how a regular
+authenticated node will act if a new neighbor which is not authenticated with
+the network is handled, but this is taken care of in the batman class and not
+here.
 
 The two last parts should be self-explanatory, they simply check the current
 time and then compares this against time values set on the nodes own current
@@ -165,7 +166,14 @@ the last version updates and that proxy certificates have to be implemented
 differently. The author have asked for an answer on this subject on both emails
 to the developers of OpenSSL, the OpenSSL's mailinglists, and on an
 OpenSSL ``IRC'' channel\footnote{OpenSSL IRC Channel: \#openssl on
-\url{irc://irc.freenode.net}}
+\url{irc://irc.freenode.net}}.
+
+As a replacement for this extension, a commonly used free-text extension called
+\texttt{netscape\_comment} has been used and the policy has been written in
+cleartext inside this comment. Because the design proposed used the
+\texttt{id-ppl-anyLanguage} and allows the application to decide the language
+the policy is written in, this should make no practical difference, other than
+not being a strictly RFC 3820 proxyCertInfoExtension.
 
 \subsection{Generating PC Requests}
 \subsection{Generating PCs}
@@ -181,6 +189,14 @@ OpenSSL ``IRC'' channel\footnote{OpenSSL IRC Channel: \#openssl on
 \subsection{Verifying One-Time Passwords}
 
 \section{Changes to the BATMAN Protocol}
+
+\begin{figure}[h]
+	\centering
+  	\includegraphics{images/extended_ogm.png}
+  	\caption{Modified routing announcement (Originator Message - OGM) for the modified BATMAN protocol.}
+	\label{fig:extended_ogm}
+\end{figure}
+
 \subsection{POSIX.C}\label{subsect:posix.c}
 \subsection{BATMAN.C}
 \subsection{SCHEDULE.C}

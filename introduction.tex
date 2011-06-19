@@ -7,24 +7,30 @@ out that even the norwegian army does not want super super safe systems as you
 cannot do much on those systems, rather do heavy monitoring of ``less safe''
 systems\ldots analogy to our ad-hoc network maybe?
 
-We have become accustomed with an almost complete presence of digital networks
+We have become accustomed to an almost complete presence of digital networks
 in our daily lives. Everywhere you go, you can either plug your laptop into an
-ethernet slot, connect your laptop to an available wifi hot spot, or just use
+ethernet slot, connect your iPad to an available wifi hot spot, or just use
 your cell phone via 3G mobile data network. However, this is not universally
-true throughout the world. Many places are scarcely populated, or the people
+true throughout the world. Many places are sparsely populated, or the people
 living there do not have the resources to deploy such networks.
 
 In emergency and/or military situations, this often applies. Even if it didn't,
 the networks may have been put out of operations due to the nature of the
-emergency (i.e. tsunami destroying the infrastructure). The military might
-also be in an hostile environment where they cannot trust the network in place
-altogether.
+emergency (i.e. tsunami destroying the infrastructure). As recent events
+here in Norway have shown internal errors might paralyze the whole network 
+infratrucutre
+\footnote{\url{http://www.dagbladet.no/2011/06/16/nyheter/innenriks/telenor/16942385/}
+(Norwegian)} making emergency relief ineffective
+\footnote{\url{http://www.dagbladet.no/2011/06/11/nyheter/ver/flom/naturkatastrofer/innenriks/16880835/}
+(Norwegian)}, giving a sound argument for having a separate backup emergency
+network. The military might also be in an hostile environment where they cannot trust
+the network in place altogether.
 
 Emergency search and rescue and military tactical operations can greatly benefit
 from the use of digital communication for sharing operation critical
 information. If they have no trusted data network available, they should
-therefore setup one themselves. A realistic approach would have to be easy and
-quick to setup and be self-managing thus requiring minimal maintenance. It
+therefore set up one themselves. A realistic approach would have to be easy and
+quick to set up and be self-managing, thus requiring minimal maintenance. It
 should to an extent always be available to the participants wherever they go,
 which calls for using a wireless network. Last but not least, the network needs
 to be trusted, i.e. you should trust that the infrastructure is not compromised
@@ -36,23 +42,25 @@ range can easily be extended by placing intermediate nodes in strategic
 locations. The latter requirement however, is a more challenging task in
 \acp{MANET}.
 
-With the lack of infrastructure in \acp{MANET} and no guarantees they are
-connected to the Internet, establishing trust between the nodes become different
-from that on the Internet which can rely on e.g. \acp{PKI}.
+With the lack of infrastructure in \acp{MANET} and no guarantees that they are
+connected to the Internet, establishing trust between the nodes becomes
+different from how this is done on the Internet which can rely on e.g.
+\acp{PKI}.
 
 In this thesis I will propose and implement a solution suggestion to establish a
 trust mechanism, i.e. an authentication scheme, which combines features of a
-typical \ac{PKI} with \ac{WOT} ideas [TODO: ref of gpg project maybe?].
+typical \ac{PKI} with some of the ideas behind \ac{WOT}
+\cite{zimmermann1995official}.
 
 
 \section{Motivation}
-The recent 7.0 magnitude earthquake that struck Haiti in 2010 showed us how huge
+The 7.0 magnitude earthquake that struck Haiti in 2010 showed us how huge
 relief efforts easily become very inefficient when huge amounts of emergency
 relief personell work at a scene with little or scarce communication throughout
-the area (\url{http://www.wired.com/magazine/2010/04/ff_haiti/}). With a trusted
-communication network like a secure \ac{MANET} an operation like this could
-become much more efficient, bringing the right amount of help to the right
-places at the right time.
+the area \footnote{\url{http://www.wired.com/magazine/2010/04/ff_haiti/}}. With
+a trusted communication network like a secure \ac{MANET} an operation like this
+could become much more efficient, bringing the right amount of help to the
+right places at the right time.
 
 \section{Contributions?}
 Specify what I am contributing with?

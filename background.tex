@@ -2,15 +2,16 @@
 \label{ch:background}
 \acresetall
 
-This chapter aims to give the reader the necessary background to understand this
-thesis.
+This chapter aims to give the reader the necessary background to ad hoc routing,
+attacks on ad hoc networks, and about the proxy certificates concept in order to
+understand this thesis.
 
 \section{\acf{MANET}}
 An ad hoc network is a network of nodes which communicate with each other and
 through each other, i.e. nodes act as both regular end nodes and as intermediate
 nodes, similar to routers in regular networks. Because nodes in an ad hoc
 network can route packets from one node to another until its destination, ad hoc
-networks does not need an infrastructure with routers such as regular networks
+networks do not need an infrastructure with routers such as regular networks
 do \cite{perkins2008ad}. Without an infrastructure ad hoc networks can be
 established spontaneously and with no, or minimum, pre-configuration depending
 on the implementation in use.
@@ -29,9 +30,9 @@ networks and ad hoc networks. In \ref{fig:infrastructure_mode} there are three
 mobile nodes connected to each other through two wireless access points
 (infrastructure), while in \ref{fig:adhoc_mode} there are five nodes connected
 to each other and through each other. In infrastructure mode an end node only
-accepts packets packets addressed to itself, while in ad hoc mode the node will
-try to forward packets addressed to other nodes (on the network layer). They
-will however not accept packets sent to other link-layer addresses.
+accepts packets addressed to itself, while in ad hoc mode the node will try to
+forward packets addressed to other nodes (on the network layer). They will
+however not accept packets sent to other link-layer addresses.
 
 A \ac{MANET} is a subset of ad hoc networks, in which nodes are specified as
 non-stationary wireless nodes, i.e. a \ac{MANET} consists of several mobile
@@ -51,26 +52,91 @@ protocols are OLSR \cite{olsr_paper}, B.A.T.M.A.N. \cite{batman_rfc}, Babel
 \cite{rfc6126}, DSDV \cite{he2002destination}, and AODV
 \cite{Perkins:2003:AHO:RFC3561} which all fall into one of the two main
 categories of ad hoc routing - i.e. ``reactive'' and ``pro-active'' routing
-protocols.
-
-\subsubsection*{Reactive Routing Protocols}
-
+protocols. In this thesis a pro active routing protocol is used in the system
+design, and as such an introduction to this type of protocol is necessary.
 
 \subsubsection*{Pro-active Routing Protocols}
+As the name suggests, a pro active routing protocol finds or creates routing
+paths before, i.e. pro actively, the paths are requested. Essentially this means
+that the routing protocol on a node has to regularly share routing information
+with other nodes it can communicate with. This can be done in a huge variety of
+ways - from storing full paths to all known nodes and broadcast this information
+to all nodes regularly, to only storing a first hop in the direction of the
+known nodes, and only telling your neighbors that you have a route to some other
+node instead of the full route.
 
+Each method might have some advantages over the other, i.e. storing full paths
+and sending all this information to all nodes in the network might minimize the
+chances of routing loops and route flappings, but this method would have a huge
+overhead in signalling traffic. The latter method would have much less overhead,
+but it is more difficult to avoid routing loops and/or route flapping.
 
 \subsection{Challenges}
+There are a multitude of challenges to solve in regards to ad hoc networking,
+and especially so in modbile ad hoc networking. First there are challenges
+regarding routing such as route flapping and routing loops, then there is the
+issue of power conservation as modile ad hoc nodes usually runs on battery
+power, and last but definately not least there is the issue of security.
 
-\subsection{Security}
+\subsubsection*{Route Flapping}
+Route flapping is a term describing rapid route changes when there are multiple
+possible routes between two nodes. Sometimes two routes might be almost equally
+good and might stay that way for a while, which might lead routes in a node's
+routing table to constantly change between the two. In such scenarios a routing
+protocol might solve the problem by not changing routes unless the other route
+is a significantly better route, or if it has been slightly better, but
+constantly so for a longer time. Which solution is better is difficult to
+determine and is one of many reasons why there are a huge amount of contesting
+ad hoc routing protocols, and this question is still unresolved.
+
+\subsubsection*{Routing Loops}
+You have a routing loop if a path between two nodes passes through one or more
+node(s) on the route more than once. When nodes have wrong, incomplete, or just
+different routing information from one another then two nodes in the network
+might choose to route the same packets through different nodes, which might
+lead the route to eventually return to nodes which have already received and
+forwarded said packets.
+
+In a \ac{MANET} where routes might change very often, the chances of two nodes
+having different routing information is high. Routing loops can therefore become
+a severe problem in \acp{MANET}, suggesting implementations should use a
+protocol that has some mechanisms to minimize the chances of routing loops,
+and/or detecting routing loops and removing them after the fact.
+
+\subsubsection*{Power Conservation}
+With mobile nodes in a \ac{MANET} power consumption can become a huge hindrance.
+Because pro active routing protocols sends routing information regularly, even
+if they are not needed, they might be wasting energy compared to reactive
+protocols that only calculates routing paths when application data is sent
+through the network.
+
+This issue will also be very much affected by the security implementation on top
+of the ad hoc routing protocol. If. for example, every packet is to be digitally
+signed, a hashing operation and an public key encryption operation would be
+performed on each packet - using a lot of energy. When designing the
+authentication solution this issue needs to be addressed.
+
+\subsubsection*{Security}
+Security can be divided in multiple fields of interest such as (but not limited
+to) \textit{secrecy}, \textit{integrity}, \textit{authenticity}, and
+\textit{access control} to name a few. Whatever the security feature is, it
+usually depends on \emph{authentication}.
+
+Acheiving a secure initial authentication is a very difficult task even in
+regular networks, but using a verifyable identity based upon this initial
+authentication is conquered using \acp{PKI}. In a \ac{MANET}, possibly without
+Internet access, this task is very difficult however. Therefore, one ends up
+with the original problem - doing initial authentication all over again. As this
+is topic is greatly discussed throughout the thesis there is no point in
+elaborating more at this point.
 
 \section{B.A.T.M.A.N.}
-BATMAN \cite{batman_rfc} is an increasingly more popular routing protocol for
+BATMAN \cite{batman_rfc} is an increasingly popular routing protocol for
 wireless ad hoc networks, as seen by the fact its taken into the Linux kernel
-net tree (\url{http://www.open-mesh.org/wiki/open-mesh/2011-03-17-batman-adv-and-the-penguin}).
-The name is an abbreviation for ``Better Approach To Mobile Ad hoc Networking''.
-The motivation behind developing BATMAN was to replace the Optimized Link State
+net tree
+\footnote{\url{http://www.open-mesh.org/wiki/open-mesh/2011-03-17-batman-adv-and-the-penguin}}. The name is an abbreviation for ``Better Approach To Mobile Ad hoc Networking''. The motivation behind developing BATMAN was to replace the Optimized Link State
 Routing Protocol (OLSR) \cite{why-starting-batman} because of the inherent
-difficulties that protocol has.
+difficulties that protocol has, as explained below.
 
 \subsection{From OLSR to BATMAN}
 OLSR is a pro-active routing protocol, which means that participating nodes
@@ -93,13 +159,13 @@ each node and who was the last sender.
 
 \subsection{BATMAN Protocol Explanation}
 The routing messages sent in BATMAN are called \acp{OGM}. Figure
-\ref{fig:original_ogm} show the packet format with all header fields. The
-\ac{OGM} format has changed since the \cite{batman_rfc} was published, but there
-is no official publication with the new packet format as of yet. The updated
-packet format can be found in the project's internal documentation
-\url{http://gitorious.org/batman-adv-doc/}. The packet format found in the RFC
-belong to the older version III of the BATMAN algorithm. The algorithm used in
-this thesis is version IV.
+\ref{fig:original_ogm} shows the packet format with all header fields. The
+\ac{OGM} format has changed since the draft specification was published
+\cite{batman_rfc}, but there is no official publication with the new packet
+format as of yet. The updated packet format can be found in the project's
+internal documentation \footnote{\url{http://gitorious.org/batman-adv-doc/}}.
+The packet format found in the draft specification belong to the older version
+III of the BATMAN algorithm. The algorithm used in this thesis is version IV.
 
 \begin{figure}[h]
 	\centering
@@ -109,13 +175,14 @@ this thesis is version IV.
 \end{figure}
 
 The real workhorse of the packet is the ``Originator Address'' field which
-carries a host address of the node 'A' that broadcasted the \ac{OGM}. When a
+carries the host address of the node 'A' that broadcasted the \ac{OGM}. When a
 node 'B' receives this message it checks if the originator address and source
 address of the IP header are the same - if so the two nodes are direct
 neighbors. B then forwards the \ac{OGM} only changing the ``\ac{TTL}'' and
-``Previous Sender'' fields. All \acp{OGM} inside the BATMAN network are
-broadcasted and rebroadcasted until the TTL has dropped to zero, or until they
-receive an \ac{OGM} they have previously sent themselves.
+``Previous Sender'' fields. B's neighbors who receive this OGM from A through
+B also forwards the packet and so on. All \acp{OGM} inside the BATMAN network
+are broadcasted and rebroadcasted until the TTL has dropped to zero, or until
+the nodes receive an \ac{OGM} they have previously sent themselves.
 
 This way all \acp{OGM} will be received and rebroadcasted by all nodes in the
 network and all nodes will learn the existence of each other and which nodes are
@@ -125,12 +192,15 @@ All nodes and their first hops in their paths are stored in a list called an
 
 \begin{figure}[h]
 	\centering
-	\subfloat{\includegraphics[width=0.3\textwidth]{images/ogm_packet_flow_1.png} }
-	\subfloat{\includegraphics[width=0.3\textwidth]{images/ogm_packet_flow_2.png} } 
-	\subfloat{\includegraphics[width=0.3\textwidth]{images/ogm_packet_flow_3.png}}
-	\\
-	\subfloat{\includegraphics[width=0.3\textwidth]{images/ogm_packet_flow_4.png} } 
-	\subfloat{\includegraphics[width=0.3\textwidth]{images/ogm_packet_flow_5.png}}
+	\subfloat{\includegraphics[width=0.45\textwidth]{images/ogm_packet_flow_1.png}
+	}
+	\subfloat{\includegraphics[width=0.45\textwidth]{images/ogm_packet_flow_2.png}}
+	\\ 
+	\subfloat{\includegraphics[width=0.45\textwidth]{images/ogm_packet_flow_3.png}
+	}
+	\subfloat{\includegraphics[width=0.45\textwidth]{images/ogm_packet_flow_4.png}}
+	\\ 
+	\subfloat{\includegraphics[width=0.45\textwidth]{images/ogm_packet_flow_5.png}}
 	\caption{Flow of an \acf{OGM} originating from the left-most node.}
 	\label{fig:ogm_packet_flow}
 \end{figure}

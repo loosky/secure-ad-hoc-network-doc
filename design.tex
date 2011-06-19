@@ -1111,9 +1111,9 @@ able to verify the certificate before engaging in the handshake.
 \subsubsection*{\acl{PC} Request}
 This message contains the field declaring it is a ``certificate request
 message'' and its payload contains a X.509\_REQ data structure
-\cite{viega2002network}. This data is essentially a certificate without an
-issuer's signature, containing all the values it wishes the \ac{SP} to grant
-it.
+\cite{viega2002network}. This data structure is essentially a certificate
+without an issuer's signature, containing all the values it wishes the \ac{SP}
+to grant it.
 
 The request data structure also contains the extensions being used, and
 specifically the sender will request certain rights through the policy field of
@@ -1137,7 +1137,7 @@ lengths of the contents in the payload.
 
 The payload contains everything needed to create the sender's keystream, i.e. a
 nonce, an ephemeral key encrypted with the recipients public key, an IV, and a
-digital signature. The signature is used tp prove the authenticity of the
+digital signature. The signature is used to prove the authenticity of the
 message, i.e. to prove the integrity of the message content and to authenticate
 the sender - or prove the sender is who is claims to be. The digital signature
 is created by creating a message digest of the nonce, IV, and unencrypted (!)
@@ -1175,15 +1175,26 @@ packet appended with the current ephemeral key (encrypted).
 The routing announcements are sent by the original routing protocol and not by
 the \ac{AM}, but a small but significant alteration to the routing protocol has
 to be made in order to append the \acp{OTP} to the routing announcements.
-Therefore this will be discussed here briefly.
 
 The routing announcements are appended with 16 bits extracts from the keystream,
 called one-time-passwords. Additionally, each routing announcement is also
 appended with a sequence number for which the offset of the keystream the
-\ac{OTP} matches.
+\ac{OTP} matches. In the next chapter Figure \ref{fig:extended_ogm} shows how
+the routing announcements for BATMAN, which are called \acp{OGM}, are modified
+with these \acp{OTP}.
 
-TODO: Add figure showing these messages, and explicitly the 16 bits extracted
-from the keystream\ldots
+\begin{figure}[h]
+	\centering
+  	\includegraphics[width=\textwidth]{images/appending_otp_from_keystream.png}
+  	\caption{One-time passwords and their sequence numbers appended to routing annoucements.}
+	\label{fig:appending_otp_from_keystream}
+\end{figure}
+
+Figure \ref{fig:appending_otp_from_keystream} shows how the first five routing
+annoucements, after a new keystream is shared with neighbors, are appended with
+the five first \acp{OTP} from the new keystream. Additionally it shows the
+authentication sequence number appended after the \acp{OTP} again, required by
+the recipient to know which OTP to match in the sender's keystream.
 
 For each routing announcement a neighbor receives, it checks the \ac{OTP} at the
 given offset of the senders keystream and if it matches - it assumes the message
