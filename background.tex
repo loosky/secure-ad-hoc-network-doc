@@ -190,18 +190,18 @@ the first hop between them and the other nodes, i.e. the first leg of the path.
 All nodes and their first hops in their paths are stored in a list called an
 ``Originator List''.
 
-\begin{figure}[h]
+\begin{figure}[ht!]
 	\centering
-	\subfloat{\includegraphics[width=0.45\textwidth]{images/ogm_packet_flow_1.png}
-	}
-	\subfloat{\includegraphics[width=0.45\textwidth]{images/ogm_packet_flow_2.png}}
+	\subfloat[TTL = 50]{\includegraphics[width=0.4\textwidth]{images/ogm_packet_flow_1.png}}
+	\hspace{10mm}
+	\subfloat[TTL = 49]{\includegraphics[width=0.4\textwidth]{images/ogm_packet_flow_2.png}}
 	\\ 
-	\subfloat{\includegraphics[width=0.45\textwidth]{images/ogm_packet_flow_3.png}
-	}
-	\subfloat{\includegraphics[width=0.45\textwidth]{images/ogm_packet_flow_4.png}}
+	\subfloat[TTL = 48]{\includegraphics[width=0.4\textwidth]{images/ogm_packet_flow_3.png}}
+	\hspace{10mm}
+	\subfloat[TTL = 47]{\includegraphics[width=0.4\textwidth]{images/ogm_packet_flow_4.png}}
 	\\ 
-	\subfloat{\includegraphics[width=0.45\textwidth]{images/ogm_packet_flow_5.png}}
-	\caption{Flow of an \acf{OGM} originating from the left-most node.}
+	\subfloat[TTL = 46]{\includegraphics[width=0.4\textwidth]{images/ogm_packet_flow_5.png}}
+	\caption{Flow of one OGM originating from the left-most node.}
 	\label{fig:ogm_packet_flow}
 \end{figure}
 
@@ -213,9 +213,23 @@ again.
 When a node which has already received and forwarded an \ac{OGM} receives the
 same \ac{OGM} from another node at a later point - it drops that packet so the
 network will not get flooded by forwarding the same \acp{OGM} until its \ac{TTL}
-is zero. This is also necessary in order to prevent routing loops.
+is zero. This is also necessary in order to prevent routing loops. BATMAN uses
+sliding windows to detect whether an \ac{OGM} has been received before or not.
 
-\subsection{Batman Daemon vs. Batman-Advanced}
+\subsection{BATMAN Daemon vs. BATMAN Advanced}
+There are two completely different versions of the BATMAN ad hoc routing
+protocol\footnote{\url{http://www.open-mesh.org/wiki/open-mesh/BranchesExplained}},
+and the one described so far has been the BATMAN Daemon, or \emph{batmand}. This
+version has the benefits of being a network layer protocol making the
+authentication scheme proposed in this thesis sound. However, there is a new
+version called BATMAN Advanced, or \emph{batman-adv}, which operates on the
+link layer instead. This version breaks the standard layering principle as it
+routes throughout the network on the link layer, encapsulating everything above
+such as IP and DHCP packets. Because of this huge difference the design
+proposed in this thesis will not work with batman-adv, at least not without
+major changes to the design. Note therefore that whenever BATMAN is mentioned
+in this thesis, it is the BATMAN Daemon (version 0.3.2) which is being referred
+to.
 
 \section{Proxy Certificates}
 \label{sect:pc}
@@ -235,39 +249,80 @@ by an \ac{CA}, but an \ac{EEC} or another \ac{PC}. With such certificates one
 can delegate rights on behalf of one self, i.e. if you issue a \ac{PC} to some
 other entity, that entity will be able to act on your behalf. \acp{PC} allows
 the use of restrictions, given in a proxyPolicy field. This way the issuer can
-decide which of its own rights the issuee will have, granted the issued \ac{PC}
-cannot have more or elevated rights to that of the issuer of the \ac{PC}.
-
-TODO: Mention entities PI, AC, AA\ldots Say something about why this can be
-useful for our implementation. Maybe a figure with the certificate fields??
-
-
-%PI - Proxy Issuer
-%AC - Attribute Certificate
-%AA - Attribute Authority
-
-%Requirement from the RFC page 9: passing the PC request from entity B to
-% entity A over an authenticated, integrity checked channel. In our solution
-% this is OK because the out-of-band channel (fingerprint exchange) can be
-% viewed as this authenticated integrity checked channel. . . me thinks
+decide which of its own rights the issuee shall have, granted the issued \ac{PC}
+cannot have more or elevated rights than the issuer of the \ac{PC}.
 
 \section{Attacks on Mobile Ad Hoc Networks}
+There are a multitude of attacks on mobile ad hoc networks
+\cite{goyal2010literature}, and a lot of them are essentially \ac{DoS} attacks
+such as jamming. However, in this thesis attacks on the routing model is of
+more interest and below are two very different attacks on our routing model.
+
 \subsection{Wormhole Attack}
-\subsection{Blackhole Attack}
-\subsection{Greyhole Attack}
+A wormhole attack is an attack in which the attacker is able to set up a so
+called \emph{wormhole} between two distant nodes in the network, and using this
+wormhole to e.g. copy a packet (such as in a replay attack) and send it to a
+receiver at the other end before the original packet arrives (preplay).
+
+\begin{figure}[h]
+	\centering
+  	\includegraphics[width=\textwidth]{images/wormhole_attack.png}
+  	\caption{Wormhole attack between node A and B.}
+	\label{fig:wormhole_attack}
+\end{figure}
+
+Figure \ref{fig:wormhole_attack} shows the idea behind the wormhole attack. Here
+we have a network of trusted nodes (green) and two malicious nodes (red). The
+trusted nodes are communicating via wireless links, which the malicious nodes
+are able to pick up. The wormhole between the two malicious node can be a fiber
+channel, or it might just be a wireless radio link where the two malicious nodes
+have much higher transmitting power than the trusted nodes, extending the range.
+
+The simplest attack using this model against an ad hoc routing protocol would be
+for the first malicious node (M1) to copy a routing annoucement from node A,
+send it through the wormhole to M2, and have M2 forward the packet to node B
+using both mac layer and network layer address spoofing. If successful, i.e.
+this packet arrives before the re-broadcasts from the other slower nodes, it
+would fool node B to believe that node A is a direct neighbor and he would
+update his routing tables accordingly.
+
+\subsection{Suppress Replay Attack}
+A suppress replay attack, sometimes called an pre-play attack, is an attack in
+which an attacker is able to intercept and suppress a packet, or parts of a
+packet in air. For instance, if a packet appended with some secret is sent over
+a radio link, the attacker might be able to jam the first part of the packet and
+receive the secret. The original recipient would also just receive the secret
+part, but would not understand the content because the headers of and the first
+parts of the payload would be gone, therefore ignoring the packet altogether.
+
+At this point the attacker could be able to create a new falsified packet, and
+append it with the secret - which the recipient might trust depending on the
+authentication scheme used.
 
 \section{Related Work}
+There are many proposals of security designs for \acp{MANET}, and a very few
+actual implementations based on some specific routing protocols. None of the
+implementations found by this author would be applicable for the BATMAN
+protocol, but some of the design proposals probably would.
 
-\subsection{A Secure Mobile Ad hoc Network Based on Distributed Certificate
-Authority}
-\cite{hosseinisecure} propose a solution for a secure MANET based on distributed
-CA. They employ use of clusters and an offline/out-of-band authentication
-scheme. They use RSA for encryption, because they claim it is more energy
-efficient. READ AGAIN LATER\ldots
+S. A. H. Seno et al. propose a system design based on distributed CA, using
+clustering of nodes and an offline/out-of-band authentication scheme
+\cite{hosseinisecure}.
 
-\subsection{A Threshold Cryptography Based Authentication Scheme for Mobile
-Ad-hoc Network}
-\cite{springerlink:Haimabati} have a more mathematical approach
-to the problem. Requires predefined unique ID and special hardware with a hidden
-and secure algorithm (i.e. smart card). This solution is probably better suited
-for the military\ldots
+Another related authentication scheme is proposed by H. Dey and R. Datta which
+have a more mathematical approach to the problem \cite{springerlink:Haimabati}.
+This solution requires predefined unique ID and special hardware with a hidden
+and secure algorithm (i.e. smart card), and is probably better suited for a
+military application rather than emergency situations.
+
+K. Sanzgiri et al. proposed an authentication scheme for ad hoc routing called
+Authenticated Routing for Ad hoc Networks (ARAN), which is adding signature
+extension to the AODV reactive routing protocol \cite{sanzgiri2005authenticated}.
+
+Additionally, some believes the computational costs using asymmetric keys for ad
+hoc authentication is to great which lead to the Ariadne protocol
+\cite{hu2005ariadne}, and the Secure Routing Protocol
+\cite{papadimitratos2002secure}.
+
+{\AA}. A. Nyre et al. published a design of an hierarchical authentication
+system for the OLSR ad hoc routing protocol \cite{nyre2009secure}.

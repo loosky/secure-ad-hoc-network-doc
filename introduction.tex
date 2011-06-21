@@ -1,12 +1,6 @@
 \chapter{Introduction}
 \label{ch:intro}
 \acresetall
-
-TODO: \url{http://www.tu.no/it/article287598.ece} add this to text\ldots points
-out that even the norwegian army does not want super super safe systems as you
-cannot do much on those systems, rather do heavy monitoring of ``less safe''
-systems\ldots analogy to our ad-hoc network maybe?
-
 We have become accustomed to an almost complete presence of digital networks
 in our daily lives. Everywhere you go, you can either plug your laptop into an
 ethernet slot, connect your iPad to an available wifi hot spot, or just use
@@ -18,10 +12,8 @@ In emergency and/or military situations, this often applies. Even if it didn't,
 the networks may have been put out of operations due to the nature of the
 emergency (i.e. tsunami destroying the infrastructure). As recent events
 here in Norway have shown internal errors might paralyze the whole network 
-infratrucutre
-\footnote{\url{http://www.dagbladet.no/2011/06/16/nyheter/innenriks/telenor/16942385/}
-(Norwegian)} making emergency relief ineffective
-\footnote{\url{http://www.dagbladet.no/2011/06/11/nyheter/ver/flom/naturkatastrofer/innenriks/16880835/}
+infratrucutre\footnote{\url{http://www.dagbladet.no/2011/06/16/nyheter/innenriks/telenor/16942385/}
+(Norwegian)} making emergency relief ineffective\footnote{\url{http://www.dagbladet.no/2011/06/11/nyheter/ver/flom/naturkatastrofer/innenriks/16880835/}
 (Norwegian)}, giving a sound argument for having a separate backup emergency
 network. The military might also be in an hostile environment where they cannot trust
 the network in place altogether.
@@ -50,38 +42,94 @@ different from how this is done on the Internet which can rely on e.g.
 In this thesis I will propose and implement a solution suggestion to establish a
 trust mechanism, i.e. an authentication scheme, which combines features of a
 typical \ac{PKI} with some of the ideas behind \ac{WOT}
-\cite{zimmermann1995official}.
+\cite{zimmermann1995official}. The system design is presented in two parts, the
+part which has been implemented in Chapter \ref{ch:design}, and the ideas that I
+did not have time to implement is discussed as further work in Chapter
+\ref{ch:discussion}.
 
+As one might expect, it is a very challenging task to achieve strong security
+for \acp{MANET} and still have the benefits of its simple ``plug and play''
+design. As real world implementations go, there are a few trade-offs, and
+security cannot always win. This design will not try to be 100\% secure, but
+should be secure enough to deploy in emergency situations. To back this claim,
+the Norwegian Army recently stated that their new computer security guidelines
+is to rather have a usable (available) system which might be open to attack,
+instead of a bad system which is impenetrable - as long as they are able to
+monitor and take action against potential
+attacks\footnote{\url{http://www.tu.no/it/article287598.ece} (Norwegian)}.
 
 \section{Motivation}
 The 7.0 magnitude earthquake that struck Haiti in 2010 showed us how huge
 relief efforts easily become very inefficient when huge amounts of emergency
 relief personell work at a scene with little or scarce communication throughout
-the area \footnote{\url{http://www.wired.com/magazine/2010/04/ff_haiti/}}. With
+the area\footnote{\url{http://www.wired.com/magazine/2010/04/ff_haiti/}}. With
 a trusted communication network like a secure \ac{MANET} an operation like this
 could become much more efficient, bringing the right amount of help to the
 right places at the right time.
 
-\section{Contributions?}
-Specify what I am contributing with?
+\section{Contributions}
+This thesis produce a novel design method to achieve authentication and trust
+between nodes in a secure ad hoc network. The popular ad hoc routing protocol
+called BATMAN has been extended to become an instantiation of said design, which
+has never been done before. Additionally, the use of proxy certificates for
+trust establishment for ad hoc networks is also a novel approach to the problem.
 
 \section{Objectives}
+The main objective of this thesis is to design and implement an authentication
+extension to ad hoc networks based on a known routing protocol.
+
+Secondly, other design ideas, or things that was supposed to be in the design
+but did not make the timeframe is discussed upon in contexts of both security
+and real world performance.
+
+Last, but not least, testing of the proposed design's implementation should be
+done to compare the performance of the new implementation against the original
+routing protocol.
+
+The problem description also mentions testing the implementation against known
+security attacks. However, my responsible professor Stig Frode Mj{\o}lsnes
+claimed no such tests were necessary as the security of this design should
+rather undergo peer review and testing, therefore these tests have not been
+done.
 
 \section{Limitations}
 
 \subsection{IP Address Configuration}
 \label{limit:ip_address_conf}
+Autoconfiguration of network interfaces for ad hoc networks is a huge and
+difficult task and will not be addressed in this thesis. Throughout this thesis
+the assumption is that all nodes trying to participate in the same network is
+preconfigured with a valid and unique IP on the correct subnet. It is also
+assumed their network interfaces are correctly set up to connect to the correct
+wireless channels.
 
 \subsection{Detecting malicious behaviour}
 \label{limit:malicious_behaviour}
+One attack vector which will not be discussed in this thesis is if a legitimate
+node acts maliciously, which might happen if a legitimate node is compromised.
+The solution proposed in the thesis assumes all trusted nodes acts with good
+intentions. There are much research about detecting malicious behavior in ad
+hoc network \cite{Pirzada_McDonald} \cite{dhurandher2010network}.
 
+However, these kind of solutions are mainly designed for networks without any
+authentication scheme at all, and is therefore just investigating malicious
+behaviour without trying to detect whether a node is compromised or not. These
+proposals might therefore not be of the greatest interest, but should be studied
+to see if any of their features can safely be applied to an ad hoc network with
+an authentication system in place.
 
 \section{Method}
-The primary research method conducted in this thesis is the design science
-paradigm for Information Systems research as described in [TODO: Hevner,
-March\ldots]. The model and method artifacts of this paradigm are described in
-Chapter \ref{ch:design} whereas the instantiation artifact is described in
-Chapter \ref{ch:implementation}.
+The primary research method conducted in this thesis is the \emph{design
+science paradigm} for Information Systems research as described in
+\cite{hevner2003information}. The model and method artifacts of this paradigm
+are described in Chapter \ref{ch:design} whereas the instantiation artifact is
+described in Chapter \ref{ch:implementation}.
+
+Much of the design (method artifact) comes from the specialization project last
+fall\footnote{A.G. Bowitz and E.G. Graarud \textit{Developing a Secure Ad Hoc
+Network Implementation} \url{http://org.ntnu.no/batman2010/project_final.pdf}},
+but some aspects of that design has been changed during the course of the study
+and implementation in this thesis.
 
 \section{Document Structure}
 This thesis report is structured as follows:

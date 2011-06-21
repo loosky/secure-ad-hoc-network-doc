@@ -2,129 +2,189 @@
 \label{ch:discussion}
 \acresetall
 
+\section{Key Usage}
+Not good practive to use same keys for both encryption and signing
+Is simpler
+Limited lifetime makes it ok\ldots
 
-\section{Why ECC?}
-ECC has short key sizes compared to same strength RSA keys.
+\section{System Design Vulnerability/Attacks on the routing announcements?}
+The design was changed a bit during implementation, and because lack of time
+there was a crucial part that did not make it to the implementation, which needs
+to be addressed before the system can be used in a real world scenario. There
+are two attacks that the system are still vulnerable to, namely the
+\emph{wormhole attack} and the \emph{suppress replay attack}.
 
-RSA have less energy consumption (claimed by \cite{hosseinisecure}) - need to
-check it out, or at least mention somewhere\ldots
+Because the routing announcements are unencrypted and the one-time-passwords
+are just appended after the messages, these packets can be altered using each of
+the two attacks. In this section the two attacks are first explained, and then
+the section goes on to describe possible solutions for both attacks.
 
-\section{Routing Authentication Solution}
-\label{sect:routing_auth_solution}
-As proposed in Chapter \ref{ch:design} the proposed system design uses an novel
-solution to continuously verify routing announcements received from ones
-neighbors.
+\subsection{Wormhole Attack}
+In a wormhole attack, see Figure \ref{fig:wormhole_attack}, an attacker does not
+need to know the keystream of a node in order to send that node's routing
+announcements. If you look at the figure from the background chapter you have a
+network of trusted nodes in green, and two malicious nodes in red. 
 
-For this system to be used on typical mobile devices with all their constraints,
-one has to acknowledge the limitations to computing power, battery lifetime, and
-saturation in the wireless network.
+Assume the two attackers, M1 and M2, want to disrupt the network topology by
+having node B believe node A (and vice versa) is a direct neighbor. Assuming the
+out-of-band wormhole in the figure is a faster route between node A and B than
+the ``real'' route through the network, M1 can simply forward the announcements
+from A to M2. Then M2 does the same, except he also needs to spoof his network
+and link layer addresses. When B receives the routing announcement from M2, he
+believes it is from A and that A is a new direct neighbor.
 
-Because all nodes in a \ac{MANET} using a pro-active routing protocol broadcasts
-their routing announcements and forward all received routing announcements, the
-network traffic will increase exponentially to the amount of nodes in the
-network and how closely bound they are. Therefore all routing announcements
-needs to be as small as possible, as discussed by several others before [TODO:
-find some refs, multiple]. A typical signature is usually on the order of one or
-two larger than a regular routing announcement, so by adding a signature to the
-routing announcement - most of the data sent in the network would be signature
-data. This is far from ideal.
+Now B will ask for A's keystream-material, and M2 and M1 will forward this
+request to A, which will dutifully reply with his keystream-material. Note that
+M1 needs to spoof B's addresses here, as well as forwarding B's routing
+announcements. When B receives the keystream through the wormhole, he is now
+able to verify the routing announcements also sent through the wormhole, and
+soon will this route take priority in his routing table as a strong direct link
+instead of going through other nodes in the network to reach A.
 
-The first solution that one would think of would be to only sign a very few of
-the announcements, periodically. This however, would be totally disastrous. This
-would have no protection against spoofing attacks whatsoever, as an attacker
-could wait for a legitimate node to send a signed announcement and then send his
-own fake announcements spoofed with the legitimate node's address.
+TODO: MSC FIGURE VISER DETTE
 
-The solution proposed in this thesis, solves the problem in a different manner.
-Periodically, more than a second and less than a minute, a node sends a special
-packet to all its direct neighbors. The packet contains a random value string,
-a temporary symmetric key and a signed hash value of the packet (HMAC). Each
-copy of the packet is also encrypted with the neighbors' public key in order to
-keep the random value and symmetric key hidden from adversaries.
+This attack only distorts the network topology, but notice that because the
+routing announcements' integrity are not protected, and the content is not
+encrypted, the attackers can possibly do greater damage by altering the content
+of the message. By altering the content, they could possibly generate fake
+re-broadcast announcements which is announcing untrusted nodes, possibly
+connecting a whole network of malicious nodes to this trusted network. This
+alteration is not actually a wormhole attack, but it is fair to say that the
+wormhole attack opens up to a variety of other attacks, such as alteration of
+packet, dropping of packets etc.
 
-Now, each neighbor shares a secret with the node and this can be used in a trust
-scheme on the following routing announcements. The node and its neighbors
-computes a new value by encrypting the previously sent random value with the
-corresponding symmetric key. This value is then split in parts, or extracts, of
-16 bits. Each extract is then appended, along with an offset value declaring at
-which offset of the whole value the 16 bits belongs, to all routing
-announcements the node sends - both his own and rebroadcasts of other nodes'
-announcements. Each offset of 16 bits will only be allowed to be sent once, as
-to avoid replay attacks using the same values. 
+\subsection{Suppress Replay Attack}
+Another attack which is possible due to the fact that the one time passwords are
+not ``connected'' to the routing announcements in any way is the suppress replay
+attack. Suppose an attacker is able to jam the signals for a very short time,
+only enough to distort the main payload of the routing announcement, while the
+one time password and its sequence number are kept intact.
 
-Neighbors can now easily check whether the extract it receives matches the
-correct offset in the value it computed, and if it does the neighbor will trust
-the announcement is actually sent by the legitemate node. 
+The trusted receiver of this distorted packet will ignore it, because he will
+not understand the meaning of the packet. The attacker on the other hand, knows
+that the following uncorrupt data is a valid one time password and its sequence
+number from the sender's keystream.
 
-This scheme is fully based on trust. You trust that your trusted nodes will only
-send you its own annoucement (correctly) and rebroadcast only its trusted nodes
-announcements without modification. If for some reason a trusted node should
-behave maliciously, this scheme will not detect this and allow the trusted node
-to potentially disrupt the network.
+Because the original recipient of this packet did not understand the destroyed
+packet, he will not know that this \ac{OTP} is already used, and if the attacker
+wishes to create a false routing announcement he can now do this and append the
+\ac{OTP}, which will be accepted by the original recipient. Note that also here
+the attacker needs to spoof the addresses of the original sender of the
+announcement which he partly jammed.
 
-\subsection{Routing Announcement Modification}
-The \ac{MAC} value extract appended to the routing announcements could have been
-used with the routing announcements without adding extra bits to the message. By
-using a simple technique such as XOR'ing the extract with e.g. the originator
-address field of the packet one would save 16 bits of extra overhead on each
-packet.
+\subsection{Solution to the Suppress Replay Attack}
+A possible solution to the suppress replay attack, is to ensure message
+intergrity in addition to the authentication. The basic idea would be to create
+and append a message digest to the announcement while using the keystream to
+encrypt the message, e.g. by using a strong stream cipher.
 
-There are two reasons why this is not done in this design proposal:
+There is one great pitfall to this idea, however. Because the routing
+announcements are often identical to each other, the attacker might be able to
+do a known plaintext attack, being able to first recreate the message digest,
+and depending on the stream cipher just XOR the announcement and digest with the
+encrypted message, revealing the keystream used by the stream cipher. If this
+message was in any way blocked from reaching the intended recipient, the packet
+could be changed and XOR'ed with the retrieved keystream and sent to the
+recipient, which would trust this packet.
 
-\begin{itemize}
-  \item It would not be modular to different protocols, but be BATMAN specific,
-  and
-  \item It might confuse the reader to beleive it is would increase the security
-  of the protocol.
-\end{itemize}
+One possible way to avoid this problem would be to add some randomness to the
+``known part'', namely the original announcement. If the announcement is e.g.
+appended with a part of the senders keystream (\ac{OTP}) before creating the
+message digest, the attacker would not be able to recreate the full plaintext
+(including digest) and would therefore not be able to find the keystream used by
+the stream cipher.
 
-That said, in real life implementations it should probably be done for saving
-the overhead.
+The reader might rise another question, regarding the lenght of this random part
+added to the announcement before creating the digest. One major factor here is
+time, and time it takes for an adversary to find the random part (collision).
+The time is however very restricted. The sliding window used to avoid replay
+attacks is only 64 bits long, and in the worst case (best case for adversary)
+there are only two legitimate nodes in the network. If this is the case, each
+node will send two announcements every second (BATMAN protocol) meaning the
+window of opportunity for the attacker is only 32 seconds. For each extra
+legitimate node in the network this window drastically closes. The length of the
+random part used for the digest should therefore be strong enough withstand 32
+seconds of brute-force guessing attack.
 
-Because the different ad hoc routing protocols this design is created for are
-pro-active protocols sending packets over the network layer, the IP addresses of
-each node will, and must be, visible in the IP packet. Using the address inside
-the routing announcement XOR'ed with the \ac{MAC} value extract would hide this
-address from an observer, but the observer would be able to see the address in
-the network layer packet - so in the end, no information has been hidden from
-the observer after all.
+Note that it might not be wise to send the whole message digest because the
+announcement sizes would become very large. This might be truncated as well, but
+when designing this the time needed to find a collision for a truncated digest
+needs to be addressed as well.
 
-\section{Compromised Trusted Nodes}
-One attack vector not previously discussed in this thesis is an internal attack
-from a trusted node that acts maliciously - typically a compromised node which
-have previously been trusted to participate in the network.
+\subsection{Possible Solution to the Wormhole Attack}
+This attack vector is very difficult to to protect against. With the solution
+above, many attacks dependent on the wormhole attack are thwarted because of
+packet secrecy, integrity and authentication. However, the solution does not
+hinder an attacker from replaying the exact same packets through a wormhole, in
+order to alter the network topology. There has been alot of research effort to
+find a good solution to this attack, but most solutions are aimed towards
+stationary networks and not \acp{MANET} \cite{raoteapproaches}.
 
-The solution proposed does not handle this attack vector, as it assumes all
-trusted neighbors acts with good intentions. However, this is a broadly
-discussed field of research and several solutions have been proposed
-\cite{Pirzada_McDonald} \cite{dhurandher2010network}. In both of these papers
-the authors generate a trust value of their neighbors based on observed
-behaviour. For instance, after sending a message to a non-neighbor in the
-network, you would expect your mutually trusted neighbor on the path between
-you and the recipient of your message to forward your packet. After sending the
-packet, you can check whether your neighbor actually forwards the packet by
-sniffing for the recipients address in promiscous mode. If no packet is ever
-sent from your neighbor, this can lead you to believe hi is a black hole. If you
-observe several possible malicious acts by a neighbor, you can choose to not
-trust this neighbor anymore and add it to a blacklist.
+One possible solution as pointed to by the article above is the use of
+``location aware guard node'' and graph theory \cite{poovendran2007graph}
+\cite{lazos2005preventing} to detect wormholes. The idea is that if you have
+special nodes spread out in the field at fixed points, where none of these nodes
+are within each other's transmitting range, one should never be a neighbor of
+more than one node at a time. If you receive direct packets from two nodes
+within a very short timeframe, there might be indications that there's a
+wormhole in place replaying one of the special nodes' announcements.
 
-This kind of solution, among others, already exist and should be incorporated in
-addition to the design proposed in this thesis. Without this form of neighbor
-checking, you cannot trust your neighbor and therefore not use this design at
-all. To clarify once more - the solution proposed in this thesis only covers
-external attacks, whereas the attack vector mentioned in this section is an
-internal attack.
+\section{Extending the System Design}
+The specialization project\footnote{} this thesis mentioned other important
+features the secure ad hoc network implementation should have. The things
+mentioned in this thesis' system design are actually implemented, but there are
+still much more that should be added if this system should be used in real life
+emergency situations.
 
-TODO: Trengs det noe mer?
+In this section some important features which should be added, or at least
+studied, are mentioned. They do add more complexity to the system, so it is
+probably better to do a complete security and performance analysis on this
+thesis' proposed design before adding these features, however.
 
-\section{wormhole protection}
-because OGMs one time passwords are checked by direct neighbor, no wormhole
-attack is effective\ldots must be direct neighbor anyhow to replay packets. Only
-real threat is if packets are altered in the air to show fake routing info, but
-this is not wormhole attack, this is ``suppress replay attack''
+\subsection{Initial Authentication with Long-Lived Public Key Certificates}
+One limiting factor in the system design is the need for an out-of-band
+initial authentication. With this limitation, every actor in the emergency
+scenario needs to manually verify his or hers identity to the network management
+handled by the \ac{SP}. With many actors, which would be typical in a large
+emergency situation like a natural disaster, this process might take up valuable
+time from the actual emergency work - which contradicts the whole meaning of
+setting up the \ac{MANET} at the scene in the first place.
 
-\section{suppress replay attack}
-still vulnerable, but so is all wireless network without link-layer encryption
+Now, if an actor has possession of a regular \ac{LLPKC} for which the network
+\ac{SP} is able to verify, this should be allowed without the need of an
+out-of-band authentication. After the \ac{SP} have verified the certificate, he
+can now issue the the actor a proxy certificate, signed by him so that all nodes
+in the network are able to verify the new nodes identity.
 
-\section{Future Work}
+The question of whether the \ac{SP} is able to verify the \ac{LLPKC} is not
+necessarily easy to answer. If the \ac{SP} trusts the identity and knows the
+public key of the issuer of the actor's certificate, he is able to verify that
+this actor was trusted with this identity (and rights) at some time. However, it
+does not mean this is true anymore - the certificate might have been revoked.
 
+In the absence of Internet access, \acp{CRL} might not be available to the
+\ac{SP}. If this is the case, an evaluation of what to do with the actor has to
+be done. Ideas that comes to mind might be to issue a very short lived \ac{PC},
+maybe with limited rights, to the actor's node so that it can start working now,
+but has to re-authenticate later when \acp{CRL} has been brought to the scene
+either out-of-band or by setting up Internet access. If no \ac{CRL} is ever
+brought to the SPs attention, he might want to require an out-of-band
+authentication later.
+
+Either way, as this does not have to happen in the same out-of-band fashion as
+the proposed design in this thesis requires, one could also allow the
+authentication happen even if the actor is not a direct neighbor of the \ac{SP},
+but is connected through other nodes in the network.
+
+While in this implementation regular trusted nodes drop the announcements from
+new unauthenticated nodes, they could rather tunnel the announcement directly to
+the \ac{SP} and have the authentication handshake go through them.
+
+\subsection{Network Merging}
+\subsection{Internet Gateway}
+\subsection{Multiple SP}
+\subsubsection*{SP List Sharing}
+need to know other SPs public keys, therefore send a list of all SPs with their
+public kehys, just like the old AL sending idea, but only for SPs. Each SP keeps
+track of their own children nodes, and send them the list, signed with his
+pubkey.
