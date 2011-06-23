@@ -3,25 +3,346 @@
 \acresetall
 
 
-\definecolor{darkgray}{rgb}{0.95,0.95,0.95}
-\lstset{
-	language=c,
-	basicstyle=\footnotesize,
-	numbers=left,
-	numberstyle=\footnotesize,
-	stepnumber=0,
-	numbersep=5pt,
-	backgroundcolor=\color{darkgray},
-	showspaces=false,
-	showstringspaces=false,
-	showtabs=false,
-	frame=single,
-	tabsize=2,
-	captionpos=b,
-	breaklines=true,
-	breakatwhitespace=false,
-	escapeinside={\%*}{*)}
+\section{Code Snippets}
+In this section all the code snippets referred to from Chapter
+\ref{ch:implementation} are shown. They might not reflect the source code
+perfectly, as some lines in between and re-organization has been done to only
+include the most important steps. However, all the values are the exact same as
+their counterparts in the source code.
+
+\subsection{AM Sockets Setup}\label{code:sockets}
+\begin{lstlisting}[frame=tb]
+int32_t *recvsock, *sendsock;
+addrinfo hints, *res;
+
+/* Set family information */
+memset(&hints, 0, sizeof hints);
+hints.ai_family = AF_INET;
+hints.ai_socktype = SOCK_DGRAM;
+hints.ai_flags = AI_PASSIVE;
+hints.ai_protocol = IPPROTO_UDP;
+
+/* Puts the port-info inside a addrinfo data structure */
+getaddrinfo(NULL, port, &hints, &res);
+
+/* Assign file descriptor for sockets */
+*recvsock = socket(PF_INET, SOCK_DGRAM, 0)
+*sendsock = socket(PF_INET, SOCK_DGRAM, 0)
+
+/* Binds the sockets to the network interface */
+setsockopt(*recvsock, SOL_SOCKET, SO_BINDTODEVICE, interface, strlen(interface) + 1)
+setsockopt(*sendsock, SOL_SOCKET, SO_BINDTODEVICE, interface, strlen(interface) + 1)
+
+/* Binds receive socket to the port (rest of the address is empty/null) */
+bind(*recvsock, res->ai_addr, res->ai_addrlen);
+
+/* Allow the send socket to send broadcast messages */
+int broadcast_val = 1;
+setsockopt(*sendsock, SOL_SOCKET, SO_BROADCAST, &broadcast_val, sizeof int)
+
+/* Set the send socket to non-blocking */
+fcntl(*sendsock, F_SETFL, O_NONBLOCK);
+
+\end{lstlisting}
+
+\subsection{Proxy Certificate Extension}\label{code:pc_ext}
+Remember the author did not get the original proxyCertInfoExtension to work, so
+it was changed with a netscape comment.
+
+\begin{lstlisting}[frame=tb]
+STACK_OF(X509_EXTENSION) *exts = sk_X509_EXTENSION_new_null();
+openssl_cert_add_ext_req(exts, NID_netscape_comment, "critical,myProxyCertInfoExtension:0,1");
+
+X509_REQ_add_extensions(x, exts);
+sk_X509_EXTENSION_pop_free(exts, X509_EXTENSION_free);
+\end{lstlisting}
+
+The first digit with a 0 in the comment tells the role the node requests is only
+regular 'authenticated'. If this was  1 it would mean the node was a SP. The
+last digit is used for routing rights. The 1 in the last digit means the node
+wishes full routing rights, whereas a 0 would mean limited routing rights.
+
+\subsection{Setting Subject Name in PC}\label{code:set_subject_name}
+\begin{lstlisting}[frame=tb]
+X509_NAME *name, *req_name, *issuer_name;
+req_name = X509_REQ_get_subject_name(req)
+issuer_name = X509_get_subject_name(*pc0p)
+name = X509_NAME_dup(issuer_name)
+req_name_entry = X509_NAME_get_entry(req_name,0);
+X509_NAME_add_entry(name, req_name_entry, X509_NAME_entry_count(name), 0);
+X509_set_subject_name(cert, name)
+\end{lstlisting}
+
+\subsection{Adding Trusted Node to AL}\label{code:add_to_al}
+\begin{lstlisting}[frame=tb]
+void al_add(uint32_t addr, uint16_t id, role_type role, unsigned char *subject_name, EVP_PKEY *key) {
+
+	authenticated_list[num_auth_nodes] = malloc(sizeof(trusted_node));
+	authenticated_list[num_auth_nodes]->addr = addr;
+	authenticated_list[num_auth_nodes]->id = id;
+	authenticated_list[num_auth_nodes]->role = role;
+	authenticated_list[num_auth_nodes]->name = malloc(FULL_SUB_NM_SZ);
+	memset(authenticated_list[num_auth_nodes]->name, 0, FULL_SUB_NM_SZ);
+
+	if(strlen((char *)subject_name)>FULL_SUB_NM_SZ)
+		memcpy(authenticated_list[num_auth_nodes]->name, subject_name, FULL_SUB_NM_SZ);
+	else
+		memcpy(authenticated_list[num_auth_nodes]->name, subject_name, strlen((char *)subject_name));
+
+	authenticated_list[num_auth_nodes]->pub_key = openssl_key_copy(key);
+
+	if(id != my_id) {
+		EVP_PKEY_free(key);
+	}
+
+	num_auth_nodes++;
+
 }
+\end{lstlisting}
+
+\subsection{Adding Trusted Neighbor to NL}\label{code:add_to_nl}
+\begin{lstlisting}[frame=tb]
+void neigh_list_add(uint32_t addr, uint16_t id, unsigned char *mac_value) {
+
+	int i;
+	for(i=0; i<num_trusted_neigh; i++) {
+		if(id == neigh_list[i]->id) {
+
+			if(addr == neigh_list[i]->addr) {
+
+				if(neigh_list[i]->mac != NULL)
+					free(neigh_list[i]->mac);
+
+				neigh_list[i]->mac = mac_value;
+				neigh_list[i]->window = 0;
+				neigh_list[i]->last_seq_num = 0;
+				neigh_list[i]->last_rcvd_time = time (NULL);
+				neigh_list[i]->num_keystream_fails = 0;
+
+			} else {
+
+				if (mac_value != NULL)
+					free(mac_value);
+
+				neig_list_remove(i);
+				
+			}
+			
+			break;
+			
+		}
+		
+	}
+
+	if(i==num_trusted_neigh) {
+
+		neigh_list[num_trusted_neigh] = malloc(sizeof(trusted_neigh));
+		neigh_list[num_trusted_neigh]->addr = addr;
+		neigh_list[num_trusted_neigh]->id = id;
+		neigh_list[num_trusted_neigh]->mac = mac_value;
+		neigh_list[i]->window = 0;
+		neigh_list[num_trusted_neigh]->last_seq_num = 0;
+		neigh_list[num_trusted_neigh]->last_rcvd_time = time (NULL);
+		neigh_list[num_trusted_neigh]->num_keystream_fails = 0;
+		num_trusted_neigh++;
+
+	}
+
+}
+
+\end{lstlisting}
+
+\subsection{Removing Trusted Neighbor to NL}\label{code:rem_from_nl}
+\begin{lstlisting}[frame=tb]
+int neig_list_remove(int pos) {
+
+	/* First check whether this node exists at all (sanity check) */
+	if(neigh_list[pos] == NULL) {
+		return 0;
+	}
+
+	/* Check whether keystream exists, remove if so! */
+	if(neigh_list[pos]->mac != NULL)
+		free(neigh_list[pos]->mac);
+
+	/* Free up neighbor in memory */
+	free(neigh_list[pos]);
+
+	/* Re-arrange Neighbor List to avoid scarce population */
+	int i;
+	for(i=pos+1; i<num_trusted_neigh; i++) {
+		neigh_list[i-1] = neigh_list[i];
+	}
+
+	/* Finally, number of trusted neighbors has shrunk :) */
+	num_trusted_neigh--;
+
+	return 1;
+}
+\end{lstlisting}
+
+\subsection{Generate Ephemeral Key}\label{code:gen_eph_key}
+\begin{lstlisting}[frame=tb]
+void openssl_key_generate(EVP_CIPHER_CTX *aes_master, int key_count, unsigned char **keyp) {
+
+	unsigned char *ret;
+	int i, tmp, ol;
+
+	if(keyp == NULL || *keyp == NULL) {
+		ret = malloc(EVP_CIPHER_CTX_block_size(aes_master));
+	} else {
+		memset(*keyp, 0, EVP_CIPHER_CTX_block_size(aes_master));
+		ret = *keyp;
+	}
+
+	ol = 0;
+
+	/* Create plaintext from key_count - each new key will be cipher of i=1,2,3... */
+	unsigned char *plaintext = malloc(sizeof(key_count));
+	memset(plaintext, 0, sizeof(plaintext));
+	*plaintext = (unsigned char)key_count;
+	int len = strlen((char *)plaintext)+1;
+
+	EVP_EncryptUpdate(aes_master, ret, &tmp, plaintext, len);
+	ol += tmp;
+	//Remove padding, not wanted for key!
+	EVP_EncryptFinal(aes_master, ret, &tmp);
+
+	free(plaintext);
+	*keyp = ret;
+
+}
+\end{lstlisting}
+
+
+\subsection{Generate Keystream}\label{code:gen_keystream}
+\begin{lstlisting}[frame=tb]
+/* Generate Keystream from Nonce */
+
+if(*key_count>1)
+	free(auth_value);
+
+int rand_len = RAND_LEN;
+auth_value = malloc(rand_len*10+10);
+auth_value_len = 0;
+
+for(i=0; i<10; i++) {
+
+	/* Do encryption */
+	EVP_CIPHER_CTX current_ctx;
+	EVP_EncryptInit(&current_ctx, EVP_aes_128_cbc(), current_key, current_iv);
+	unsigned char *tmp = openssl_aes_encrypt(&current_ctx, current_rand, &value_len);
+	EVP_CIPHER_CTX_cleanup(&current_ctx);
+
+	/* Place ciphertext in keystream */
+	int auth_pos = auth_value_len;
+	auth_value_len += value_len;
+	memcpy(auth_value+auth_pos, tmp, value_len);
+
+	/* Change to new IV */
+	memcpy(current_iv, tmp, AES_IV_SIZE);
+
+	/* Alter the Nonce before next encryption */
+	int j;
+	for(j=0;j<rand_len/10; j++) {
+		current_rand[j+(i*(rand_len/10))] = ( (current_rand[j+(i*(rand_len/10))]) ^ i );
+	}
+	
+	free(tmp);
+	value_len = RAND_LEN;
+
+}
+\end{lstlisting}
+
+\subsection{Extension in BATMAN Class}\label{code:ext_batman}
+\begin{lstlisting}[frame=tb]
+/******************** Begin Authentication Module Extension ********************/
+
+/*
+ * If the daemon is not authenticated, or it receives an authentication
+ * token which it does not recognize, the authentication procedure in the
+ * Authentication Module is called. No packets received when authenticating
+ * will be processed.
+ */
+
+if(num_trusted_neigh) {
+	for(neigh_counter = 0; neigh_counter < num_trusted_neigh; neigh_counter++) {
+		if(neigh_list[neigh_counter]->addr == neigh) {
+			break;
+		}
+	}
+}
+
+if(neigh_counter == num_trusted_neigh) {
+
+	if(my_role == SP && my_state ==  READY) {
+		new_neighbor = neigh;
+	}
+
+	if(my_role == AUTHENTICATED && my_state ==  READY) {
+		/* Check to see whether the other node is AUTHENTICATED */
+		if(memcmp(&(bat_packet->auth), empty_check, 2) != 0)
+			new_neighbor = neigh;
+	}
+
+	goto send_packets;
+}
+
+if(neigh_list[neigh_counter]->mac == NULL)
+	goto send_packets;
+
+if(memcmp(neigh_list[neigh_counter]->mac+(bat_packet->auth_seqno*2), bat_packet->auth, 2) != 0) {
+
+	printf("MAC Extract did not match!\n");
+
+	if(my_state == READY) {
+
+		neigh_list[neigh_counter]->num_keystream_fails ++;
+
+		/* Keystream is consequently fail, ergo need to handshake a new one */
+		if(neigh_list[neigh_counter]->num_keystream_fails > 20) {
+			my_state = WAIT_FOR_REQ_SIG;
+			new_neighbor = neigh;
+			neigh_list[neigh_counter]->num_keystream_fails = 0;
+		}
+
+	}
+
+	goto send_packets;
+}
+
+/* Check whether the packet is new and not a replayed packet */
+if(!tool_sliding_window(bat_packet->auth_seqno, neigh_list[neigh_counter]->id))
+	goto send_packets;
+
+
+/* Everything seems fine, reset failcounter if more than 0 */
+if(neigh_list[neigh_counter]->num_keystream_fails != 0)
+	neigh_list[neigh_counter]->num_keystream_fails = 0;
+
+/********************* End Authentication Module Extension *********************/
+\end{lstlisting}
+
+\subsection{Extension in SCHEDULE Class}\label{code:ext_schedule}
+\begin{lstlisting}[frame=tb]
+/* Begin Authentication Module Extension */
+
+/* Add Signature Extract to OGM */
+if(pthread_mutex_trylock(&auth_lock) == 0) {
+
+	if(auth_value != NULL) {
+
+		memcpy(bat_packet->auth, auth_value+2*auth_seq_num, 2);
+		bat_packet->auth_seqno = auth_seq_num;
+		auth_seq_num ++;
+
+	}
+
+	pthread_mutex_unlock(&auth_lock);
+}
+
+/* End Authentication Module Extension */
+\end{lstlisting}
 
 %\section{BATMAN}
 %

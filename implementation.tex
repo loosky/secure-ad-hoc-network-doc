@@ -56,45 +56,10 @@ Two sockets are used for the AM module, one for sending and one for receiving AM
 messages. Both sockets are bound to the interface device given by the AM
 initiation function. The receive socket is then bound to a designated port
 64305, regular BATMAN runs on port 4305, and the send socket is explicitly
-allowed to send to broadcast addresses.
-
-Sockets needs to be explicitly set to be allowed to send to broadcast addresses
-in UNIX systems, as a protection mechanism.
-
-The following shows a code snippet of how the sockets are setup:
-\begin{lstlisting}[frame=tb]
-int32_t *recvsock, *sendsock;
-addrinfo hints, *res;
-
-/* Set family information */
-memset(&hints, 0, sizeof hints);
-hints.ai_family = AF_INET;
-hints.ai_socktype = SOCK_DGRAM;
-hints.ai_flags = AI_PASSIVE;
-hints.ai_protocol = IPPROTO_UDP;
-
-/* Puts the port-info inside a addrinfo data structure */
-getaddrinfo(NULL, port, &hints, &res);
-
-/* Assign file descriptor for sockets */
-*recvsock = socket(PF_INET, SOCK_DGRAM, 0)
-*sendsock = socket(PF_INET, SOCK_DGRAM, 0)
-
-/* Binds the sockets to the network interface */
-setsockopt(*recvsock, SOL_SOCKET, SO_BINDTODEVICE, interface, strlen(interface) + 1)
-setsockopt(*sendsock, SOL_SOCKET, SO_BINDTODEVICE, interface, strlen(interface) + 1)
-
-/* Binds receive socket to the port (rest of the address is empty/null) */
-bind(*recvsock, res->ai_addr, res->ai_addrlen);
-
-/* Allow the send socket to send broadcast messages */
-int broadcast_val = 1;
-setsockopt(*sendsock, SOL_SOCKET, SO_BROADCAST, &broadcast_val, sizeof int)
-
-/* Set the send socket to non-blocking */
-fcntl(*sendsock, F_SETFL, O_NONBLOCK);
-
-\end{lstlisting}
+allowed to send to broadcast addresses. Sockets needs to be explicitly set to be
+allowed to send to broadcast addresses in UNIX systems, as a protection
+mechanism. A code snippet of the sockets set up is shown in the appendix under
+Section \ref{code:sockets}.
 
 There are several practical reasons to choose UDP sockets over TCP sockets for
 this implementation. First and foremost, this system sends authentication
@@ -117,11 +82,12 @@ Most of the interesting operation in the AM class happens within a single loop
 running throughout the lifetime of the BATMAN daemon. The program flow
 throughout this loop is shown in Figure \ref{fig:am_main_loop}.
 
-\begin{figure}[hb!]
+\begin{figure}[h!]
 	\centering
 	\includegraphics[width=\textwidth]{images/am_main_loop.png}
 	\caption{Main program flow in AM class.}
 	\label{fig:am_main_loop}
+	\clearpage
 \end{figure}
 
 For clarity the figure leaves out certain details, but the most important
@@ -176,27 +142,196 @@ the policy is written in, this should make no practical difference, other than
 not being a strictly RFC 3820 proxyCertInfoExtension.
 
 \subsection{Generating PC Requests}
+As mentioned earlier the PC requests are generated prior to the main loop of the
+AM thread. This means the request is generated and ready prior to discovering
+new neighbors, so the authentication handshake can be performed as quick as
+possible.
+
+The request starts with creating and assigning a RSA key pair the size of 1024
+bits. If the reader take a look into the implementation he or she will see that
+the setup for an \ac{ECC} key pair is also there. Using ECC was only scrapped
+at the very end because of problems regarding the keystream-material exchange
+later on, where the author had problems with the ECIES algorithm.
+
+The subject name is created a pseudo random function, contrary to using the
+SHA-1 digest of the public key as proposed in the design. This was implemented
+this way at the beginning quickly, and was supposed to be exchanged with the
+message digest later on but because of time constraint there were no time to
+test whether this subject name was set correctly. It should however be an easy
+and relatively quick fix, but needs to be tested properly first - and probably
+be encoded in Base64.
+
+After this the proxy certificate extension is added using the following
+function\\\texttt{openssl\_cert\_add\_ext\_req} as seen in Section
+\ref{code:pc_ext}.
+
+All this data is stored as a X.509\_REQ object and written to disk and sent
+during the handshake in a PEM encoded format \cite{rfc1421}.
+
 \subsection{Generating PCs}
+Generating PCs are much the same as creating PC requests, with the addition of
+signing the certificate, changing the subject name, setting the issuer name, and
+setting the valid lifetime of the certificate. The issuer name is simply set to
+the subject name of the \ac{SP} and the subject name is set as shown in Section
+\ref{code:set_subject_name}. The valid lifetime is set from the current time,
+and until 8 hours from creation.
+
 \subsection{Verifying PCs}
+In this implementation PCs and their public keys are not verified during the
+initial authentication phase. This implementation use the physical locality as
+the ``out-of-band verification'', which might be good enough if the SP only
+use an ethernet cable which has to be directly connected to the new nodes trying
+to authenticate themselves. However, in a real-world implementation this method
+has to be revised!
+
+However, when the initial authentication with the SP is complete, nodes do
+verify each others' PCs by checking the signature against the SPs public key
+using \texttt{X509\_verify} taking the received certificate and the SPs public
+key as input.
 
 \section{Authentication List}
+When a node has verified another node, it stores some information about that
+node within struct called \texttt{trusted\_node}. Then the struct is placed in a
+list called \ac{AL} which stores one such struct for each known and trusted
+node. Table \ref{tab:impl_al_content} shows how this data structure looks like:
+\begin{table}[h]
+	\centering
+	\begin{tabular}{| l | l |}\hline
+ 		\textbf{Data type} & \textbf{Variable Name}\\\hline
+		uint16\_t & id\\\hline
+		uint32\_t & addr\\\hline
+		uint8\_t & role\\\hline 
+		unsigned char * & name\\\hline 
+		EVP\_PKEY * & pub\_key\\\hline  
+	\end{tabular}
+	\caption{Trusted node struct of the AL.}
+	\label{tab:impl_al_content}
+\end{table}
+At the beginning of the project, the AL was intended to be sent on the network
+and was therefore made as an array, instead of a linked list. With additional
+time this list should however be converted to a linked list for better
+performance and less memory waste. The complete code snippet showing how a newly
+verified node is added to the AL is shown in Section \ref{code:add_to_al}.
 
 \section{Neighbor List}
+Similarly when a node receives a new keystream-material message from a neighbor
+the neighbor is added to the \ac{NL}. This list is also an array, and should
+also be changed to a linked list, which contains a data structure called
+\texttt{trusted\_neigh}. Below Table \ref{tab:impl_nl_content} shows this new
+data structure:
+\begin{table}[h]
+	\centering
+	\begin{tabular}{| l | l |}\hline
+ 		\textbf{Data type} & \textbf{Variable Name}\\\hline
+		uint16\_t & id\\\hline
+		uint32\_t & addr\\\hline
+		uint64\_t & window\\\hline 
+		uint16\_t & last\_seq\_num\\\hline
+		unsigned char * & mac\\\hline 
+		time\_t & last\_rcvd\_time\\\hline
+		uint8\_t & num\_keystream\_fails\\\hline 
+	\end{tabular}
+	\caption{Trusted neighbor struct of the NL.}
+	\label{tab:impl_nl_content}
+\end{table}
+Note here that while the design and implementation changed during this thesis
+things have changed, and what used to be a \ac{MAC} in the NL is now a
+keystream, but the names have not been changed in the current version of the
+implementation.
 
-\section{Keystream}
-\subsection{Generating Keystreams}
-\subsection{Using One-Time Passwords From Keystream}
-\subsection{Verifying One-Time Passwords}
+The code snippet in Section \ref{code:add_to_nl} shows what happens whenever a
+new neighbor is added, or a new keystream-material is received from a neighbor.
+The code snippet in Section \ref{code:rem_from_nl} shows what happens whenever a
+node is removed from the NL due to inactivity, i.e. not received its
+keystream-material for 130 seconds.
+
+\section{Keystream Generation}
+Before a keystream can be generated, its keystream-material must be generated
+(and sent). The IV and nonce are both generated using OpenSSL's
+\texttt{RAND\_pseudo\_bytes} generating 16 and 767 Bytes of pseudo random data,
+respectively. The generation of the ephemeral key is created using AES-CBC as
+shown in the code snippet in Section \ref{code:gen_eph_key}.
+
+When the keystream-material has been created, they can be used to create the
+full keystream on both ends. First the original nonce is encrypted using the
+ephemeral key and IV as inputs to OpenSSL's AES-CBC encryption. Next one tenth
+(1/10) of the nonce will be XOR'ed with 1 and encrypted again with the AES-CBC
+encryption, using the same key but using a part of the previous ciphertext as
+IV. This is done 9 times, so the second round the second part (between 2/10 and
+3/10) of the nonce will be XOR'ed with 2 and encrypted with the same key and IV
+from previous ciphertext and so on until ten different (1 original and 9
+modified) nonces has been encrypted. All the ciphertexts is then added to one
+large buffer, which is this node's keystream. All of the operations above is
+shown in the code snippet in Section \ref{code:gen_keystream}.
+
+\section{Using One-Time Passwords}
+\acp{OTP} are handled within the context of the original BATMAN protocol because
+adding and verifying them is performed when the original protocol receives or
+sends them. How to add the OTPs are described in Section
+\ref{subsect:schedule.c} while how to verify them are described in Section
+\ref{subsect:batman.c}.
 
 \section{Changes to the BATMAN Protocol}
+Some changes are BATMAN specific or needs to be called from within the original
+BATMAN protocol and these changes are described here.
+
+Figure \ref{fig:extended_ogm} shows how the modified batman packets, or
+\acp{OGM}, look like. The white area is not changed, except an unused version
+number is taken and used in the 'Version' field at the outset of the packet. The
+red area is added by this implementation, containing both an \ac{OTP} and its
+sequence number in the keystream.
 
 \begin{figure}[h]
 	\centering
   	\includegraphics{images/extended_ogm.png}
-  	\caption{Modified routing announcement (Originator Message - OGM) for the modified BATMAN protocol.}
+  	\caption{Modified routing announcement (OGM) for extended BATMAN.}
 	\label{fig:extended_ogm}
 \end{figure}
 
 \subsection{POSIX.C}\label{subsect:posix.c}
-\subsection{BATMAN.C}
-\subsection{SCHEDULE.C}
+It is within the posix.c class that the daemon's main function that initialized
+the whole program lies. In here a small but important modification was made.
+Before allowing the daemon to start, OpenSSL's pseudo random number generator
+(PRNG) has to be seeded with much high entropy random data. This is done by
+taking 1024 bytes from the UNIX environment's \emph{/dev/urandom}. If this
+seeding should fail, the daemon is not started and the program killed.
+
+\subsection{BATMAN.C}\label{subsect:batman.c}
+It is in this class where the main thread in the original BATMAN runs, where it
+receives \acp{OGM}, decides how to handle them, and whether to schedule to send
+own or re-broadcast other nodes' \acp{OGM}. Before entering the main loop, this
+class has been modified to initiate the AM class by calling
+\texttt{am\_thread\_init}.
+
+Inside the main loop which is loops for each received \ac{OGM} there has been a
+modification to verify the \ac{OTP} appended to the \ac{OGM}. If the
+verification check is not passed, the \ac{OGM} is dropped, and possibly the AM
+class is told there is a new node. The interesting code snippet from this class
+can be found in Section \ref{code:ext_batman} in it entirety.
+
+TODO: NEW FIGURE SHOWING THE BATMAN FLOW CHART HERE!
+
+Figure XXXX shows the flow chart through the main loop in BATMAN. Here you can
+see where the AM modifications are put, and hopefully understand why they are
+put there. The first checks before the modification are almost like sanity
+checks, which must be passed before testing the \acp{OTP} should even be
+considered. After the AM extension there are many checks which are more specific
+to the routing algorithm, but they do not affect whether the \acp{OTP} should be
+checked, and if the OGM is received from a new neighbor the AM extension has to
+notify the AM class of a new neighbor before allowing the the subsequent checks
+to be made, or the OGM will be handled when it quite possibly should not.
+
+\subsection{SCHEDULE.C}\label{subsect:schedule.c}
+In the schedule class there are two functions which needs to be modified. The
+two functions \texttt{schedule\_forward\_packet} and
+\texttt{schedule\_own\_packet} generates and puts \acp{OGM} in a queue waiting
+to be send on behalf of other nodes or itself, respectively. The modifications
+are the same using only different available parameters, and is shown in Section
+\ref{code:ext_schedule}.
+
+Again there is some variable name discrepancy because the design and
+implementation has evolved during the work of this thesis. The \texttt{auth}
+variable name used actually means \ac{OTP} and the \texttt{auth\_value} means
+the whole keystream. The line below means that a value of 2 bytes size is to
+be copied from the keystream to the OTP value in the bat\_packet, or OGM.\\
+\texttt{memcpy(bat\_packet-$>$auth, auth\_value+2*auth\_seq\_num, 2);}.

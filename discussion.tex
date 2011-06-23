@@ -2,11 +2,6 @@
 \label{ch:discussion}
 \acresetall
 
-\section{Key Usage}
-Not good practive to use same keys for both encryption and signing
-Is simpler
-Limited lifetime makes it ok\ldots
-
 \section{System Design Vulnerability/Attacks on the routing announcements?}
 The design was changed a bit during implementation, and because lack of time
 there was a crucial part that did not make it to the implementation, which needs
@@ -15,9 +10,9 @@ are two attacks that the system are still vulnerable to, namely the
 \emph{wormhole attack} and the \emph{suppress replay attack}.
 
 Because the routing announcements are unencrypted and the one-time-passwords
-are just appended after the messages, these packets can be altered using each of
-the two attacks. In this section the two attacks are first explained, and then
-the section goes on to describe possible solutions for both attacks.
+are just appended after the messages, these packets can be altered using the
+following two attacks. In this section the two attacks are first explained, and
+then the section goes on to describe possible solutions for both attacks.
 
 \subsection{Wormhole Attack}
 In a wormhole attack, see Figure \ref{fig:wormhole_attack}, an attacker does not
@@ -47,11 +42,11 @@ This attack only distorts the network topology, but notice that because the
 routing announcements' integrity are not protected, and the content is not
 encrypted, the attackers can possibly do greater damage by altering the content
 of the message. By altering the content, they could possibly generate fake
-re-broadcast announcements which is announcing untrusted nodes, possibly
-connecting a whole network of malicious nodes to this trusted network. This
-alteration is not actually a wormhole attack, but it is fair to say that the
-wormhole attack opens up to a variety of other attacks, such as alteration of
-packet, dropping of packets etc.
+re-broadcast announcements announcing untrusted nodes, possibly connecting a
+whole network of malicious nodes to this trusted network. This alteration is
+not actually a wormhole attack, but it is fair to say that the wormhole attack
+opens up to a variety of other attacks, such as alteration of packet, dropping
+of packets etc.
 
 \subsection{Suppress Replay Attack}
 Another attack which is possible due to the fact that the one time passwords are
@@ -72,7 +67,7 @@ wishes to create a false routing announcement he can now do this and append the
 the attacker needs to spoof the addresses of the original sender of the
 announcement which he partly jammed.
 
-\subsection{Solution to the Suppress Replay Attack}
+\subsection{Possible Solution to the Suppress Replay Attack}
 A possible solution to the suppress replay attack, is to ensure message
 intergrity in addition to the authentication. The basic idea would be to create
 and append a message digest to the announcement while using the keystream to
@@ -129,6 +124,25 @@ more than one node at a time. If you receive direct packets from two nodes
 within a very short timeframe, there might be indications that there's a
 wormhole in place replaying one of the special nodes' announcements.
 
+\section{Key Usage}
+In the fields of information security and cryptography it is not seen as a good
+practice to use the same keys for different type of tasks such as encryption 
+for confidentiality and signing for integrity and authenticity.
+
+It is argued that using only one key for different purposes brings a single
+point of failure to the design. While this is true, sometimes the benefits of
+having single key for these purposes are greater than the risk. In the proposed
+design the same public key pair is used to digitally sign keystream-material
+messages as well as when encrypting (with recipients public key) the symmetric
+keys in the same messages. In addition, the \acp{SP} use the same key to sign
+other nodes' \acp{PC}.
+
+The benefits of only having a singe public key pair for each node in the network
+is simplicity in the design. When it comes to the possible vulnerability if the
+one key is compromised, the lifetime of each key which is bound by the
+relatively short lifetime of \acp{PC} makes the window of opportunity for misuse
+of this key short and damage low.
+
 \section{Extending the System Design}
 The specialization project\footnote{} this thesis mentioned other important
 features the secure ad hoc network implementation should have. The things
@@ -181,10 +195,143 @@ new unauthenticated nodes, they could rather tunnel the announcement directly to
 the \ac{SP} and have the authentication handshake go through them.
 
 \subsection{Network Merging}
-\subsection{Internet Gateway}
-\subsection{Multiple SP}
-\subsubsection*{SP List Sharing}
-need to know other SPs public keys, therefore send a list of all SPs with their
-public kehys, just like the old AL sending idea, but only for SPs. Each SP keeps
-track of their own children nodes, and send them the list, signed with his
-pubkey.
+For this implementation to be really useful for emergency services, which will
+consist of different types of actors and organizations, the implementation
+should support merging of multiple ad hoc networks. For example, if paramedics
+set up their own network, and firefighters arrive with their own network,
+co-operation between these networks should be supported.
+
+Figure \ref{fig:scenario_networks} (from the specialization
+project\footnote{A.G. Bowitz and E.G. Graarud \textit{Developing a Secure Ad
+Hoc Network Implementation}
+\url{http://org.ntnu.no/batman2010/project_final.pdf}}) shows a possible
+scenario when a large emergency situation such as a natural disaster has
+happened. The figure portrays 4 organizational actors, i.e. police,
+firefighters, paramedics, and the military, which all run their own networks.
+Some of the networks co-operate through the use of gateways, such as between the
+police and the other actors, and the paramedics and firefighters co-operate
+through by merging their networks.
+
+\begin{figure}[h]
+	\centering
+  	\includegraphics[width=\textwidth]{images/scenario.png}
+  	\caption{Scene from scenario with actors from multiple organizations.}
+	\label{fig:scenario_networks}
+\end{figure}
+
+Choosing whether to merge two networks or not is mainly a security issue. Some
+actors might have higher security concerns than others, like the military do not
+trust the other actors to merge with their networks, but they might still want
+to communicate. This can for example be handled by having certain gateway nodes
+being allowed to communicate with nodes outside the network in a controlled
+manner.
+
+\subsubsection*{Full Merging}
+A \emph{full merging} means that two or more separately built and maintained
+networks completely merge so that each node in each of the networks receive
+all the routing announcements being sent within the networks. What this
+basically means is that the different networks become a single network.
+
+The transition to from multiple to one network is not however, an easy one. Up
+until this point the assumption has been that there is only one management node
+called \ac{SP} in the network. This will now change. With multiple networks
+mering into one there will be multiple \acp{SP} managing the access control of
+the network. In the next section having multiple \acp{SP} are discussed in
+greater detail.
+
+There is one more major factor which needs to be addressed with full merging of
+networks, namely how access control is defined. One now needs to assume that the
+\acp{SP} either use the same policy languages to define what rights a node have
+been attributed with, or that they have a way of translating these policy
+languages so that they can be uniformly understood. For instance, in Section
+\ref{subsect:detailed_pc_descr} three special attributes and their values were
+used as an example of how a policy might look like:
+
+\begin{itemize}
+  \item Role - Node's role in the network
+  \item Routing - Whether the node can partake in the routing
+  \item Application - Whether the node has access to the application layer
+\end{itemize}
+
+Now, these attributes would seem to make sense in most applications of this
+system design, but some implementations might even have more attributes. Their
+values might also be different, because different networks might have different
+needs, for instance the 'role' attribute might have different values depending
+on what kind of elements are present in the network. For instance, one network
+might have the ``location aware guard nodes'' mentioned earlier in the network
+for wormhole protection, while other network do not.
+
+\subsubsection*{Limited Merging}
+\emph{Limited merging} is a completely different technique than the one
+described above, and probably easier to implement. With limited merging of two or more
+networks, the networks stay autonomous with their own (possible) hierarchy, set
+of rules, management nodes, and so on. What constitutes the merging is that at
+least one node in each network is set up with gateway capabilities, which can
+broadcast the existence of another network to the nodes inside its own network.
+
+Rules on the application layer must necessarily still be looked at, as they
+should work over the different network, but routing rules and other access
+controls can stay hidden between the networks.
+
+\subsubsection*{Internet Gateway}
+Similar to limited merging, a node in a network may be given gateway capabilites
+to announce Internet access to the network. Because all nodes belong to the same
+\ac{MANET} and the management is consistant within this one network, this
+capability should be relatively easy to implement. The only thing the reader
+should notice is that the policy field within the proxy certificates of the
+nodes can now be used to declare whether the node should have Internet access or
+not by adding an \emph{Internet attribute} to the policy.
+
+\subsection{Multiple Service Proxies}
+Whenever full merging of two secure and managed MANETs happen as described above
+two \emph{or more} (!) SPs will end up in the same network (the emphasis on more
+is used because one network might have more than one SP). This would be a
+challenging task to overcome, for these networks are inherently flat, or
+non-hierarchical. Decision making in the network after this point would be
+difficult if one network (or specifically on SP) sees itself as more important
+than the other.
+
+It is probably better to say that for two networks to fully merge, they should
+see themselves as equal counterpart where no network has more rights than the
+other, and therefore the \acp{SP} have the same rights as each other. This means
+that nodes issued by one \ac{SP}, or said differently one SP's children, are
+equally trusted by all other nodes in the network, depending on the restrictions
+set in their \acp{PC} of course.
+
+If all the \acp{SP} in the network are considered ``equal'', then they are all
+equally trusted to issue new nodes and introduce them to the network. The major
+requirement missing for this scheme to happen is that all nodes in the network
+now needs to know the public keys for all SPs.
+
+It is likely that not all nodes in the network will ever become a direct
+neighbor and therefore not receive the other SPs' \acp{PC0}, but they will meet
+nodes signed by those SPs. A way around this problem is to have each \ac{SP} to
+once in a while broadcast a digitally signed list to all its children nodes
+containing the identities (unique subject names) and public keys for all other
+trusted \acp{SP} in the network. Because this list is signed by a known
+\ac{SP}, you are able to verify the authenticity of this list and therefore
+implicitly verify and trust all nodes issued with PCs from the other SPs.
+
+\section{Experience with OpenSSL}
+The experience with OpenSSL has been a challenging one. There is little
+documentation available, and only on some segments of the library. Many
+functions being used in the implementation of this thesis are undocumented, or
+at least not in a freely available documentation. Not to be confused, you can
+find most OpenSSL functions in their documentation, but most of those functions
+are not explained, many does not explain output and input to functions, and many
+functions have unclear names making it a game of ``guessing'' which functions to
+use.
+
+Most of the implementation has been understood by looking at a few available
+examples online at different sites, some demos within the OpenSSL libraries,
+and by asking the online community. For reference, I would personally recommend the
+community at \emph{Stack Overflow}\footnote{\url{http://stackoverflow.com}}
+rather than the OpenSSL mailinglists\footnote{\url{openssl-dev@openssl.org}}
+\footnote{\url{openssl-users@openssl.org}} which have not answered any
+questions I raised.
+
+When I've had enough time I've documented the OpenSSL functions used in my
+implementation, which can hopefully help someone planning to further implement
+on this design, or other designs with similar functionality.
+
+TODO: mention why ECC not used, problems with ECIES algorithm

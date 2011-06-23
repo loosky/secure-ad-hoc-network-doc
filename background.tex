@@ -287,13 +287,13 @@ would fool node B to believe that node A is a direct neighbor and he would
 update his routing tables accordingly.
 
 \subsection{Suppress Replay Attack}
-A suppress replay attack, sometimes called an pre-play attack, is an attack in
+A suppress replay attack, sometimes called a pre-play attack, is an attack in
 which an attacker is able to intercept and suppress a packet, or parts of a
 packet in air. For instance, if a packet appended with some secret is sent over
 a radio link, the attacker might be able to jam the first part of the packet and
 receive the secret. The original recipient would also just receive the secret
-part, but would not understand the content because the headers of and the first
-parts of the payload would be gone, therefore ignoring the packet altogether.
+part, but would on the link layer drop the packet because there would be a
+\ac{CRC} mismatch (or no \ac{CRC} at all).
 
 At this point the attacker could be able to create a new falsified packet, and
 append it with the secret - which the recipient might trust depending on the
@@ -305,24 +305,28 @@ actual implementations based on some specific routing protocols. None of the
 implementations found by this author would be applicable for the BATMAN
 protocol, but some of the design proposals probably would.
 
-S. A. H. Seno et al. propose a system design based on distributed CA, using
-clustering of nodes and an offline/out-of-band authentication scheme
-\cite{hosseinisecure}.
+Seno et al. propose a system design based on a distributed CA, using clustering
+of nodes and an offline/out-of-band authentication scheme \cite{hosseinisecure}.
 
-Another related authentication scheme is proposed by H. Dey and R. Datta which
-have a more mathematical approach to the problem \cite{springerlink:Haimabati}.
-This solution requires predefined unique ID and special hardware with a hidden
-and secure algorithm (i.e. smart card), and is probably better suited for a
-military application rather than emergency situations.
+Another related authentication scheme is proposed by Dey and Datta which have a
+more mathematical approach to the problem \cite{springerlink:Haimabati}. This
+solution requires a predefined unique ID and special hardware with a hidden and
+secure algorithm (i.e. smart card), and is probably better suited for a
+military application than emergency situations.
 
-K. Sanzgiri et al. proposed an authentication scheme for ad hoc routing called
-Authenticated Routing for Ad hoc Networks (ARAN), which is adding signature
+Sanzgiri et al. proposed an authentication scheme for ad hoc routing called
+Authenticated Routing for Ad hoc Networks (ARAN), by adding a signature
 extension to the AODV reactive routing protocol \cite{sanzgiri2005authenticated}.
 
-Additionally, some believes the computational costs using asymmetric keys for ad
-hoc authentication is to great which lead to the Ariadne protocol
+Additionally, some believe the computational costs using asymmetric keys for ad
+hoc authentication is too great which lead to the Ariadne protocol
 \cite{hu2005ariadne}, and the Secure Routing Protocol
 \cite{papadimitratos2002secure}.
 
-{\AA}. A. Nyre et al. published a design of an hierarchical authentication
-system for the OLSR ad hoc routing protocol \cite{nyre2009secure}.
+Nyre et al. published a design of an hierarchical authentication system for the
+OLSR ad hoc routing protocol \cite{nyre2009secure}.
+
+The problems with most of the related work are their complexity, high
+computational costs and/or non-scalability when networks running implementations
+based on their design grow large - and these things are what separates this
+thesis from the other works.

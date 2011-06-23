@@ -11,8 +11,8 @@ living there do not have the resources to deploy such networks.
 In emergency and/or military situations, this often applies. Even if it didn't,
 the networks may have been put out of operations due to the nature of the
 emergency (i.e. tsunami destroying the infrastructure). As recent events
-here in Norway have shown internal errors might paralyze the whole network 
-infratrucutre\footnote{\url{http://www.dagbladet.no/2011/06/16/nyheter/innenriks/telenor/16942385/}
+here in Norway have shown, internal errors might paralyze the whole network 
+infrastructure\footnote{\url{http://www.dagbladet.no/2011/06/16/nyheter/innenriks/telenor/16942385/}
 (Norwegian)} making emergency relief ineffective\footnote{\url{http://www.dagbladet.no/2011/06/11/nyheter/ver/flom/naturkatastrofer/innenriks/16880835/}
 (Norwegian)}, giving a sound argument for having a separate backup emergency
 network. The military might also be in an hostile environment where they cannot trust
@@ -44,7 +44,7 @@ trust mechanism, i.e. an authentication scheme, which combines features of a
 typical \ac{PKI} with some of the ideas behind \ac{WOT}
 \cite{zimmermann1995official}. The system design is presented in two parts, the
 part which has been implemented in Chapter \ref{ch:design}, and the ideas that I
-did not have time to implement is discussed as further work in Chapter
+did not have time to implement are discussed as further work in Chapter
 \ref{ch:discussion}.
 
 As one might expect, it is a very challenging task to achieve strong security
@@ -68,7 +68,7 @@ could become much more efficient, bringing the right amount of help to the
 right places at the right time.
 
 \section{Contributions}
-This thesis produce a novel design method to achieve authentication and trust
+This thesis presents a novel design to achieve authentication and trust
 between nodes in a secure ad hoc network. The popular ad hoc routing protocol
 called BATMAN has been extended to become an instantiation of said design, which
 has never been done before. Additionally, the use of proxy certificates for
@@ -126,10 +126,8 @@ are described in Chapter \ref{ch:design} whereas the instantiation artifact is
 described in Chapter \ref{ch:implementation}.
 
 Much of the design (method artifact) comes from the specialization project last
-fall\footnote{A.G. Bowitz and E.G. Graarud \textit{Developing a Secure Ad Hoc
-Network Implementation} \url{http://org.ntnu.no/batman2010/project_final.pdf}},
-but some aspects of that design has been changed during the course of the study
-and implementation in this thesis.
+fall \cite{bowitz_graarud}, but some aspects of that design has been changed
+during the course of the study and implementation in this thesis.
 
 \section{Document Structure}
 This thesis report is structured as follows:
@@ -146,13 +144,20 @@ implementation of the system design. The implementation is a modification of the
 \ac{BATMAN} source code.
 
 \textbf{Chapter \ref{ch:testing_results}: Testing \& Results} devise different
-tests for checking t he performance of the implementation compared to the
+tests for checking the performance of the implementation compared to the
 original \ac{BATMAN} implementation, and presents the results of the tests.
 
-\textbf{Chapter \ref{ch:discussion}: Discussion}
+\textbf{Chapter \ref{ch:discussion}: Discussion} looks at some of the possible
+vulnerabilities in the proposed design, talks a little about the experience of
+implementing such a system, and takes up issues regarding extending the proposed
+system design even further.
 
-\textbf{Chapter \ref{ch:conclusion}: Conclusion}
+\textbf{Chapter \ref{ch:conclusion}: Conclusion} makes conclusions about the
+security, and performance of this system as well as how well it fulfills the
+requirements for the implementation.
 
-\textbf{Appendix \ref{appendix:source}: Source Code}
+\textbf{Appendix \ref{appendix:source}: Source Code} shows a few of the most
+necessary code snippets and links to the full source code available online.
 
-\textbf{Appendix \ref{appendix:irc}: IRC Chat Logs}
+\textbf{Appendix \ref{appendix:irc}: IRC Chat Log} shows a chat log with one of
+the BATMAN developers.
