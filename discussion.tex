@@ -2,12 +2,12 @@
 \label{ch:discussion}
 \acresetall
 
-\section{System Design Vulnerability/Attacks on the routing announcements?}
-The design was changed a bit during implementation, and because lack of time
-there was a crucial part that did not make it to the implementation, which needs
-to be addressed before the system can be used in a real world scenario. There
-are two attacks that the system are still vulnerable to, namely the
-\emph{wormhole attack} and the \emph{suppress replay attack}.
+\section{Modified Routing Announcements Vulnerability}
+The design was changed a bit during implementation, and with limited time some
+parts did not make it to the implementation These things needs to be addressed
+before the system can be used in a real world scenario. There are two attacks
+that the system are still vulnerable to, namely the \emph{wormhole attack} and
+the \emph{suppress replay attack}.
 
 Because the routing announcements are unencrypted and the one-time-passwords
 are just appended after the messages, these packets can be altered using the
@@ -57,7 +57,7 @@ one time password and its sequence number are kept intact.
 
 The trusted receiver of this distorted packet will ignore it, because he will
 not understand the meaning of the packet. The attacker on the other hand, knows
-that the following uncorrupt data is a valid one time password and its sequence
+that the following un-corrupt data is a valid one time password and its sequence
 number from the sender's keystream.
 
 Because the original recipient of this packet did not understand the destroyed
@@ -69,7 +69,7 @@ announcement which he partly jammed.
 
 \subsection{Possible Solution to the Suppress Replay Attack}
 A possible solution to the suppress replay attack, is to ensure message
-intergrity in addition to the authentication. The basic idea would be to create
+integrity in addition to the authentication. The basic idea would be to create
 and append a message digest to the announcement while using the keystream to
 encrypt the message, e.g. by using a strong stream cipher.
 
@@ -89,9 +89,9 @@ message digest, the attacker would not be able to recreate the full plaintext
 (including digest) and would therefore not be able to find the keystream used by
 the stream cipher.
 
-The reader might rise another question, regarding the lenght of this random part
-added to the announcement before creating the digest. One major factor here is
-time, and time it takes for an adversary to find the random part (collision).
+The reader might raise another question, regarding the length of this random
+part added to the announcement before creating the digest. One major factor
+here is time, and time it takes for an adversary to find the random part (collision).
 The time is however very restricted. The sliding window used to avoid replay
 attacks is only 64 bits long, and in the worst case (best case for adversary)
 there are only two legitimate nodes in the network. If this is the case, each
@@ -111,9 +111,9 @@ This attack vector is very difficult to to protect against. With the solution
 above, many attacks dependent on the wormhole attack are thwarted because of
 packet secrecy, integrity and authentication. However, the solution does not
 hinder an attacker from replaying the exact same packets through a wormhole, in
-order to alter the network topology. There has been alot of research effort to
-find a good solution to this attack, but most solutions are aimed towards
-stationary networks and not \acp{MANET} \cite{raoteapproaches}.
+order to alter the network topology. There has been a lot of research to find a
+good solution to this attack, but most solutions are aimed towards stationary
+networks and not \acp{MANET} \cite{raoteapproaches}.
 
 One possible solution as pointed to by the article above is the use of
 ``location aware guard node'' and graph theory \cite{poovendran2007graph}
@@ -121,21 +121,20 @@ One possible solution as pointed to by the article above is the use of
 special nodes spread out in the field at fixed points, where none of these nodes
 are within each other's transmitting range, one should never be a neighbor of
 more than one node at a time. If you receive direct packets from two nodes
-within a very short timeframe, there might be indications that there's a
+within a very short time frame, there might be indications that there's a
 wormhole in place replaying one of the special nodes' announcements.
 
 \section{Key Usage}
-In the fields of information security and cryptography it is not seen as a good
-practice to use the same keys for different type of tasks such as encryption 
-for confidentiality and signing for integrity and authenticity.
-
-It is argued that using only one key for different purposes brings a single
-point of failure to the design. While this is true, sometimes the benefits of
-having single key for these purposes are greater than the risk. In the proposed
-design the same public key pair is used to digitally sign keystream-material
-messages as well as when encrypting (with recipients public key) the symmetric
-keys in the same messages. In addition, the \acp{SP} use the same key to sign
-other nodes' \acp{PC}.
+In the fields of information security and cryptography it is not considered a
+good practice to use the same keys for different type of tasks such as
+encryption for confidentiality and signing for integrity and authenticity. It is
+argued that using only one key for different purposes brings a single point of
+failure to the design. While this is true, sometimes the benefits of having
+single key for these purposes are greater than the risk. In the proposed design
+the same public key pair is used to digitally sign keystream-material messages
+as well as when encrypting (with the recipient's public key) the symmetric keys
+in the same messages. In addition, the \acp{SP} use the same key to sign other
+nodes' \acp{PC}.
 
 The benefits of only having a singe public key pair for each node in the network
 is simplicity in the design. When it comes to the possible vulnerability if the
@@ -143,32 +142,32 @@ one key is compromised, the lifetime of each key which is bound by the
 relatively short lifetime of \acp{PC} makes the window of opportunity for misuse
 of this key short and damage low.
 
-\section{Extending the System Design}
-The specialization project\footnote{} this thesis mentioned other important
-features the secure ad hoc network implementation should have. The things
-mentioned in this thesis' system design are actually implemented, but there are
-still much more that should be added if this system should be used in real life
-emergency situations.
+\section{Future Work - Extending the System Design}
+The specialization project \cite{bowitz_graarud} that preceded this thesis
+mentioned other important features the secure ad hoc network implementation
+should have. The things mentioned in this thesis' system design are actually
+implemented, but there are still much more that should be added if this system
+should be used in real life emergency situations.
 
 In this section some important features which should be added, or at least
 studied, are mentioned. They do add more complexity to the system, so it is
 probably better to do a complete security and performance analysis on this
-thesis' proposed design before adding these features, however.
+thesis' proposed design before adding these features.
 
 \subsection{Initial Authentication with Long-Lived Public Key Certificates}
 One limiting factor in the system design is the need for an out-of-band
 initial authentication. With this limitation, every actor in the emergency
-scenario needs to manually verify his or hers identity to the network management
+scenario needs to manually verify his or her identity to the network management
 handled by the \ac{SP}. With many actors, which would be typical in a large
 emergency situation like a natural disaster, this process might take up valuable
 time from the actual emergency work - which contradicts the whole meaning of
 setting up the \ac{MANET} at the scene in the first place.
 
-Now, if an actor has possession of a regular \ac{LLPKC} for which the network
+Now, if an actor has possession of a regular \ac{LLPKC} which the network
 \ac{SP} is able to verify, this should be allowed without the need of an
-out-of-band authentication. After the \ac{SP} have verified the certificate, he
+out-of-band authentication. After the \ac{SP} has verified the certificate, he
 can now issue the the actor a proxy certificate, signed by him so that all nodes
-in the network are able to verify the new nodes identity.
+in the network are able to verify the new node's identity.
 
 The question of whether the \ac{SP} is able to verify the \ac{LLPKC} is not
 necessarily easy to answer. If the \ac{SP} trusts the identity and knows the
@@ -187,11 +186,10 @@ authentication later.
 
 Either way, as this does not have to happen in the same out-of-band fashion as
 the proposed design in this thesis requires, one could also allow the
-authentication happen even if the actor is not a direct neighbor of the \ac{SP},
-but is connected through other nodes in the network.
-
-While in this implementation regular trusted nodes drop the announcements from
-new unauthenticated nodes, they could rather tunnel the announcement directly to
+authentication to happen even if the actor is not a direct neighbor of the
+\ac{SP}, but is connected through other nodes in the network. While in this
+implementation regular trusted nodes drop the announcements from new
+unauthenticated nodes, they could rather tunnel the announcement directly to
 the \ac{SP} and have the authentication handshake go through them.
 
 \subsection{Network Merging}
@@ -202,15 +200,12 @@ set up their own network, and firefighters arrive with their own network,
 co-operation between these networks should be supported.
 
 Figure \ref{fig:scenario_networks} (from the specialization
-project\footnote{A.G. Bowitz and E.G. Graarud \textit{Developing a Secure Ad
-Hoc Network Implementation}
-\url{http://org.ntnu.no/batman2010/project_final.pdf}}) shows a possible
-scenario when a large emergency situation such as a natural disaster has
-happened. The figure portrays 4 organizational actors, i.e. police,
-firefighters, paramedics, and the military, which all run their own networks.
-Some of the networks co-operate through the use of gateways, such as between the
-police and the other actors, and the paramedics and firefighters co-operate
-through by merging their networks.
+project \cite{bowitz_graarud}) shows a possible scenario when a large emergency
+situation such as a natural disaster has happened. The figure portrays 4
+organizational actors, i.e. police, firefighters, paramedics, and the military,
+which all run their own networks. Some of the networks co-operate through the
+use of gateways, such as between the police and the other actors, and the
+paramedics and firefighters co-operate by merging their networks.
 
 \begin{figure}[h]
 	\centering
@@ -220,11 +215,11 @@ through by merging their networks.
 \end{figure}
 
 Choosing whether to merge two networks or not is mainly a security issue. Some
-actors might have higher security concerns than others, like the military do not
-trust the other actors to merge with their networks, but they might still want
-to communicate. This can for example be handled by having certain gateway nodes
-being allowed to communicate with nodes outside the network in a controlled
-manner.
+actors might have higher security concerns than others, e.g. military units does
+not trust the other actors to merge with their networks, but they might still want
+to communicate with them. This can for example be handled by having certain
+gateway nodes being allowed to communicate with nodes outside the network in a
+controlled manner.
 
 \subsubsection*{Full Merging}
 A \emph{full merging} means that two or more separately built and maintained
@@ -232,12 +227,11 @@ networks completely merge so that each node in each of the networks receive
 all the routing announcements being sent within the networks. What this
 basically means is that the different networks become a single network.
 
-The transition to from multiple to one network is not however, an easy one. Up
-until this point the assumption has been that there is only one management node
-called \ac{SP} in the network. This will now change. With multiple networks
-mering into one there will be multiple \acp{SP} managing the access control of
-the network. In the next section having multiple \acp{SP} are discussed in
-greater detail.
+The transition to from multiple to one network is not easy. Up to this point
+the assumption has been that there is only one management node called \ac{SP}
+in the network. This will now change. With multiple networks merging into one
+there will be multiple \acp{SP} managing the access control of the network. In
+the next section having multiple \acp{SP} is discussed in greater detail.
 
 There is one more major factor which needs to be addressed with full merging of
 networks, namely how access control is defined. One now needs to assume that the
@@ -259,24 +253,27 @@ values might also be different, because different networks might have different
 needs, for instance the 'role' attribute might have different values depending
 on what kind of elements are present in the network. For instance, one network
 might have the ``location aware guard nodes'' mentioned earlier in the network
-for wormhole protection, while other network do not.
+for wormhole protection, while other network do not. With two such different
+networks, full merging might not be feasible, but with smaller differences the
+obstacles might be manageable.
 
 \subsubsection*{Limited Merging}
 \emph{Limited merging} is a completely different technique than the one
-described above, and probably easier to implement. With limited merging of two or more
-networks, the networks stay autonomous with their own (possible) hierarchy, set
-of rules, management nodes, and so on. What constitutes the merging is that at
-least one node in each network is set up with gateway capabilities, which can
-broadcast the existence of another network to the nodes inside its own network.
+described above, and probably easier to implement. With limited merging of two
+or more networks, the networks stay autonomous with their own (possible)
+hierarchy, set of rules, management nodes, and so on. What constitutes the
+merging is that at least one node in each network is set up with gateway
+capabilities, which can broadcast the existence of another network to the nodes
+inside its own network.
 
 Rules on the application layer must necessarily still be looked at, as they
-should work over the different network, but routing rules and other access
+should work over the different networks, but routing rules and other access
 controls can stay hidden between the networks.
 
 \subsubsection*{Internet Gateway}
-Similar to limited merging, a node in a network may be given gateway capabilites
+Similar to limited merging, a node in a network may be given gateway capabilities
 to announce Internet access to the network. Because all nodes belong to the same
-\ac{MANET} and the management is consistant within this one network, this
+\ac{MANET} and the management is consistent within this one network, this
 capability should be relatively easy to implement. The only thing the reader
 should notice is that the policy field within the proxy certificates of the
 nodes can now be used to declare whether the node should have Internet access or
@@ -288,7 +285,7 @@ two \emph{or more} (!) SPs will end up in the same network (the emphasis on more
 is used because one network might have more than one SP). This would be a
 challenging task to overcome, for these networks are inherently flat, or
 non-hierarchical. Decision making in the network after this point would be
-difficult if one network (or specifically on SP) sees itself as more important
+difficult if one network (or specifically one SP) sees itself as more important
 than the other.
 
 It is probably better to say that for two networks to fully merge, they should
@@ -318,7 +315,7 @@ documentation available, and only on some segments of the library. Many
 functions being used in the implementation of this thesis are undocumented, or
 at least not in a freely available documentation. Not to be confused, you can
 find most OpenSSL functions in their documentation, but most of those functions
-are not explained, many does not explain output and input to functions, and many
+are not explained, many do not explain output and input to functions, and many
 functions have unclear names making it a game of ``guessing'' which functions to
 use.
 

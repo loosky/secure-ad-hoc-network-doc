@@ -35,8 +35,8 @@ located) is 'hung up' in e.g. authenticating another node.
 
 \subsection{AM Thread}
 In the setup phase in the original batman class, an \ac{AM} initiation function
-called \texttt{am\_thread\_init} from the \ac{AM} class is called. This function
-takes the network interface name and its corresponding IP address and broadcast
+called \texttt{am\_thread\_init} from the \ac{AM} class is called. This
+function takes the network interface name and its corresponding IP address and broadcast
 address as input. These values are then stored locally in in the AM class for
 socket setup. For socket setup see Section \ref{subsect:am_socks}.
 
@@ -130,13 +130,13 @@ into the implementation, but some however, were left due to time constraint.
 
 One such was that the original proxy certificate X.509v3 extension, introduced
 in RFC 3820 called ``proxyCertInfoExtension'' was not used to carry the policies as
-intented. Most of the OpenSSL documentation is not released to the general
+intended. Most of the OpenSSL documentation is not released to the general
 public for free, and this X.509v3 extension was no exception. The only examples
 found, amongst the original proxy certificate implementations from the Globus
 Project\footnote{Globus Project:
 \url{http://www.globus.org/toolkit/downloads/}}, but using the exact same setup
 did not work in my implementation. After some investigation it seems no open
-source code projects using proxy certificates have been publiished for years,
+source code projects using proxy certificates have been published for years,
 giving me the idea that maybe the OpenSSL specifications have changed during
 the last version updates and that proxy certificates have to be implemented
 differently. The author have asked for an answer on this subject on both emails

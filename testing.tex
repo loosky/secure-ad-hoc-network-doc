@@ -163,7 +163,7 @@ from the seconds test are more ambiguous.
 Figure \ref{fig:results_test_1} presents the first test's results for both the
 original and modified version of BATMAN. The two graphs shows the time in
 seconds on the y-axis and the trial/run number on the x-axis. The two colored
-lines on the graps shows the results from first neighbor discovery until the
+lines on the graphs shows the results from first neighbor discovery until the
 first neighbor is added to routing table (green line) and until both nodes are
 added to the routing table (red line).
 
@@ -179,10 +179,10 @@ The results from the original protocol, shown in Figure
 \ref{fig:test_1_original}, shows high variance in the time needed to add one and
 two nodes to the routing table. For 7 out of 10 ``first nodes'' the time needed
 is relatively equal, being about one second. For both nodes to be added however,
-there are much more variance - variying from the best possible time, i.e. equal
+there are much more variance - varying from the best possible time, i.e. equal
 to adding one node, and up above 3 times longer than adding one node. As this is
 from the original implementation of BATMAN, this thesis will not try to explain
-why this behaviour is observed, nor does the writer know exacly why either.
+why this behaviour is observed, nor does the writer know exactly why either.
 
 Figure \ref{fig:test_1_secure} shows the results from the modified version
 proposed in this thesis. These results indicates that the behaviour of the
@@ -193,7 +193,7 @@ process of adding both nodes to the routing table.
 Another interesting observation is that the time variance seems to be much less
 from that of the original version. This might be because the authentication
 handshake and the keystream sharing happens in a separate thread from the
-regular BATMAN operations, meaning the BATMAN protocol continously receives
+regular BATMAN operations, meaning the BATMAN protocol continuously receives
 routing announcements to process while the \ac{AM} handles its part. The idea
 being that while the \ac{AM} thread runs the BATMAN thread ``gets ready'' to do
 its part of the job.
@@ -234,7 +234,7 @@ it.
 
 Re-transmitting mechanisms based on guessing that the receiving node has not
 received the \ac{AM} messages are in place, but as the mechanism wait until it
-beleives the other node has not received, instead of knowing it instantly. This
+believes the other node has not received, instead of knowing it instantly. This
 can of course be managed adding ACK'ing to each \ac{AM} message, which was not
 added initially because of the wish to minimize overhead. This however, might
 have to be re-evaluated.
@@ -242,7 +242,7 @@ have to be re-evaluated.
 Another thing to notice is how multiple trial runs using the modified version
 actually performed better than the original version. This is impossible to
 explain talking about the design and implementations themselves, but is probably
-most accuratly explained in the terms of external environment.
+most accurately explained in the terms of external environment.
 
 In this test, one major factor is the movement of the Tablet Pc, or node D. This
 movement is not perfect, and will vary in speed, timing, and accurate position
@@ -250,6 +250,6 @@ for each run. As self-generated routing announcements is only generated every
 one second, a difference in almost two seconds can be seen based on the
 difference in distance each run. Also, the original implementation only starts
 its whole neighbor discovery after an original (self-generated/produced) routing
-annoucement is received from a new neighbor. The \ac{AM} is triggered on the
-first routing annoucement received from that new neighbor, even if that
-annouement is a re-broadcast from another node in the new neighbor's network.
+announcement is received from a new neighbor. The \ac{AM} is triggered on the
+first routing announcement received from that new neighbor, even if that
+announcement is a re-broadcast from another node in the new neighbor's network.

@@ -134,9 +134,11 @@ elaborating more at this point.
 BATMAN \cite{batman_rfc} is an increasingly popular routing protocol for
 wireless ad hoc networks, as seen by the fact its taken into the Linux kernel
 net tree
-\footnote{\url{http://www.open-mesh.org/wiki/open-mesh/2011-03-17-batman-adv-and-the-penguin}}. The name is an abbreviation for ``Better Approach To Mobile Ad hoc Networking''. The motivation behind developing BATMAN was to replace the Optimized Link State
-Routing Protocol (OLSR) \cite{why-starting-batman} because of the inherent
-difficulties that protocol has, as explained below.
+\footnote{\url{http://www.open-mesh.org/wiki/open-mesh/2011-03-17-batman-adv-and-the-penguin}}.
+The name is an abbreviation for ``Better Approach To Mobile Ad hoc
+Networking''. The motivation behind developing BATMAN was to replace the
+Optimized Link State Routing Protocol (OLSR) \cite{why-starting-batman} because
+of the inherent difficulties that protocol has, as explained below.
 
 \subsection{From OLSR to BATMAN}
 OLSR is a pro-active routing protocol, which means that participating nodes
@@ -279,7 +281,7 @@ channel, or it might just be a wireless radio link where the two malicious nodes
 have much higher transmitting power than the trusted nodes, extending the range.
 
 The simplest attack using this model against an ad hoc routing protocol would be
-for the first malicious node (M1) to copy a routing annoucement from node A,
+for the first malicious node (M1) to copy a routing announcement from node A,
 send it through the wormhole to M2, and have M2 forward the packet to node B
 using both mac layer and network layer address spoofing. If successful, i.e.
 this packet arrives before the re-broadcasts from the other slower nodes, it

@@ -66,8 +66,8 @@ The neighbors accepts a routing announcement if and only if:
   \item that sender's sequence number has not been received earlier (replay).
 \end{itemize}
 
-This ``key extract'' of the keystream is comparable to regular \acp{OTP} as used
-by e.g. online banks and it is important to note that they are not ``connected''
+This ``key extract'' of the keystream is comparable to regular \acp{OTP} as
+used by e.g. online banks and it is important to note that they are not ``connected''
 to the routing announcements sent, meaning they do not provide integrity for the
 packet.
 
@@ -194,7 +194,7 @@ crisis area, possibly requiring merging or at least collaboration between
 different networks, R5.
 
 R7 comes implicitly from R6 because R6 would be useless if regular nodes could
-alter their priveleges without the permission of a master or management node. R6
+alter their privileges without the permission of a master or management node. R6
 is necessary in this design as no authentication is required prior to the
 network setup, and it is therefore no way to know which rights one actor/node
 should have. As will be discussed in Chapter \ref{ch:discussion} the network
@@ -229,7 +229,7 @@ for less management operations in the management-hostile environment that is
 exposure is limited because of the short valid lifetimes on the \acp{PC}.
 Regular \acp{LLPKC} on the other hand, could be compromised throughout the
 lifetime of the network, or until revocation lists were brought to the scene,
-out-of-band or by acheiving Internet access later on.
+out-of-band or by achieving Internet access later on.
 
 Also, the \ac{SP} could be interested in giving the node rights the node would
 not usually have on this specific scene, depending on the situation. This is
@@ -263,9 +263,9 @@ receiving this information.
 
 
 \section{Design Overview}
-The secure ad hoc network designed here does not change any fundamental workings
-of regular ad hoc routing protocols. When nodes have been authenticated and
-neighbors have verified their neighbors respectively, the routing annoucements
+The secure ad hoc network designed here does not change any fundamental
+workings of regular ad hoc routing protocols. When nodes have been authenticated and
+neighbors have verified their neighbors respectively, the routing announcements
 are generated, broadcasted, forwarded, and handled by the routing protocol
 almost as usual. The only addition to the routing protocol is the addition of
 one-time passwords (OTP) to the routing announcements, and the handling of said
@@ -455,7 +455,7 @@ to verify the signature on the \ac{PC1}'s up against the public key of the
 
 When both nodes have verified each other's certificates, they send each other
 their keystream-material messages, in which they verify each others' signatures
-to actually verify each other as the legitemate owners of the certificates. If
+to actually verify each other as the legitimate owners of the certificates. If
 they are able to verify each others' signature they will add each other to their
 \ac{AL} and \ac{NL}, respectively.
 
@@ -627,10 +627,10 @@ and most likely changed in a real-world implementation.
 %	\label{fig:node_states_authorized}
 %\end{figure}
 
-When a node has been issed a \ac{PC} and become a trusted node in the network,
+When a node has been issued a \ac{PC} and become a trusted node in the network,
 it is almost ready to take part in the sending and forwarding of routing
 announcements. But before a node can take part in the routing in the network,
-there has to be a way for the node to continously re-authenticate itself to make
+there has to be a way for the node to continuously re-authenticate itself to make
 sure the node is still who it says it is.
 
 A common practice would be to sign each and every routing announcement from this
@@ -738,15 +738,15 @@ the senders keystream. The secret is discarded.
 
 \subsection{Using \acfp{OTP} from Keystream}
 Once the keystream has been shared with the neighbors, the node will begin to
-extract smaller chuncks of the keystream and use an \ac{OTP} for each
+extract smaller chunks of the keystream and use an \ac{OTP} for each
 routing announcement it generates itself, or forwards from other trusted
 neighbors. In addition to the \acp{OTP} appended to the announcements,
 the node keeps a counter, or sequence number, to keep track of which
 \ac{OTP} it has used in order not to use the password twice.
 
-Similarily the node will have to both verify the correctness of the \acp{OTP}
+Similarly the node will have to both verify the correctness of the \acp{OTP}
 received in announcements from its trusted neighbors, and that they have not
-been received before. If the password has been received before the annoucement
+been received before. If the password has been received before the announcement
 needs to be dropped, and assumed to be part of a replay-attack. If the node
 would have accepted re-using of one-time-passwords, an attacker could listen
 and record valid one-time-passwords and re-use them with false routing
@@ -771,8 +771,8 @@ behaviour to continue. This is however mentioned under limitations in Section
 \subsection{Discovering New Neighbors}
 Up until this point, the node only had only discovered the \ac{SP} and after the
 authentication handshake shared their keystream material in order to be able to
-trust each others' routing annoucements. Because of the trust mode being used in
-this design, each routing annoucement from the \ac{SP} are trusted, even if they
+trust each others' routing announcements. Because of the trust mode being used in
+this design, each routing announcement from the \ac{SP} are trusted, even if they
 are re-broadcasts (forwarded by the SP) originating from other nodes not yet
 known to the new node. This means that the routing table of our node could
 possibly fill up with unknown nodes, reachable through \ac{SP}. To have all
@@ -792,7 +792,7 @@ The verification of the ownership of the \ac{PC} is not performed before
 receiving the keystream-material message which occurs soon after sharing
 \acp{PC}. As a remainder the keystream-material message is signed with the
 private key of the sender. Therefore, assuming the nodes has not been
-compromized, the ownership of the neighbors are verified by checking the
+compromised, the ownership of the neighbors are verified by checking the
 validity of said signatures.
 
 \section{Detailed Entity Description}
@@ -826,7 +826,7 @@ forbidden to use, some values that are required to use, and some values that
 must be used in a well defined way \cite{rfc3820}. Below are the
 fields that are included in this system design:
 \begin{itemize}
-  \item Subject Name: $<$Isser Name$>$ + ``CN: $<$SHA-1(Public Key)$>$''
+  \item Subject Name: $<$Issuer Name$>$ + ``CN: $<$SHA-1(Public Key)$>$''
   \item Issuer Name: $<$Subject Name of Issuer$>$
   \item Serial Number: ``$<$SHA-1(Public Key)$>$''
   \item X509v3 Extensions:
@@ -864,7 +864,7 @@ The ``policyLanguage'' field is set to the default value, leaving the
 language used in the policy field later to be handled correctly by the
 application, rather than being universally understandable.
 
-Finally, the last field called ``policy'' might be of greates interest. This
+Finally, the last field called ``policy'' might be of greatest interest. This
 field explains what rights the given \ac{PC} has for this design. Three values
 have been defined for use in this design:
 
@@ -882,11 +882,11 @@ rights in the network, or ``authenticated'' meaning the node is trusted by the
 
 The ``routing'' value can be ``full'' or ``limited''. If it is full the node is
 able to generate and broadcast its own routing announcements, and forward its
-trusted nodes' routing annoucements. This means the node partakes completely in
+trusted nodes' routing announcements. This means the node partakes completely in
 the network and might be placed in a path between two nodes in the network. The
 ``limited'' value is used so a node can become an end-node, but not a node in a
 path between other nodes. I.e., it can send its own routing announcements, but
-it cannot forward other nodes' routing annoucements. If a node with limited
+it cannot forward other nodes' routing announcements. If a node with limited
 rights does forward other nodes' announcements they must be dropped. In
 addition, a detection system of misbehaving nodes should pick up this as
 potentially malicious behaviour, but this is not being implemented as
@@ -945,7 +945,7 @@ values might look like the ones in Table \ref{tab:pc1_values}.
 The interesting part here is too see that the subject name contains the full
 subject name of the issuer in addition to the hash value of the public key used
 in the PC1. Note also that the pCPathLenConstraint now denies the owner to issue
-other acp{PC} using this certificate.
+other \acp{PC} using this certificate.
 
 \subsection{\acf{SP}}
 The term \acl{SP} was coined by Dr. Lawrie Brown \cite{lawrie:technotes}.
@@ -1056,14 +1056,14 @@ in the \ac{NL} by the observant reader. If not, this is where the keystreams of
 your neighbors are stored, and updated each time you receive a new
 keystream-material message from said neighbor. There are four other fields too
 however, which might not be expected by the reader. These fields play an
-important part in mainstaining this list and most importantly - replay attack
+important part in maintaining this list and most importantly - replay attack
 protection.
 
 First, the ``Time keystream received'' field stores the time (in seconds) when
 the last keystream from this neighbor was received. The \acl{AM} regularly
 checks to see if it has not received keystreams from nodes in the \ac{NL} for
-some time, and purges all entries older than a defined timeframe. This is mainly
-to keep the \ac{NL} up to date and short, as the keystreams take up memory
+some time, and purges all entries older than a defined time frame. This is
+mainly to keep the \ac{NL} up to date and short, as the keystreams take up memory
 storage.
 
 The remaining three fields are quite more interesting, as they are used for
@@ -1083,7 +1083,7 @@ neighbor. If the last sequence number is X, then the sliding window corresponds
 to the the sequence numbers between X-63 and X. I.e. the sliding window shows
 whether an \ac{OTP} from this range has been received or not.
 
-For a node to accept a routing annoucement from a direct neighbor (which is in
+For a node to accept a routing announcement from a direct neighbor (which is in
 its \ac{NL}), the following MUST be true:
 \begin{itemize}
   \item the \ac{OTP} sequence number must either be inside the sliding window,
@@ -1235,12 +1235,12 @@ with these \acp{OTP}.
 \begin{figure}[h]
 	\centering
   	\includegraphics[width=\textwidth]{images/appending_otp_from_keystream.png}
-  	\caption{One-time passwords and their sequence numbers appended to routing annoucements.}
+  	\caption{One-time passwords and their sequence numbers appended to routing announcements.}
 	\label{fig:appending_otp_from_keystream}
 \end{figure}
 
 Figure \ref{fig:appending_otp_from_keystream} shows how the first five routing
-annoucements, after a new keystream is shared with neighbors, are appended with
+announcements, after a new keystream is shared with neighbors, are appended with
 the five first \acp{OTP} from the new keystream. Additionally it shows the
 authentication sequence number appended after the \acp{OTP} again, required by
 the recipient to know which OTP to match in the sender's keystream.
