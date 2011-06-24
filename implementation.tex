@@ -14,6 +14,16 @@ Appendix \ref{appendix:source}.
 %	\label{fig:batman_if_statements}
 %\end{figure}
 
+\section{OpenSSL Library}
+All of the cryptographic functions such as encryptions, signatures, and X.509
+public key certificate creation and verification are created using functions
+from the OpenSSL library \cite{viega2002network}. This library was not in the
+original implementation of BATMAN, and has to be installed on the computers running this modified version
+and added to the Makefile for the BATMAN implementation. How to install the
+correct OpenSSL library in a debian environment is explained in Appendix
+\ref{appendix:lab_setup}, and the modified Makefile is part of the full source
+code linked to in Appendix \ref{appendix:source}.
+
 \section{Authentication Module}
 Almost all functionality added to BATMAN is within the borders of a separate
 class called \ac{AM}. The first thing to notice about the \ac{AM} is that it
