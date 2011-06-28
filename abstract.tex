@@ -9,6 +9,15 @@
 %to the network. Wireless ad hoc networks fulfill many of these requirements,
 %but the issue of security and access control still remains a challenging task.
 %\\\\
+
+In emergency situations such as natural disasters the emergency personell should
+be able to establish communication fast and reliably. Depending on the nature of
+the disaster one cannot rely on existing communication infrastructure, or access
+to centralized administration. Additionally the established communication needs
+authentication in order to handle access control so only trusted parties can
+partake. A suitable medium for such communication is wireless ad hoc networks,
+but their flat structure make authentication a very challenging task.
+
 %The goal of this study can be divided into two parts. The first part was
 %focused on trying to define a system with a proper authentication scheme that
 %does not affect the nature of ad hoc networks. We combined common
@@ -16,9 +25,20 @@
 %Secondly, the B.A.T.M.A.N. routing protocol was extended to incorporate the
 %very basic functionality of the system design proposed.
 %\\\\
+
+In this thesis a system design for an ad hoc network combined with access
+control is proposed, and implemted extending a popular routing protocol called
+BATMAN. The proposed authentication scheme relies on special public key
+certificates called proxy certificates, and in combination with a neighbor trust
+mechanism both authentication and access control are managed in a secure manner.
+
 %A small laboratory environment was set up to test the performance of the
 %extended protocol with the intention of proving that our basic functionality
 %did not weaken the unique properties of mobile ad hoc networks. The test
 %results shows that the basic idea of our system design is possible, and that
 %the current implementation should be further extended to fulfill the
 %requirements necessary for a secure ad hoc network.
+
+Tests using mobile nodes shows that the performance of the proposed design is
+comparable to the original routing protocol (BATMAN) used, showing that the
+authentication process is completely manageable even in mobile ad hoc networks.

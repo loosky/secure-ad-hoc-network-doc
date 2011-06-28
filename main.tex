@@ -58,6 +58,15 @@ escapeinside={\%*}{*)}          % if you want to add a comment within your code
 
 \pagenumbering{roman}
 \pagestyle{fancy}
+
+\input{problem_description}
+\addcontentsline{toc}{chapter}{Problem Description}
+
+\pagestyle{empty}
+\cleardoublepage
+\pagestyle{fancy}
+
+
 \input{abstract}
 
 \pagestyle{empty}
@@ -145,10 +154,10 @@ escapeinside={\%*}{*)}          % if you want to add a comment within your code
 \cleardoublepage
 \pagestyle{fancy}
 
-\addcontentsline{toc}{chapter}{References}
 \bibliographystyle{alpha}
 \renewcommand{\bibname}{References}
 \bibliography{ref}
+\addcontentsline{toc}{chapter}{References}
 
 \pagestyle{empty}
 \cleardoublepage
@@ -157,11 +166,11 @@ escapeinside={\%*}{*)}          % if you want to add a comment within your code
 \appendix
 \input{appendix_source_code}
 
-\pagestyle{empty}
-\cleardoublepage
-\pagestyle{fancy}
+%\pagestyle{empty}
+%\cleardoublepage
+%\pagestyle{fancy}
 
-\input{appendix_irc_logs}
+%\input{appendix_irc_logs}
 
 \pagestyle{empty}
 \cleardoublepage
