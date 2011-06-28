@@ -182,7 +182,7 @@ is relatively equal, being about one second. For both nodes to be added however,
 there are much more variance - varying from the best possible time, i.e. equal
 to adding one node, and up above 3 times longer than adding one node. As this is
 from the original implementation of BATMAN, this thesis will not try to explain
-why this behaviour is observed, nor does the writer know exactly why either.
+why this behaviour is observed, nor does the author know exactly why either.
 
 Figure \ref{fig:test_1_secure} shows the results from the modified version
 proposed in this thesis. These results indicates that the behaviour of the
@@ -246,10 +246,10 @@ most accurately explained in the terms of external environment.
 
 In this test, one major factor is the movement of the Tablet Pc, or node D. This
 movement is not perfect, and will vary in speed, timing, and accurate position
-for each run. As self-generated routing announcements is only generated every
-one second, a difference in almost two seconds can be seen based on the
+for each run. As self-generated routing announcements are only generated once
+every second, a difference in almost two seconds can be seen based on the
 difference in distance each run. Also, the original implementation only starts
-its whole neighbor discovery after an original (self-generated/produced) routing
-announcement is received from a new neighbor. The \ac{AM} is triggered on the
-first routing announcement received from that new neighbor, even if that
+its whole neighbor discovery after an original (self-generated/produced)
+routing announcement is received from a new neighbor. The \ac{AM} is triggered
+on the first routing announcement received from that new neighbor, even if that
 announcement is a re-broadcast from another node in the new neighbor's network.

@@ -7,13 +7,6 @@ implemented into the BATMAN protocol. Some code snippets will be shown in the
 following sections when applicable, and the full source code can be found in
 Appendix \ref{appendix:source}.
 
-%\begin{figure}[h]
-%	\centering
-%	\includegraphics[totalheight=1\textheight]{images/batman_if_statements.png}
-%	\caption{IF-Statements in the Batman Class}
-%	\label{fig:batman_if_statements}
-%\end{figure}
-
 \section{OpenSSL Library}
 All of the cryptographic functions such as encryptions, signatures, and X.509
 public key certificate creation and verification are created using functions
@@ -319,17 +312,23 @@ verification check is not passed, the \ac{OGM} is dropped, and possibly the AM
 class is told there is a new node. The interesting code snippet from this class
 can be found in Section \ref{code:ext_batman} in it entirety.
 
-TODO: NEW FIGURE SHOWING THE BATMAN FLOW CHART HERE!
+\begin{figure}[h!]
+	\centering
+	\includegraphics[totalheight=1\textheight]{images/batman_if_statements.png}
+	\caption{IF-Statements in the Batman Class}
+	\label{fig:batman_if_statements}
+\end{figure}
 
-Figure XXXX shows the flow chart through the main loop in BATMAN. Here you can
-see where the AM modifications are put, and hopefully understand why they are
-put there. The first checks before the modification are almost like sanity
-checks, which must be passed before testing the \acp{OTP} should even be
-considered. After the AM extension there are many checks which are more specific
-to the routing algorithm, but they do not affect whether the \acp{OTP} should be
-checked, and if the OGM is received from a new neighbor the AM extension has to
-notify the AM class of a new neighbor before allowing the the subsequent checks
-to be made, or the OGM will be handled when it quite possibly should not.
+Figure \ref{fig:batman_if_statements} shows the flow chart through the main loop
+in BATMAN. Here you can see where the AM modifications are put, and hopefully
+understand why they are put there. The first checks before the modification are
+almost like sanity checks, which must be passed before testing the \acp{OTP}
+should even be considered. After the AM extension there are many checks which
+are more specific to the routing algorithm, but they do not affect whether the
+\acp{OTP} should be checked, and if the OGM is received from a new neighbor the
+AM exte nsion has to notify the AM class of a new neighbor before allowing the
+the subsequent checks to be made, or the OGM will be handled when it quite
+possibly should not.
 
 \subsection{SCHEDULE.C}\label{subsect:schedule.c}
 In the schedule class there are two functions which needs to be modified. The

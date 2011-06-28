@@ -2,3 +2,43 @@
 \label{ch:conclusion}
 \acresetall
 
+With this thesis I have shown that the problem of authentication in \aclp{MANET}
+can be managed using a special type of public key certificates called proxy
+certificates, along with the use of one-time passwords. In this thesis a system
+design for handling the authentication in a MANET is proposed along with its
+implementation for UNIX systems. I have shown that a central node is only
+required for initial authentication, while the subsequent operation of the MANET
+have no such requirement due to the use of proxy certificates and a trust
+scheme.
+
+Prior to this thesis, a comprehensive study of related works for authentication
+and security in ad hoc networks was carried out during a specialization project
+carried out in co-operation with Anne Gabrielle Bowitz. During this study the
+main design ideas were formed, but changes were made with thesis to account for
+authentication of nodes without a verifyable authentication token, and also
+during the implementation when some specific goals became more clear.
+
+An emergency scenario was constructed and used to create system design
+requirements. With the exception of one requirement, which has been deemed
+further work, all requirements have been accounted for and handled in the
+proposed system design.
+
+The implementation of the system design was acheived by extending an existing
+and popular ad hoc routing protocol called BATMAN. The extension should also be
+portable to other network-layer pro-active routing protocols.
+
+Furthermore, the performance of the implemented system design was compared
+to the original routing protocol implementation. These tests indicates that the
+extension do not add much delay, but rather a small and constant delay. The
+tests are, however not fully definite and they should probably be runned again
+with a larger set of test-machines and with far more trials. Only this way can a
+linear time delay be disproven. If further testing should prove a constant
+delay, there would be no obvious performance issues with the proposed design.
+
+Some tasks are left as future work. As noted in the discussion chapter, both
+wormhole attacks and suppress replay attacks might have to be countered. With an
+powerful adversary both attacks could be successful on the proposed design,
+however two possible solutions (one more or less straight forward) were
+discussed. These proposals are left as my suggestions to the science community
+for further work. A peer review of the security assumptions and choices in the
+proposed design is also left as further work.

@@ -36,8 +36,6 @@ able to verify the routing announcements also sent through the wormhole, and
 soon will this route take priority in his routing table as a strong direct link
 instead of going through other nodes in the network to reach A.
 
-TODO: MSC FIGURE VISER DETTE
-
 This attack only distorts the network topology, but notice that because the
 routing announcements' integrity are not protected, and the content is not
 encrypted, the attackers can possibly do greater damage by altering the content
@@ -70,41 +68,43 @@ announcement which he partly jammed.
 \subsection{Possible Solution to the Suppress Replay Attack}
 A possible solution to the suppress replay attack, is to ensure message
 integrity in addition to the authentication. The basic idea would be to create
-and append a message digest to the announcement while using the keystream to
-encrypt the message, e.g. by using a strong stream cipher.
+and append a message digest of the announcement and an OTP from the keystream.
 
-There is one great pitfall to this idea, however. Because the routing
-announcements are often identical to each other, the attacker might be able to
-do a known plaintext attack, being able to first recreate the message digest,
-and depending on the stream cipher just XOR the announcement and digest with the
-encrypted message, revealing the keystream used by the stream cipher. If this
-message was in any way blocked from reaching the intended recipient, the packet
-could be changed and XOR'ed with the retrieved keystream and sent to the
-recipient, which would trust this packet.
+Using this idea, the OTP would never be sent visible, meaning at least one part
+of the routing announcement is a secret between the sender and the authorized
+receivers. The OTP has to be secret, or else an attacker could modify the
+message and create a new digest, whereas with a secret OTP the attacker would
+not be able to create an announcement which would give a verifyable digest value
+(collision). The message would therefore look like the following:
 
-One possible way to avoid this problem would be to add some randomness to the
-``known part'', namely the original announcement. If the announcement is e.g.
-appended with a part of the senders keystream (\ac{OTP}) before creating the
-message digest, the attacker would not be able to recreate the full plaintext
-(including digest) and would therefore not be able to find the keystream used by
-the stream cipher.
+$Announcement | Hash(Announcement | OTP) | OTPSeqNum$
 
-The reader might raise another question, regarding the length of this random
-part added to the announcement before creating the digest. One major factor
-here is time, and time it takes for an adversary to find the random part (collision).
-The time is however very restricted. The sliding window used to avoid replay
-attacks is only 64 bits long, and in the worst case (best case for adversary)
-there are only two legitimate nodes in the network. If this is the case, each
-node will send two announcements every second (BATMAN protocol) meaning the
-window of opportunity for the attacker is only 32 seconds. For each extra
-legitimate node in the network this window drastically closes. The length of the
-random part used for the digest should therefore be strong enough withstand 32
-seconds of brute-force guessing attack.
+Note that the full length of the message digest (hash value) would not have to
+be appended to the message. A truncated version could be used, but when
+designing such a system one needs to calculate how long the truncated digest
+should be. The sliding window used to avoid replay attacks is only 64 bits long,
+and in the worst case (best case for adversary) there are only two legitimate
+nodes in the network. If this is the case, each node will send two
+announcements every second (BATMAN protocol) meaning the window of opportunity
+for the attacker is only 32 seconds. This means that the truncated digest should
+at least be of a size which is unfeasable for an attacker to find a digest
+collision within 32 seconds of brute forcing.
 
-Note that it might not be wise to send the whole message digest because the
-announcement sizes would become very large. This might be truncated as well, but
-when designing this the time needed to find a collision for a truncated digest
-needs to be addressed as well.
+However, this requirement might even be to strict, because the attacker also has
+to find a collision which would produce valid values for the routing
+announcement - making the attackers job much more complex. This is true because
+the routing algorithms will drop any announcement containing values that does
+not ``make any sense''.
+
+Note also that even IF we suppose the attacker was able to find a collision for
+a valid announcement, the attacker would have to accomplish this continuously
+again and again, because the routing protocol (BATMAN) requires several valid
+announcements from a node before it updates its routes for that node. For each
+time the attacker fails at finding a valid and fake announcement the routing
+protocol at the receiving end figures this to be a bad or broken link,
+effectively killing the attack. It might be that the original two bytes, and its
+65536 ($2^16$) possible combinations would be to difficult for an attacker to
+break.
 
 \subsection{Possible Solution to the Wormhole Attack}
 This attack vector is very difficult to to protect against. With the solution
@@ -193,11 +193,12 @@ unauthenticated nodes, they could rather tunnel the announcement directly to
 the \ac{SP} and have the authentication handshake go through them.
 
 \subsection{Network Merging}
-For this implementation to be really useful for emergency services, which will
-consist of different types of actors and organizations, the implementation
-should support merging of multiple ad hoc networks. For example, if paramedics
-set up their own network, and firefighters arrive with their own network,
-co-operation between these networks should be supported.
+Due to R5 of Table \ref{tab:our_req} and for this implementation to be really
+useful for emergency services, which will consist of different types of actors
+and organizations, the implementation should support merging of multiple ad hoc
+networks. For example, if paramedics set up their own network, and firefighters
+arrive with their own network, co-operation between these networks should be
+supported.
 
 Figure \ref{fig:scenario_networks} (from the specialization
 project \cite{bowitz_graarud}) shows a possible scenario when a large emergency
@@ -261,10 +262,11 @@ obstacles might be manageable.
 \emph{Limited merging} is a completely different technique than the one
 described above, and probably easier to implement. With limited merging of two
 or more networks, the networks stay autonomous with their own (possible)
-hierarchy, set of rules, management nodes, and so on. What constitutes the
-merging is that at least one node in each network is set up with gateway
-capabilities, which can broadcast the existence of another network to the nodes
-inside its own network.
+hierarchy, set of rules, management nodes, and so on, while at the same time
+allowing the two (or more) networks to collaborate. What constitutes the merging
+is that at least one node in each network is set up with gateway capabilities,
+which can broadcast the existence of another network to the nodes inside its
+own network.
 
 Rules on the application layer must necessarily still be looked at, as they
 should work over the different networks, but routing rules and other access
@@ -331,4 +333,35 @@ When I've had enough time I've documented the OpenSSL functions used in my
 implementation, which can hopefully help someone planning to further implement
 on this design, or other designs with similar functionality.
 
-TODO: mention why ECC not used, problems with ECIES algorithm
+During the implementation and before completing the keystream sharing, ECC was
+used instead of RSA for signing the certificates. In order to use ECC for the
+keystream sharing, ECDH or ECIES had to be used. This however, was not an easy
+task using OpenSSL, and the author had to change the public keys to RSA in order
+to complete the keystream sharing in due time for turinging in this thesis. One
+can easily argue that ECC should be used rather than RSA because of key sizes,
+making much sense in \acp{MANET}.
+
+\section{Out-Of-Band Authentication}
+If an authentication scheme use some other medium to authenticate a user than
+the medium for which the authenticated identities are supposed to use later, you
+have an out-of-band authentication. For instance, when two computers interact
+over the Internet, and the authentication scheme relies on some secret
+information being transferred via e.g. SMS on the phone network, then this
+secret information is being shared on an out-of-band authentication.
+
+For the purpose of this thesis, a few out-of-band authentication schemes could
+be handy, such as sharing public keys (or just their fingerprints) verbally
+between the human actors, or using USB sticks. There is no requirement of
+sharing the public keys however. If one can assume that you know with certainty
+that a communication is from the alleged identity, you can instantly grant this
+identity access and issue it a PC. This can be true if the SP is plugged into
+one end of an ethernet cable, and the other end of the cable is plugged into the
+actors machine. Then you know this machine belongs to the actor and can be
+directly verified.
+
+Another part of the out-of-band authentication can be that an actor has a
+non-digital authentication token such as a passport, or a work related identity
+badge issued by the emergency organization emplying this actor. The SP might
+require this person to show him this identity badge before being allowed into
+the network. In other words, there are countless of different out-of-band
+authentication schemes, and they will not be discussed here further.
