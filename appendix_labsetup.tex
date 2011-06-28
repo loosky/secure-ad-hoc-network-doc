@@ -39,8 +39,6 @@ post-down brctl delif unicast wlan0
 post-down brctl delbr unicast
 \end{lstlisting}
 
-\noindent
-\\
 To install batmand, run the following as root user:
 
 \begin{lstlisting}[frame=tb]
@@ -49,26 +47,10 @@ make install
 make clean
 \end{lstlisting}
 
-\noindent
-\\
-For running the batman daemon on the test nodes, we ran the following script as root user:
+To run the batman daemon on a regular test node, use the following command:
 
-\begin{lstlisting}[frame=tb]
-ifconfig wlan0 up
-batmand wlan0
-batmand -cd 4
-killall batmand
-ifconfig wlan0 down
-\end{lstlisting}
+\texttt{batmand --role authenticated -d 4 wlan0}
 
-\noindent
-\\
-For reducing the transmitting power in test III and IV we ran the following as root user:
+To run the batman daemin on the SP node, use the following command:
 
-\begin{lstlisting}[frame=tb]
-ifconfig wlan0 down
-iwconfig wlan0 txpower 7
-ifconfig wlan0 up
-\end{lstlisting}
-
-
+\texttt{batmand --role sp -d 4 wlan0}
