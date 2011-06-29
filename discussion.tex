@@ -55,7 +55,7 @@ one time password and its sequence number are kept intact.
 
 The trusted receiver of this distorted packet will ignore it, because he will
 not understand the meaning of the packet. The attacker on the other hand, knows
-that the following un-corrupt data is a valid one time password and its sequence
+that the following uncorrupt data is a valid one time password and its sequence
 number from the sender's keystream.
 
 Because the original recipient of this packet did not understand the destroyed
@@ -74,7 +74,7 @@ Using this idea, the OTP would never be sent visible, meaning at least one part
 of the routing announcement is a secret between the sender and the authorized
 receivers. The OTP has to be secret, or else an attacker could modify the
 message and create a new digest, whereas with a secret OTP the attacker would
-not be able to create an announcement which would give a verifyable digest value
+not be able to create an announcement which would give a verifiable digest value
 (collision). The message would therefore look like the following:
 
 $Announcement | Hash(Announcement | OTP) | OTPSeqNum$
@@ -87,7 +87,7 @@ and in the worst case (best case for adversary) there are only two legitimate
 nodes in the network. If this is the case, each node will send two
 announcements every second (BATMAN protocol) meaning the window of opportunity
 for the attacker is only 32 seconds. This means that the truncated digest should
-at least be of a size which is unfeasable for an attacker to find a digest
+at least be of a size which is unfeasible for an attacker to find a digest
 collision within 32 seconds of brute forcing.
 
 However, this requirement might even be to strict, because the attacker also has
@@ -325,7 +325,7 @@ Most of the implementation has been understood by looking at a few available
 examples online at different sites, some demos within the OpenSSL libraries,
 and by asking the online community. For reference, I would personally recommend the
 community at \emph{Stack Overflow}\footnote{\url{http://stackoverflow.com}}
-rather than the OpenSSL mailinglists\footnote{\url{openssl-dev@openssl.org}}
+rather than the OpenSSL mailing lists\footnote{\url{openssl-dev@openssl.org}}
 \footnote{\url{openssl-users@openssl.org}} which have not answered any
 questions I raised.
 
@@ -337,8 +337,8 @@ During the implementation and before completing the keystream sharing, ECC was
 used instead of RSA for signing the certificates. In order to use ECC for the
 keystream sharing, ECDH or ECIES had to be used. This however, was not an easy
 task using OpenSSL, and the author had to change the public keys to RSA in order
-to complete the keystream sharing in due time for turinging in this thesis. One
-can easily argue that ECC should be used rather than RSA because of key sizes,
+to complete the keystream sharing in due time before turnging in this thesis.
+One can easily argue that ECC should be used rather than RSA because of key sizes,
 making much sense in \acp{MANET}.
 
 \section{Out-Of-Band Authentication}
@@ -361,7 +361,7 @@ directly verified.
 
 Another part of the out-of-band authentication can be that an actor has a
 non-digital authentication token such as a passport, or a work related identity
-badge issued by the emergency organization emplying this actor. The SP might
+badge issued by the emergency organization employing this actor. The SP might
 require this person to show him this identity badge before being allowed into
 the network. In other words, there are countless of different out-of-band
 authentication schemes, and they will not be discussed here further.

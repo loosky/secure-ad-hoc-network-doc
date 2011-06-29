@@ -85,7 +85,7 @@ each other, which also means they will trust their neighbors to properly verify
 their neighbors again.
 
 %In order for trusted nodes to learn of newly trusted nodes existence, the
-%\ac{SP} reularly broadcasts lists containing the id, address and public key of
+%\ac{SP} regularly broadcasts lists containing the id, address and public key of
 %each trusted node in the network. This needs to be done, because before
 %learning about a new node the other trusted nodes will not accept any messages
 %from this node. This means the new node will not be able to exchange its own
@@ -490,7 +490,7 @@ other approximately at the same time.
 
 Figure \ref{fig:node_states_discovery} illustrates the routing announcements
 periodically sent by two nodes until they discover each other, and how the SP
-enters the authentication handshake state while the new node does nothing.One
+enters the authentication handshake state while the new node does nothing. One
 of the nodes have already assumed the master role and is a \ac{SP} while the
 other node is unauthenticated.
 
@@ -764,9 +764,9 @@ neighbors only send you their own announcements and forwards announcements from
 its trusted neighbors. One can therefore say there is a trust-chain where you do
 not explicitly verify the authenticity of all nodes' announcements, because you
 trust your neighbors to verify it for you, and their neighbors to verify it for
-them again and so on. This scheme will not detect malicious behaviour if some
+them again and so on. This scheme will not detect malicious behavior if some
 trusted node in the network is compromised, and would allow the malicious
-behaviour to continue. This is however mentioned under limitations in Section
+behavior to continue. This is however mentioned under limitations in Section
 \ref{limit:malicious_behaviour}.
 
 \subsection{Discovering Additional New Neighbors}
@@ -807,9 +807,9 @@ Internet or other communication infrastructure available one cannot depend on a
 to verify actors physically (out-of-band) and then issuing them an
 authentication token to be used during this scenario. The reasoning to use a
 certificate at all is due to requirement R4 from Table \ref{tab:our_req},
-because with an easily verifyable certificate for all trusted nodes in the
+because with an easily verifiable certificate for all trusted nodes in the
 network all nodes can continue to verify each other even if the SP is
-unavailible. This is where the \aclp{PC} comes in handy, while regular \acp{EEC}
+unavailable. This is where the \aclp{PC} comes in handy, while regular \acp{EEC}
 are not as easy to verify, and also should not be used for issuing new regular
 certificates, per RFC2459 \cite{rfc2459}.
 
@@ -894,7 +894,7 @@ path between other nodes. I.e., it can send its own routing announcements, but
 it cannot forward other nodes' routing announcements. If a node with limited
 rights does forward other nodes' announcements they must be dropped. In
 addition, a detection system of misbehaving nodes should pick up this as
-potentially malicious behaviour, but this is not being implemented as
+potentially malicious behavior, but this is not being implemented as
 previously explained in Limitations (\ref{limit:malicious_behaviour}).
 
 The last value, ``application'', is used to declare whether the node should have
@@ -1178,7 +1178,7 @@ request in addition to adding some values, possibly changing some of the
 requested values, and sending it all in one message.
 
 After this message, the \ac{SP} waits for the first keystream-material message
-from the newly authenticated node as an acknowledgement from the recipient,
+from the newly authenticated node as an acknowledgment from the recipient,
 after which the \ac{SP} sends its keystream-material to the new node as well.
 
 \subsection{Keystream-Material Message}
@@ -1263,7 +1263,7 @@ dropped as discussed earlier.
 %\begin{figure}[h]
 %	\centering
 %  	\includegraphics{images/mac_ogm_msc.png}
-%  	\caption{Node A peridically generates a new pseudo-random value and a
+%  	\caption{Node A periodically generates a new pseudo-random value and a
 %  	corresponding symmetric key which it shares with its neighbor B. Node A use
 %  	an extract of a generated MAC of this value in each of its routing
 %  	announcements hereafter.}

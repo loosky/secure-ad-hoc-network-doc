@@ -13,7 +13,7 @@ public key certificate creation and verification are created using functions
 from the OpenSSL library \cite{viega2002network}. This library was not in the
 original implementation of BATMAN, and has to be installed on the computers running this modified version
 and added to the Makefile for the BATMAN implementation. How to install the
-correct OpenSSL library in a debian environment is explained in Appendix
+correct OpenSSL library in a Debian environment is explained in Appendix
 \ref{appendix:lab_setup}, and the modified Makefile is part of the full source
 code linked to in Appendix \ref{appendix:source}.
 
@@ -77,7 +77,7 @@ Second, TCP was created with wired networks in mind, observing much less packet
 loss. In \acp{MANET} the packet losses are much higher than in wired and fixed
 infrastructure networks, and as nodes move around direct paths between nodes
 change much more frequently. TCP is not suitable for such environments because
-it will lead to a huge amount of re-sending of packets to ``non-existant''
+it will lead to a huge amount of re-sending of packets to ``non-existent''
 neighbors and much memory wasted in connection states being kept for dead links.
 
 \subsection{Main Operation of the AM Thread}
@@ -133,7 +133,7 @@ source code projects using proxy certificates have been published for years,
 giving me the idea that maybe the OpenSSL specifications have changed during
 the last version updates and that proxy certificates have to be implemented
 differently. The author have asked for an answer on this subject on both emails
-to the developers of OpenSSL, the OpenSSL's mailinglists, and on an
+to the developers of OpenSSL, the OpenSSL's mailing lists, and on an
 OpenSSL ``IRC'' channel\footnote{OpenSSL IRC Channel: \#openssl on
 \url{irc://irc.freenode.net}}.
 
@@ -194,8 +194,8 @@ key as input.
 
 \section{Authentication List}
 When a node has verified another node, it stores some information about that
-node within struct called \texttt{trusted\_node}. Then the struct is placed in a
-list called \ac{AL} which stores one such struct for each known and trusted
+node within a struct called \texttt{trusted\_node}. Then the struct is placed in
+a list called \ac{AL} which stores one such struct for each known and trusted
 node. Table \ref{tab:impl_al_content} shows how this data structure looks like:
 \begin{table}[h]
 	\centering
@@ -326,7 +326,7 @@ almost like sanity checks, which must be passed before testing the \acp{OTP}
 should even be considered. After the AM extension there are many checks which
 are more specific to the routing algorithm, but they do not affect whether the
 \acp{OTP} should be checked, and if the OGM is received from a new neighbor the
-AM exte nsion has to notify the AM class of a new neighbor before allowing the
+AM extension has to notify the AM class of a new neighbor before allowing the
 the subsequent checks to be made, or the OGM will be handled when it quite
 possibly should not.
 

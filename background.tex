@@ -38,7 +38,7 @@ A \ac{MANET} is a subset of ad hoc networks, in which nodes are specified as
 non-stationary wireless nodes, i.e. a \ac{MANET} consists of several mobile
 nodes communicating with each other, and through each other even while on the
 move. With \acp{MANET} nodes are always on the move and must therefore update
-their routing tables continously to make sure full paths between nodes are
+their routing tables continuously to make sure full paths between nodes are
 updated as quickly as possible, i.e. a minimal routing path convergence is
 necessary.
 
@@ -68,11 +68,11 @@ node instead of the full route.
 Each method might have some advantages over the other, i.e. storing full paths
 and sending all this information to all nodes in the network might minimize the
 chances of routing loops and route flappings, but this method would have a huge
-overhead in signalling traffic. The latter method would have much less overhead,
+overhead in signaling traffic. The latter method would have much less overhead,
 but it is more difficult to avoid routing loops and/or route flapping.
 
 \subsubsection*{Reactive Routing Protocols}
-In opposition to pro-active protocols, reacive protocols calculates and updates
+In opposition to pro-active protocols, reactive protocols calculates and updates
 routes when they are needed, i.e. when data is being sent. The advantages of
 this strategy is conserving power used in obsolete/non-necessary routing
 calculations, but the downside being that the protocol might react more slowly
@@ -80,10 +80,10 @@ to topology changes.
 
 \subsection{Challenges}
 There are a multitude of challenges to solve in regards to ad hoc networking,
-and especially so in modbile ad hoc networking. First there are challenges
+and especially so in mobile ad hoc networking. First there are challenges
 regarding routing such as route flapping and routing loops, then there is the
-issue of power conservation as modile ad hoc nodes usually runs on battery
-power, and last, but definately not least, there is the issue of security.
+issue of power conservation as mobile ad hoc nodes usually runs on battery
+power, and last, but definitely not least, there is the issue of security.
 
 \subsubsection*{Route Flapping}
 Route flapping is a term describing rapid route changes when there are multiple
@@ -129,8 +129,8 @@ to) \textit{confidentiality}, \textit{integrity}, \textit{authenticity}, and
 \textit{access control} to name a few. Whatever the security feature is, it
 usually depends on \emph{authentication}.
 
-Acheiving a secure initial authentication is a very difficult task even in
-regular networks, but using a verifyable identity based upon this initial
+Achieving a secure initial authentication is a very difficult task even in
+regular networks, but using a verifiable identity based upon this initial
 authentication is conquered using \acp{PKI}. In a \ac{MANET}, possibly without
 Internet access, this task is again very difficult. Therefore, one ends
 up with the original problem - doing initial authentication all over again. As this
@@ -257,8 +257,8 @@ by an \ac{CA}, but by an \ac{EEC} or another \ac{PC}. With such certificates one
 can delegate rights on behalf of one self, i.e. if you issue a \ac{PC} to some
 other entity, that entity will be able to act on your behalf. \acp{PC} allows
 the use of restrictions, given in a proxyPolicy field. This way the issuer can
-decide which of its own rights the issuee shall have, granted the issued \ac{PC}
-cannot have more or elevated rights than the issuer of the \ac{PC}.
+decide which of its own rights the receiver shall have, granted the issued
+\ac{PC} cannot have more or elevated rights than the issuer of the \ac{PC}.
 
 \section{Attacks on Mobile Ad Hoc Networks}
 There are a multitude of attacks on mobile ad hoc networks
