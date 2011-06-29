@@ -1,21 +1,12 @@
 \chapter{Test Results}
 \label{appendix:test_results}
 \acresetall
-
-\section{Logs}
-All of the logs produced from the tests can be found at the following address:
-
-\url{https://github.com/espengra/secure-ad-hoc-network-doc/raw/master/share/results.zip}
-
-Note that the logs are in the BATMAN ``-v 4'' format. For explanation see the
-man pages for batmand.
-
 \section{Numerical Results}
 This sections presents the actual numerical results the graphs in Chapter
 \ref{ch:testing_results}, and their means and variances.
 
 \subsection{Test I - Original BATMAN}
-\begin{table}[h]
+\begin{table}[h!]
 	\centering
 	\begin{tabular}{| l || p{24mm} || p{22mm} | p{22mm} || p{20mm} |  p{20mm} |}\hline
  		\textbf{\#} & \textbf{First OGM Received (s)} & \textbf{First Route Added (s)} & \textbf{Last Route Added (s)} & \textbf{Time to Add One (s)} & \textbf{Time To Add Both(s)}\\\hline
@@ -41,7 +32,7 @@ This sections presents the actual numerical results the graphs in Chapter
 \emph{Standard deviation} in time adding both routes: 0,91 seconds
 
 \subsection{Test I - Modified BATMAN}
-\begin{table}[h]
+\begin{table}[h!]
 	\centering
 	\begin{tabular}{| l || p{24mm} || p{22mm} | p{22mm} || p{20mm} |  p{20mm} |}\hline
  		\textbf{\#} & \textbf{First OGM Received (s)} & \textbf{First Route Added (s)} & \textbf{Last Route Added (s)} & \textbf{Time to Add One (s)} & \textbf{Time To Add Both(s)}\\\hline
@@ -67,7 +58,7 @@ This sections presents the actual numerical results the graphs in Chapter
 \emph{Standard deviation} in time adding both routes: 0,30 seconds
 
 \subsection{Test II}
-\begin{table}[h]
+\begin{table}[h!]
 	\centering
 	\begin{tabular}{| l || p{35mm} | p{35mm} |}\hline
 	\textbf{\#} & \textbf{Original Convergence Time (s)} & \textbf{Modified Convergence Time (s)}\\\hline
@@ -91,3 +82,12 @@ This sections presents the actual numerical results the graphs in Chapter
 
 \emph{Standard deviation} convergence time using original BATMAN: 0.88 seconds\\
 \emph{Standard deviation} convergence time using modified BATMAN: 3.93 seconds
+
+\section{Logs}
+All of the logs produced from the tests can be found at the following address:
+
+\url{https://github.com/espengra/secure-ad-hoc-network-doc/raw/master/share/results.zip}
+
+Note that the logs are in the BATMAN ``-v 4'' format. For explanation see the
+man pages for batmand.
+

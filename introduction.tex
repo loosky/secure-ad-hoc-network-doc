@@ -14,7 +14,7 @@ emergency (i.e. tsunami destroying the infrastructure). As recent events
 here in Norway have shown, internal errors might paralyze the whole network 
 infrastructure\footnote{\url{http://www.dagbladet.no/2011/06/16/nyheter/innenriks/telenor/16942385/}
 (Norwegian)} making emergency relief ineffective\footnote{\url{http://www.dagbladet.no/2011/06/11/nyheter/ver/flom/naturkatastrofer/innenriks/16880835/}
-(Norwegian)}, giving a sound argument for having a separate backup emergency
+(Norwegian)}, creating a sound argument for having a separate backup emergency
 network. The military might also be in an hostile environment where they cannot trust
 the network in place altogether.
 
@@ -36,7 +36,7 @@ locations. The latter requirement however, is a more challenging task in
 
 With the lack of infrastructure in \acp{MANET} and no guarantees that they are
 connected to the Internet, establishing trust between the nodes becomes
-different from how this is done on the Internet which can rely on e.g.
+different from how this is done on the Internet where we can rely on e.g.
 \acp{PKI}.
 
 In this thesis I will propose and implement a solution suggestion to establish a
@@ -65,7 +65,7 @@ relief personnel work at a scene with little or scarce communication throughout
 the area\footnote{\url{http://www.wired.com/magazine/2010/04/ff_haiti/}}. With
 a trusted communication network like a secure \ac{MANET} an operation like this
 could become much more efficient, bringing the right amount of help to the
-right places at the right time.
+right places and at the right time.
 
 \section{Contributions}
 This thesis presents a novel design to achieve authentication and trust
@@ -106,10 +106,11 @@ wireless channels.
 \subsection{Detecting malicious behavior}
 \label{limit:malicious_behaviour}
 One attack vector which will not be discussed in this thesis is if a legitimate
-node acts maliciously, which might happen if a legitimate node is compromised.
-The solution proposed in the thesis assumes all trusted nodes acts with good
-intentions. There are much research about detecting malicious behavior in ad
-hoc network \cite{Pirzada_McDonald} \cite{dhurandher2010network}.
+node acts maliciously, which might happen if the private key of a legitimate
+node is compromised. The solution proposed in the thesis assumes all trusted
+nodes acts with good intentions. There have been much research about detecting
+malicious behavior in ad hoc network \cite{Pirzada_McDonald}
+\cite{dhurandher2010network}.
 
 However, these kind of solutions are mainly designed for networks without any
 authentication scheme at all, and is therefore just investigating malicious
@@ -161,6 +162,9 @@ necessary code snippets and links to the full source code available online.
 
 \textbf{Appendix \ref{appendix:lab_setup}: Lab Setup} shows how the machines
 used in the lab and tests were set up.
+
+\textbf{Appendix \ref{appendix:test_results}: Test Results} presents the
+numerical results and the logs produced in the tests.
 
 \textbf{Appendix \ref{appendix:paper}: Scientific Paper} about adding security
 to the BATMAN protocol written by myself, Anne Bowitz, and our supervisors

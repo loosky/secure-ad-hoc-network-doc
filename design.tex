@@ -854,10 +854,11 @@ Issuer''. The modal verb ``should'' used in this requirement is used in order
 to ease this requirement so that a method creating a unique name with a high
 probability, but not provable uniqueness, may be accepted. Therefore using a
 SHA-1 digest of the public key used by the node is regarded as ``good enough'',
-or ``unique enough''.
+or ``unique enough''. The reason why this subject name should be unique is
+because it is the identity which we later try to verify during authentication.
 
-The same requirement is true for the serial number, and allows the serial number
-to be the same as the subject name except for the ``CN:'' prefix.
+The same uniqueness requirement is true for the serial number, and allows the
+serial number to be the same as the subject name except for the ``CN:'' prefix.
 
 The specifications requires the ``Digital signatures'' value for the ``Key
 Usage'' extension because a \ac{PC} can be used to sign the keystream material

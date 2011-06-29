@@ -109,9 +109,9 @@ routing table with paths through a new neighbor.
 \subsection{Setup}
 \begin{figure}[h]
 	\centering
-	\subfloat[1st Position]{\label{fig:test_2_1}\includegraphics[width=\textwidth]{images/setup_test_2_1.png}}
+	\subfloat[Initial Position - D out of range of C]{\label{fig:test_2_1}\includegraphics[width=\textwidth]{images/setup_test_2_1.png}}
 	\\
-	\subfloat[2nd Position]{\label{fig:test_2_2}\includegraphics[width=\textwidth]{images/setup_test_2_2.png}}
+	\subfloat[``Connected Position'' - D within range of C]{\label{fig:test_2_2}\includegraphics[width=\textwidth]{images/setup_test_2_2.png}}
 	\caption{Physical network layout used in test 2. The Laptop (node C) is moved further out of range and is periodically rejoining the network when a Tablet Pc (node D) is moved within range. When using the modified version node B acts as the SP of the network}
 	\label{fig:setup_test_2}
 \end{figure}
@@ -157,7 +157,9 @@ in terms of how they perform compared to the hypotheses. In both tests there
 were only a dataset of 10 trials, which given the variance shown below does not
 provide a statistical significant result. However, the first test shows good
 indication that the modified protocol behaves as expected, while the results
-from the seconds test are more ambiguous.
+from the seconds test are more ambiguous. The results below are presented in
+graphs, while all of the numerical results and the test logs are found in
+Appendix \ref{appendix:test_results}.
 
 \subsection{Initialization Phase}
 Figure \ref{fig:results_test_1} presents the first test's results for both the
